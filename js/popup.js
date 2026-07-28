@@ -3,11 +3,63 @@ const popupClose = document.getElementById("popupClose");
 const popupTitle = document.getElementById("popupTitle");
 const popupContent = document.getElementById("popupContent");
 const popupIcon = document.getElementById("popupIcon");
+const popupButtons =
+    document.querySelector(".popup-buttons");
 
-function showPopup(title, content, type = "success") {
+const copyBtn =
+    document.getElementById("copyDiscordBtn");
+
+const newBtn =
+    document.getElementById("newControlBtn");
+   let popupHistory = null;
+
+function showPopup(
+    title,
+    content,
+    type = "success",
+    mode = "terfi"
+) {
+
+
+    if(mode === "oyun"){
+
+        popupHistory = {
+            title: popupTitle.textContent,
+            content: popupContent.innerHTML
+        };
+
+    }
+
 
     popupTitle.textContent = title;
     popupContent.innerHTML = content;
+
+
+    if(mode==="terfi"){
+
+}
+
+else if(mode==="toplu"){
+
+    popupButtons.style.display="flex";
+
+    copyBtn.style.display="inline-block";
+
+    newBtn.style.display="none";
+
+}
+
+else if(mode==="oyun"){
+
+    popupButtons.style.display="flex";
+
+    copyBtn.style.display="none";
+
+    newBtn.style.display="inline-block";
+
+    newBtn.textContent="Kapat";
+
+}
 
     switch(type){
 
@@ -49,15 +101,28 @@ popupOverlay.addEventListener("click", function(e){
 });
 
 document.getElementById("newControlBtn").addEventListener("click", function(){
+
+    if (popupTitle.textContent === "Oyun Çıktısı" && popupHistory) {
+
+        showPopup(
+            popupHistory.title,
+            popupHistory.content,
+            "success",
+            "toplu"
+        );
+
+        popupHistory = null;
+        return;
+    }
+
     closePopup();
+
 });
 
 // Discord çıktısını kopyala
 document.getElementById("copyDiscordBtn").addEventListener("click", function () {
 
-    const text =
-window.discordMesaji ||
-popupContent.innerText;
+    const text = window.discordMesaji;
 
     navigator.clipboard.writeText(text)
         .then(() => {

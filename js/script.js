@@ -348,6 +348,8 @@ const personelContainer = document.getElementById("personelContainer");
 const personelEkleBtn = document.getElementById("personelEkle");
 const hesaplaBtn = document.getElementById("hesaplaBtn");
 const sonuclarDiv = document.getElementById("sonuclar");
+let discordCiktisi = "";
+let oyunCiktisi = "";
 
 let personelSayisi = 0;
 
@@ -356,45 +358,37 @@ function personelKartOlustur() {
     personelSayisi++;
 
     const kart = document.createElement("div");
-
     kart.className = "info-card";
-    kart.style.marginBottom = "20px";
 
     let rozetOptions = `<option value="">Rozet Seçiniz</option>`;
 
     Object.keys(rankData).forEach(rozet => {
-
-        rozetOptions += `
-            <option value="${rozet}">
-                ${rozet}
-            </option>
-        `;
-
+        rozetOptions += `<option value="${rozet}">${rozet}</option>`;
     });
 
     kart.innerHTML = `
 
-        <h3>Personel ${personelSayisi}</h3>
+        <div class="form-group">
+            <label>Personel Adı</label>
+            <input
+                type="text"
+                class="personelAdi"
+                placeholder="Personel Adı">
+        </div>
 
-        <input
-            type="text"
-            class="personelAdi"
-            placeholder="Personel Adı"
-            style="margin-bottom:10px;"
-        >
+        <div class="form-group">
+            <label>Rozet</label>
+            <select class="rozetSec">
+                ${rozetOptions}
+            </select>
+        </div>
 
-        <select
-            class="rozetSec"
-            style="margin-bottom:10px;"
-        >
-            ${rozetOptions}
-        </select>
-
-        <select class="rutbeSec">
-            <option value="">
-                Önce Rozet Seçiniz
-            </option>
-        </select>
+        <div class="form-group">
+            <label>Mevcut Rütbe</label>
+            <select class="rutbeSec">
+                <option value="">Önce Rozet Seçiniz</option>
+            </select>
+        </div>
 
     `;
 
@@ -444,7 +438,32 @@ if(hesaplaBtn){
 
     hesaplaBtn.addEventListener("click", () => {
 
-        sonuclarDiv.innerHTML = "";
+        discordCiktisi = "";
+        oyunCiktisi = "";
+        let popupSonuclari = "";
+
+const dagitan =
+    document.getElementById("dagitanYetkili").value.trim();
+
+const kod =
+    document.getElementById("kodAdi").value.trim();
+
+const saat =
+    document.getElementById("terfiSaati").value;
+
+if(!dagitan || !kod || !saat){
+
+    showToast(
+        "Dağıtan, Kod ve Terfi Saatini giriniz.",
+        "warning"
+    );
+
+    return;
+}
+
+        if (sonuclarDiv) {
+    sonuclarDiv.innerHTML = "";
+}
 
         const deger =
             parseInt(
@@ -475,73 +494,110 @@ if(hesaplaBtn){
             if(mevcutIndex === -1) return;
 
             let yeniIndex =
-                mevcutIndex + deger;
+    mevcutIndex + deger;
 
-            if(yeniIndex >= liste.length){
+if (yeniIndex >= liste.length) {
 
-                yeniIndex =
-                    liste.length - 1;
+    yeniIndex =
+        liste.length - 1;
 
-            }
+}
 
-            const yeniRutbe =
-                liste[yeniIndex];
+const yeniRutbe =
+    liste[yeniIndex];
 
-            const sonucKart =
-                document.createElement("div");
+discordCiktisi +=
+`${ad} >> ${yeniRutbe}\n`;
 
-            sonucKart.className = "info-card";
+oyunCiktisi +=
+`${ad} --> ${yeniRutbe} rütbesine terfi etti.\n\n`;
+            
 
-            sonucKart.innerHTML = `
+            popupSonuclari += `
 
-    <h3>${ad || "İsimsiz Personel"}</h3>
+<div class="info-card" style="margin-bottom:18px;">
 
-    <p style="
-        color:#f0c419;
-        font-weight:700;
-        margin-top:10px;
-        margin-bottom:10px;
-    ">
-       🏷️ Mevcut Rozeti : ${rozet}
-    </p>
+<h3>${ad || "İsimsiz Personel"}</h3>
 
-    <p style="
-        font-size:18px;
-        font-weight:600;
-    ">
+<p style="
+color:#f0c419;
+font-weight:700;
+margin-top:10px;
+margin-bottom:10px;
+">
 
-        ${rutbe}
+🏷️ Mevcut Rozeti : ${rozet}
 
-        <span style="
-            color:#f0c419;
-            font-weight:700;
-        ">
-            →
-        </span>
+</p>
 
-        <strong>
-            ${yeniRutbe}
-        </strong>
+<p style="font-size:18px;font-weight:600;">
 
-    </p>
+${rutbe}
+
+<span style="color:#f0c419;font-weight:700;">
+
+↓
+
+</span>
+
+<strong>${yeniRutbe}</strong>
+
+</p>
+
+</div>
 
 `;
 
-            sonuclarDiv.appendChild(
-                sonucKart
-            );
-
         });
+            discordCiktisi =
+`${saat} Toplu Terfisi
+
+${discordCiktisi}
+Dağıtan: ${dagitan}
+Kod: ${kod}`;
+
+popupSonuclari += `
+
+<div style="margin-top:25px;display:flex;flex-direction:column;gap:12px;">
+
+
+<button id="oyunGoster" class="popup-btn dark">
+Oyun Çıktısını Görüntüle
+</button>
+
+</div>
+
+`;
+window.discordMesaji = discordCiktisi;
+showPopup(
+    "Toplu Terfi Sonucu",
+    popupSonuclari,
+    "success",
+    "toplu"
+);
+setTimeout(() => {
+
+    document.addEventListener("click", function(e){
+
+    if(e.target && e.target.id === "oyunGoster"){
+
+        showPopup(
+            "Oyun Çıktısı",
+            `<div style="white-space:pre-line;">${oyunCiktisi}</div>`,
+            "success",
+            "oyun"
+        );
+
+    }
+
+});
+
+},100);
 
     });
-    showToast("Toast sistemi hazır.");
-    showPopup(
-    "Popup Sistemi",
-    "Popup başarıyla çalışıyor. 🎉",
-    "success"
-);
 
 }
+
 
 const dakikaInputlari = document.querySelectorAll("#eskiDakika, #yeniDakika");
 
@@ -559,4 +615,48 @@ dakikaInputlari.forEach(input => {
 
     });
 
+
+
 });
+
+const ttTemizleBtn = document.getElementById("ttTemizleBtn");
+
+
+if(ttTemizleBtn){
+
+    ttTemizleBtn.addEventListener("click",()=>{
+
+
+        // Personelleri temizle
+
+        personelContainer.innerHTML="";
+
+        personelKartOlustur();
+
+
+
+        // Bilgileri temizle
+
+        document.getElementById("dagitanYetkili").value="";
+
+        document.getElementById("kodAdi").value="";
+
+        document.getElementById("terfiSaati").selectedIndex=0;
+
+        document.getElementById("terfiDegeri").value="1";
+
+
+        discordCiktisi="";
+        oyunCiktisi="";
+        window.discordMesaji="";
+
+
+        showToast(
+            "Toplu terfi ekranı temizlendi.",
+            "success"
+        );
+
+
+    });
+
+}

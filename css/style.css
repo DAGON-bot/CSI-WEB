@@ -273,3 +273,35 @@ strong{
     transform:translateX(5px);
 
 }
+.tt-reset-btn{
+
+    position:absolute;
+
+    right:50px;
+    top:105px;
+
+    width:120px;
+    height:45px;
+
+    border:none;
+    border-radius:10px;
+
+    background:#e63946;
+    color:white;
+
+    font-size:14px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+.tt-reset-btn:hover{
+
+    background:#ff4d5a;
+    transform:scale(1.05);
+
+}
