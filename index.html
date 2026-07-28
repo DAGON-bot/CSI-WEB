@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSI Yönetim Sistemi</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/popup.css">
+    <link rel="stylesheet" href="css/toast.css">
 </head>
+
+
+
 <body>
 
 <div class="container">
@@ -33,9 +38,15 @@
 
             <div class="left-side">
 
-                <input type="text" placeholder="Terfi alan personelin adı">
+                <input
+    type="text"
+    id="personelAdi"
+    placeholder="Terfi alan personelin adı">
 
-                <input type="text" placeholder="Yetkili kod adı">
+                <input
+    type="text"
+    id="yetkiliAdi"
+    placeholder="Terfici Kodu">
 
                 <select id="terfiRozet">
     <option>Rozet seçiniz</option>
@@ -58,16 +69,18 @@
                     </p>
 
                     <div class="time-row">
-                        <div>
-                            <input type="number" value="0">
-                            <span>Saat</span>
-                        </div>
 
-                        <div>
-                            <input type="number" value="0">
-                            <span>Dakika</span>
-                        </div>
-                    </div>
+    <div>
+        <input type="number" id="eskiSaat" value="0" min="0">
+        <span>Saat</span>
+    </div>
+
+    <div>
+        <input type="number" id="eskiDakika" value="0" min="0" max="59">
+        <span>Dakika</span>
+    </div>
+
+</div>
 
                 </div>
 
@@ -76,16 +89,18 @@
                     <h3>Şu anki toplam çalışma süresi</h3>
 
                     <div class="time-row">
-                        <div>
-                            <input type="number" value="0">
-                            <span>Saat</span>
-                        </div>
 
-                        <div>
-                            <input type="number" value="0">
-                            <span>Dakika</span>
-                        </div>
-                    </div>
+    <div>
+        <input type="number" id="yeniSaat" value="0" min="0">
+        <span>Saat</span>
+    </div>
+
+    <div>
+        <input type="number" id="yeniDakika" value="0" min="0" max="59">
+        <span>Dakika</span>
+    </div>
+
+</div>
 
                 </div>
 
@@ -95,7 +110,9 @@
 
         <div class="divider"></div>
 
-        <button class="main-btn">
+        <button
+    id="terfiKontrolBtn"
+    class="main-btn">
             Terfi Kontrolünü Başlat
         </button>
 
@@ -204,6 +221,38 @@
     </div>
 
 </div>
+
+<div id="popupOverlay" class="popup-overlay">
+    <div class="popup">
+
+        <button id="popupClose" class="popup-close">×</button>
+
+        <div id="popupIcon" class="popup-icon">✔</div>
+
+        <h2 id="popupTitle">Başlık</h2>
+
+        <div id="popupContent">
+            İçerik
+        </div>
+
+        <div class="popup-buttons">
+            <button id="copyDiscordBtn" class="popup-btn gold">
+                Discord Çıktısını Kopyala
+            </button>
+
+            <button id="newControlBtn" class="popup-btn dark">
+                Yeni Kontrol
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<div id="toastContainer"></div>
+<script src="js/utils.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/popup.js"></script>
 
 <script src="js/ranks.js"></script>
 <script src="js/script.js"></script>
