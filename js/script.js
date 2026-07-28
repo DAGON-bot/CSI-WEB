@@ -76,6 +76,271 @@ if(terfiRozet){
 }
 
 // =========================
+// TERFİ KONTROL SİSTEMİ
+// =========================
+
+const terfiKontrolBtn = document.getElementById("terfiKontrolBtn");
+
+const personelAdiInput = document.getElementById("personelAdi");
+const yetkiliAdiInput = document.getElementById("yetkiliAdi");
+
+const eskiSaatInput = document.getElementById("eskiSaat");
+const eskiDakikaInput = document.getElementById("eskiDakika");
+
+const yeniSaatInput = document.getElementById("yeniSaat");
+const yeniDakikaInput = document.getElementById("yeniDakika");
+
+const terfiSureleri = {
+
+    "Memur":30,
+    "Güvenlik":40,
+    "Eğitim":60,
+    "Yasal İşler":60,
+    "Diplomat":90,
+    "Operasyon Görevlisi":90,
+    "Dış İşleri":120,
+    "Yönetim Bürosu":120,
+    "Müdürler":150,
+    "Halkla İlişkiler":190,
+    "UDY":220,
+    "Liderler":240,
+    "Soruşturma Bürosu":270,
+    "Kriminal İnceleme":270,
+    "Görevliler":300,
+    "Bakanlar":360,
+    "İstihbarat":420,
+    "Cumhurbaşkanı":450
+
+};
+
+function dakikaCevir(saat,dakika){
+
+    return (saat*60)+dakika;
+
+}
+
+function dakikaYazi(dakika){
+
+    const saat=Math.floor(dakika/60);
+
+    const dk=dakika%60;
+
+    if(saat===0)
+        return `${dk} Dakika`;
+
+    if(dk===0)
+        return `${saat} Saat`;
+
+    return `${saat} Saat ${dk} Dakika`;
+
+}
+function sureBul(rozet){
+
+    switch(rozet){
+
+        case "Standart Rütbeler":
+            return 30;
+
+        case "Güvenlik Ekibi":
+            return 40;
+
+        case "Eğitim Ekibi":
+            return 60;
+
+        case "Yasal İşler Bakanlığı":
+            return 60;
+
+        case "Diplomatlar":
+            return 90;
+
+        case "Operasyon Yetkilileri":
+            return 90;
+
+        case "Dış İşler Bakanlığı":
+            return 120;
+
+        case "Yönetim Bürosu":
+            return 120;
+
+        case "Müdürler":
+            return 150;
+
+        case "Halk ve İlişkiler Bölümü":
+            return 190;
+
+        case "Üst Düzey Yönetim":
+            return 220;
+
+        case "Leadership":
+            return 240;
+
+        case "Soruşturma Bürosu":
+            return 270;
+
+        case "Kriminal İnceleme Birimi":
+            return 270;
+
+        case "Görevliler":
+            return 300;
+
+        case "Bakanlar":
+            return 360;
+
+        case "İstihbarat Bölümü":
+            return 420;
+
+        case "Cumhurbaşkanları":
+            return 450;
+
+        default:
+            return null;
+    }
+
+}
+
+if(terfiKontrolBtn){
+
+terfiKontrolBtn.addEventListener("click",()=>{
+
+    const personel=personelAdiInput.value.trim();
+
+    const yetkili=yetkiliAdiInput.value.trim();
+
+    const rozet=terfiRozet.value;
+
+    const rutbe=terfiRutbe.value;
+
+    if(
+        personel===""||
+        yetkili===""||
+        rozet===""||
+        rutbe===""){
+            showToast("Lütfen tüm alanları doldurun.","warning");
+            return;
+    }
+
+    const eskiToplam=dakikaCevir(
+
+        Number(eskiSaatInput.value),
+
+        Number(eskiDakikaInput.value)
+
+    );
+
+    const yeniToplam=dakikaCevir(
+
+        Number(yeniSaatInput.value),
+
+        Number(yeniDakikaInput.value)
+
+    );
+
+    if(yeniToplam<eskiToplam){
+
+        showToast("Çalışma süresi hatalı.","error");
+
+        return;
+
+    }
+
+    const gecenSure=yeniToplam-eskiToplam;
+
+    const gerekenSure = sureBul(rozet);
+
+   if (gerekenSure == null) {
+
+    showToast("Bu rütbe için süre bulunamadı.","error");
+
+    return;
+
+}
+
+    const liste=rankData[rozet];
+
+    const index=liste.indexOf(rutbe);
+
+    if(index===-1){
+
+        showToast("Rütbe bulunamadı.","error");
+
+        return;
+
+    }
+
+    const sonrakiRutbe=liste[index+1]||"SON RÜTBE";
+        if (gecenSure >= gerekenSure) {
+
+        const discordMesaji =
+`Çalışan: ${personel}
+Eski Rütbe: ${rutbe}
+Yeni Rütbe: ${sonrakiRutbe}
+Oda Süresi: ${dakikaYazi(gecenSure)}
+Kod: ${yetkili}`;
+
+const popupMesaji = `
+<table class="popup-table">
+
+<tr>
+<td>👤 Personel</td>
+<td>${personel}</td>
+</tr>
+
+<tr>
+<td>👮 Yetkili</td>
+<td>${yetkili}</td>
+</tr>
+
+<tr>
+<td>🏷 Rozet</td>
+<td>${rozet}</td>
+</tr>
+
+<tr>
+<td>🎖 Eski Rütbe</td>
+<td>${rutbe}</td>
+</tr>
+
+<tr>
+<td>⬆ Yeni Rütbe</td>
+<td>${sonrakiRutbe}</td>
+</tr>
+
+<tr>
+<td>⏱ Oda Süresi</td>
+<td>${dakikaYazi(gecenSure)}</td>
+</tr>
+
+</table>
+`;
+
+       window.discordMesaji = discordMesaji;
+
+showPopup(
+    "Terfi Onaylandı",
+    popupMesaji,
+    "success"
+);
+    } else {
+
+        const kalan = gerekenSure - gecenSure;
+
+        showPopup(
+            "Terfi Reddedildi",
+            `Terfi için ${dakikaYazi(kalan)} daha çalışması gerekiyor.`,
+            "warning"
+        );
+
+    }
+
+});
+
+}
+
+
+
+
+
+// =========================
 // TOPLU TERFİ SİSTEMİ
 // =========================
 
@@ -269,5 +534,29 @@ if(hesaplaBtn){
         });
 
     });
+    showToast("Toast sistemi hazır.");
+    showPopup(
+    "Popup Sistemi",
+    "Popup başarıyla çalışıyor. 🎉",
+    "success"
+);
 
 }
+
+const dakikaInputlari = document.querySelectorAll("#eskiDakika, #yeniDakika");
+
+dakikaInputlari.forEach(input => {
+
+    input.addEventListener("input", () => {
+
+        let deger = parseInt(input.value);
+
+        if (isNaN(deger)) return;
+
+        if (deger > 59) input.value = 59;
+
+        if (deger < 0) input.value = 0;
+
+    });
+
+});
