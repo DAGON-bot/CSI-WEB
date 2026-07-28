@@ -26,9 +26,9 @@
     <!-- TERFİ KONTROL -->
     <div class="panel tab-content active" id="terfi">
 
-        <div class="logo-circle">
-            <img src="assets/logo.png" alt="CSI Logo">
-        </div>
+        <div class="page-logo">
+    <img src="assets/logo.png" alt="CSI Logo">
+</div>
 
         <h1>Terfi Kontrol Sistemi</h1>
         <p class="subtitle">
@@ -65,9 +65,6 @@
 
                     <h3>Son terfi anındaki toplam çalışma süresi</h3>
 
-                    <p class="warning">
-                        Son terfi zamanı aynı günün sabah 09:00 öncesi ise burayı 0 bırakın
-                    </p>
 
                     <div class="time-row">
 
@@ -120,29 +117,37 @@
     </div>
 
     <!-- TOPLU TERFİ -->
-    <!-- TOPLU TERFİ -->
+
+    
+
 <div class="panel tab-content" id="toplu">
+
+    <div class="page-logo">
+    <img src="assets/logo.png" alt="CSI Logo">
+</div>
 
     <h1>Toplu Terfi Sistemi</h1>
 
     <p class="subtitle">
         Toplu terfi hesaplama ve dağıtım sistemi
     </p>
-    <button id="ttTemizleBtn" class="tt-reset-btn">
-    🗑 Temizle
-</button>
-
     <div id="personelContainer">
 
-    </div>
+</div>
 
-    <button
-        id="personelEkle"
-        class="main-btn"
-        style="margin-top:20px;"
-    >
-        + Personel Ekle
+<button
+id="personelEkle"
+class="main-btn">
+
++ Personel Ekle
+
+</button>
+
+    <button id="ttTemizleBtn" class="tt-reset-btn">
+    🗑 Temizle
     </button>
+
+    
 
     <div class="divider"></div>
 
@@ -223,11 +228,81 @@
 </div>
 
     <!-- PAYBAN -->
-    <div class="panel tab-content" id="payban">
-        <h2>Payban Yönetimi</h2>
-        <p>Bu bölüm sonraki aşamada yapılacak.</p>
+
+
+<div class="panel tab-content" id="payban">
+
+    <div class="page-logo">
+    <img src="assets/logo.png" alt="CSI Logo">
+</div>
+
+    <h2>🚫 Payban Yönetimi</h2>
+
+    <p>
+        Maaş alan personellerin kontrol ve payban rapor sistemi
+    </p>
+
+
+    <div class="info-card">
+
+        <label>📅 Payban Tarihi</label>
+
+        <input 
+            type="date"
+            id="paybanTarih"
+        >
+
     </div>
 
+
+
+    <div id="paybanPersonelContainer">
+
+<div class="payban-row">
+    <input 
+    type="text"
+    class="paybanAd"
+    placeholder="Personel adı">
+
+    <input 
+    type="checkbox"
+    class="paybanCheck">
+</div>
+
+</div>
+
+
+<button 
+id="paybanPersonelEkle"
+class="main-btn">
+
++ Personel Ekle
+
+</button>
+
+
+
+    <button
+        id="paybanRaporBtn"
+        class="main-btn"
+    >
+
+        🚫 Rapor Oluştur
+
+    </button>
+
+
+    <button
+        id="paybanTemizleBtn"
+        class="reset-btn"
+    >
+
+        ↻ Sıfırla
+
+    </button>
+
+
+</div>
     <!-- PUANTAJ -->
     <div class="panel tab-content" id="puantaj">
         <h2>Puantaj Hesaplama</h2>
@@ -254,9 +329,6 @@
                 Discord Çıktısını Kopyala
             </button>
 
-            <button id="newControlBtn" class="popup-btn dark">
-                Yeni Kontrol
-            </button>
         </div>
 
     </div>

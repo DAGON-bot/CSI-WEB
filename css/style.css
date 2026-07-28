@@ -62,25 +62,50 @@ body{
 }
 
 .logo-circle{
-    width:100px;
-    height:100px;
-    margin:auto;
-    border-radius:50%;
-    background:linear-gradient(
-        135deg,
-        #caa000,
-        #ffd84f
-    );
+
+    width:140px;
+    height:140px;
+
+    margin:0 auto 25px;
+
     display:flex;
     justify-content:center;
     align-items:center;
-    margin-bottom:25px;
+
+    background:transparent;
+    border-radius:0;
+
 }
 
+
 .logo-circle img{
-    width:65px;
-    height:65px;
+
+    width:140px;
+    height:140px;
+
     object-fit:contain;
+
+}
+
+/* ORTAK CSI LOGO */
+
+.page-logo{
+
+    width:110px;
+    height:110px;
+
+    margin:0 auto 20px;
+
+}
+
+
+.page-logo img{
+
+    width:110px;
+    height:110px;
+
+    object-fit:contain;
+
 }
 
 h1{
@@ -275,26 +300,21 @@ strong{
 }
 .tt-reset-btn{
 
-    position:absolute;
+    width:100%;
+    height:50px;
 
-    right:50px;
-    top:105px;
-
-    width:120px;
-    height:45px;
+    margin-bottom:20px;
 
     border:none;
-    border-radius:10px;
+    border-radius:12px;
 
-    background:#e63946;
+    background:#ef3340;
+
     color:white;
 
-    font-size:14px;
     font-weight:700;
 
     cursor:pointer;
-
-    transition:.2s;
 
 }
 
@@ -304,4 +324,156 @@ strong{
     background:#ff4d5a;
     transform:scale(1.05);
 
+}
+
+/* PAYBAN TASARIM */
+
+#payban .info-card{
+    margin-bottom:20px;
+}
+
+
+#payban input[type="date"],
+#payban .paybanAd{
+
+    width:100%;
+    height:45px;
+
+    padding:0 15px;
+
+    background:#222;
+    border:1px solid #444;
+
+    border-radius:10px;
+
+    color:white;
+
+    font-size:15px;
+
+}
+
+
+.payban-personel{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+
+.checkbox-area{
+
+    display:flex;
+    align-items:center;
+
+    gap:10px;
+
+    font-weight:700;
+
+    color:white;
+
+}
+
+
+.checkbox-area input{
+
+    width:20px;
+    height:20px;
+
+    cursor:pointer;
+
+}
+
+
+
+#paybanRaporBtn{
+
+    margin-top:15px;
+
+}
+
+
+
+#paybanTemizleBtn{
+
+    margin-top:15px;
+
+    width:100%;
+    height:50px;
+
+    border:none;
+    border-radius:12px;
+
+    background:#d63031;
+
+    color:white;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+}
+
+
+#paybanTemizleBtn:hover{
+
+    background:#ff4757;
+
+}
+.payban-row{
+
+    display:flex;
+    align-items:center;
+
+    background:#222;
+
+    border:1px solid #444;
+
+    border-radius:12px;
+
+    padding:10px 15px;
+
+    margin-bottom:10px;
+
+}
+
+
+
+.payban-row .paybanAd{
+
+    flex:1;
+
+    background:transparent;
+
+    border:none;
+
+    outline:none;
+
+    color:white;
+
+    font-size:16px;
+
+}
+
+
+
+.payban-row .paybanCheck{
+
+    width:22px;
+    height:22px;
+
+    cursor:pointer;
+
+}
+
+#toplu .main-btn{
+    width:100%;
+    margin-top:20px;
+}
+
+#personelContainer .info-card{
+    margin-bottom:15px;
 }

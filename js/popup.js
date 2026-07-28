@@ -11,6 +11,7 @@ const copyBtn =
 
 const newBtn =
     document.getElementById("newControlBtn");
+    const newBtnExists = newBtn !== null;
    let popupHistory = null;
 
 function showPopup(
@@ -45,19 +46,25 @@ else if(mode==="toplu"){
 
     copyBtn.style.display="inline-block";
 
+    if(newBtn){
     newBtn.style.display="none";
+}
 
 }
 
-else if(mode==="oyun"){
+else if(mode=="oyun"){
 
     popupButtons.style.display="flex";
 
     copyBtn.style.display="none";
 
-    newBtn.style.display="inline-block";
 
-    newBtn.textContent="Kapat";
+    if(newBtn){
+
+        newBtn.style.display="inline-block";
+        newBtn.textContent="Kapat";
+
+    }
 
 }
 
@@ -100,40 +107,49 @@ popupOverlay.addEventListener("click", function(e){
     }
 });
 
-document.getElementById("newControlBtn").addEventListener("click", function(){
+const newControlBtn = document.getElementById("newControlBtn");
 
-    if (popupTitle.textContent === "Oyun Çıktısı" && popupHistory) {
+if(newControlBtn){
 
-        showPopup(
-            popupHistory.title,
-            popupHistory.content,
-            "success",
-            "toplu"
-        );
+    newControlBtn.addEventListener("click", function(){
 
-        popupHistory = null;
-        return;
-    }
+        if (popupTitle.textContent === "Oyun Çıktısı" && popupHistory) {
 
-    closePopup();
+            showPopup(
+                popupHistory.title,
+                popupHistory.content,
+                "success",
+                "toplu"
+            );
 
-});
+            popupHistory = null;
+            return;
+        }
+
+        closePopup();
+
+    });
+
+}
 
 // Discord çıktısını kopyala
-document.getElementById("copyDiscordBtn").addEventListener("click", function () {
+console.log("Copy eventi yüklendi");
+document.addEventListener("click", function(e){
 
-    const text = window.discordMesaji;
+    if(e.target && e.target.id === "copyDiscordBtn"){
 
-    navigator.clipboard.writeText(text)
-        .then(() => {
+        const text = window.discordMesaji;
 
-            showToast("Discord çıktısı panoya kopyalandı.", "success");
+        console.log("Kopyalanacak:", text);
 
+        navigator.clipboard.writeText(text)
+        .then(()=>{
+            showToast("Discord çıktısı panoya kopyalandı.","success");
         })
-        .catch(() => {
-
-            showToast("Kopyalama başarısız.", "error");
-
+        .catch(()=>{
+            showToast("Kopyalama başarısız.","error");
         });
+
+    }
 
 });
