@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSI Yönetim Sistemi</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="terfi">Terfi Kontrol</button>
+        <button class="tab-btn" data-tab="toplu">Toplu Terfi</button>
+        <button class="tab-btn" data-tab="payban">Payban Yönetimi</button>
+        <button class="tab-btn" data-tab="puantaj">Puantaj Hesaplama</button>
+    </div>
+
+    <!-- TERFİ KONTROL -->
+    <div class="panel tab-content active" id="terfi">
+
+        <div class="logo-circle">
+            <img src="assets/logo.png" alt="CSI Logo">
+        </div>
+
+        <h1>Terfi Kontrol Sistemi</h1>
+        <p class="subtitle">
+            Personel terfi uygunluk kontrol ve değerlendirme sistemi
+        </p>
+
+        <div class="grid">
+
+            <div class="left-side">
+
+                <input type="text" placeholder="Terfi alan personelin adı">
+
+                <input type="text" placeholder="Yetkili kod adı">
+
+                <select id="terfiRozet">
+    <option>Rozet seçiniz</option>
+</select>
+
+<select id="terfiRutbe">
+    <option>Önce rozet seçiniz</option>
+</select>
+
+            </div>
+
+            <div class="right-side">
+
+                <div class="info-card">
+
+                    <h3>Son terfi anındaki toplam çalışma süresi</h3>
+
+                    <p class="warning">
+                        Son terfi zamanı aynı günün sabah 09:00 öncesi ise burayı 0 bırakın
+                    </p>
+
+                    <div class="time-row">
+                        <div>
+                            <input type="number" value="0">
+                            <span>Saat</span>
+                        </div>
+
+                        <div>
+                            <input type="number" value="0">
+                            <span>Dakika</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="info-card">
+
+                    <h3>Şu anki toplam çalışma süresi</h3>
+
+                    <div class="time-row">
+                        <div>
+                            <input type="number" value="0">
+                            <span>Saat</span>
+                        </div>
+
+                        <div>
+                            <input type="number" value="0">
+                            <span>Dakika</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="main-btn">
+            Terfi Kontrolünü Başlat
+        </button>
+
+    </div>
+
+    <!-- TOPLU TERFİ -->
+    <!-- TOPLU TERFİ -->
+<div class="panel tab-content" id="toplu">
+
+    <h1>Toplu Terfi Sistemi</h1>
+
+    <p class="subtitle">
+        Toplu terfi hesaplama ve dağıtım sistemi
+    </p>
+
+    <div id="personelContainer">
+
+    </div>
+
+    <button
+        id="personelEkle"
+        class="main-btn"
+        style="margin-top:20px;"
+    >
+        + Personel Ekle
+    </button>
+
+    <div class="divider"></div>
+
+    <div class="grid">
+
+        <div class="left-side">
+
+            <input
+                type="text"
+                id="dagitanYetkili"
+                placeholder="Dağıtan Yetkili"
+            >
+
+            <input
+                type="text"
+                id="kodAdi"
+                placeholder="Kod Adı"
+            >
+
+        </div>
+
+        <div class="right-side">
+
+            <div class="info-card">
+
+                <h3>Terfi Değeri</h3>
+
+                <p class="warning">
+                    Seçilen değer kadar üst rütbeye terfi edilir.
+                </p>
+
+                <select id="terfiDegeri">
+
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <button
+        id="hesaplaBtn"
+        class="main-btn"
+    >
+        TT Hesapla
+    </button>
+
+    <div
+        id="sonuclar"
+        style="margin-top:30px;"
+    >
+    </div>
+
+</div>
+
+    <!-- PAYBAN -->
+    <div class="panel tab-content" id="payban">
+        <h2>Payban Yönetimi</h2>
+        <p>Bu bölüm sonraki aşamada yapılacak.</p>
+    </div>
+
+    <!-- PUANTAJ -->
+    <div class="panel tab-content" id="puantaj">
+        <h2>Puantaj Hesaplama</h2>
+        <p>Bu bölüm sonraki aşamada yapılacak.</p>
+    </div>
+
+</div>
+
+<script src="js/ranks.js"></script>
+<script src="js/script.js"></script>
+
+</body>
+</html>
