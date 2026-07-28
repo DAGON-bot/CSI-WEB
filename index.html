@@ -6,6 +6,7 @@
     <title>CSI Yönetim Sistemi</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/popup.css">
+    <link rel="stylesheet" href="css/ttPopup.css">
     <link rel="stylesheet" href="css/toast.css">
 </head>
 
@@ -127,6 +128,9 @@
     <p class="subtitle">
         Toplu terfi hesaplama ve dağıtım sistemi
     </p>
+    <button id="ttTemizleBtn" class="tt-reset-btn">
+    🗑 Temizle
+</button>
 
     <div id="personelContainer">
 
@@ -157,6 +161,22 @@
                 id="kodAdi"
                 placeholder="Kod Adı"
             >
+
+            <select id="terfiSaati">
+
+    <option value="">Toplu Terfi Saati</option>
+
+    <option value="13:00">13:00</option>
+
+    <option value="15:00">15:00</option>
+
+    <option value="18:00">18:00</option>
+
+    <option value="20:00">20:00</option>
+
+    <option value="22:00">22:00</option>
+
+</select>
 
         </div>
 
@@ -199,12 +219,6 @@
     >
         TT Hesapla
     </button>
-
-    <div
-        id="sonuclar"
-        style="margin-top:30px;"
-    >
-    </div>
 
 </div>
 
@@ -253,6 +267,7 @@
 <script src="js/utils.js"></script>
 <script src="js/toast.js"></script>
 <script src="js/popup.js"></script>
+<script src="js/ttPopup.js"></script>
 
 <script src="js/ranks.js"></script>
 <script src="js/script.js"></script>
