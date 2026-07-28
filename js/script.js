@@ -368,29 +368,22 @@ function personelKartOlustur() {
 
     kart.innerHTML = `
 
-        <div class="form-group">
-            <label>Personel Adı</label>
-            <input
-                type="text"
-                class="personelAdi"
-                placeholder="Personel Adı">
-        </div>
+<input 
+type="text"
+class="personelAdi"
+placeholder="Personel adı">
 
-        <div class="form-group">
-            <label>Rozet</label>
-            <select class="rozetSec">
-                ${rozetOptions}
-            </select>
-        </div>
 
-        <div class="form-group">
-            <label>Mevcut Rütbe</label>
-            <select class="rutbeSec">
-                <option value="">Önce Rozet Seçiniz</option>
-            </select>
-        </div>
+<select class="rozetSec">
+${rozetOptions}
+</select>
 
-    `;
+
+<select class="rutbeSec">
+<option value="">Önce rozet seçiniz</option>
+</select>
+
+`;
 
     personelContainer.appendChild(kart);
 
@@ -437,7 +430,7 @@ if(personelEkleBtn){
 if(hesaplaBtn){
 
     hesaplaBtn.addEventListener("click", () => {
-
+        console.log("TT hesapla başladı");
         discordCiktisi = "";
         oyunCiktisi = "";
         let popupSonuclari = "";
@@ -471,7 +464,7 @@ if(!dagitan || !kod || !saat){
             );
 
         const kartlar =
-            document.querySelectorAll(".info-card");
+    personelContainer.querySelectorAll(".info-card");
 
         kartlar.forEach(kart => {
 
@@ -569,11 +562,13 @@ Oyun Çıktısını Görüntüle
 
 `;
 window.discordMesaji = discordCiktisi;
+console.log("Discord çıktısı:", discordCiktisi);
 showPopup(
     "Toplu Terfi Sonucu",
     popupSonuclari,
     "success",
-    "toplu"
+    "toplu",
+    discordCiktisi
 );
 setTimeout(() => {
 
@@ -653,6 +648,230 @@ if(ttTemizleBtn){
 
         showToast(
             "Toplu terfi ekranı temizlendi.",
+            "success"
+        );
+
+
+    });
+
+}
+
+// =========================
+// PAYBAN SİSTEMİ
+// =========================
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+
+const paybanContainer = document.getElementById("paybanPersonelContainer");
+const paybanEkleBtn = document.getElementById("paybanPersonelEkle");
+
+
+if(!paybanEkleBtn || !paybanContainer){
+    console.log("Payban element bulunamadı");
+    return;
+}
+
+
+
+paybanEkleBtn.addEventListener("click",()=>{
+
+
+    const satir = document.createElement("div");
+
+    satir.className = "payban-row";
+
+
+    satir.innerHTML = `
+
+    <input 
+    type="text"
+    class="paybanAd"
+    placeholder="Personel adı">
+
+
+    <input 
+    type="checkbox"
+    class="paybanCheck">
+
+    `;
+
+
+    paybanContainer.appendChild(satir);
+
+
+});
+
+
+});
+
+// PAYBAN RAPOR OLUŞTUR
+
+const paybanRaporBtn = document.getElementById("paybanRaporBtn");
+
+
+if(paybanRaporBtn){
+
+    paybanRaporBtn.addEventListener("click",()=>{
+
+
+        const tarih =
+        document.getElementById("paybanTarih").value;
+
+
+        const kartlar =
+        document.querySelectorAll(".payban-row");
+
+
+        let liste = "";
+
+
+        kartlar.forEach(kart=>{
+
+
+            const isim =
+            kart.querySelector(".paybanAd").value.trim();
+
+
+            const check =
+            kart.querySelector(".paybanCheck").checked;
+
+
+
+            if(isim && check){
+
+                liste += isim + "\n";
+
+            }
+
+
+        });
+
+
+
+        if(liste === ""){
+
+    const rapor = `
+
+${tarih} Payban Listesi
+
+
+payban alan yoktur.
+
+
+`;
+
+    window.paybanMesaji = rapor;
+    window.discordMesaji = rapor;
+
+
+    showPopup(
+
+        "🚫 Payban Raporu",
+
+        `
+        <div style="white-space:pre-line;">
+        ${rapor}
+        </div>
+        `,
+
+        "warning",
+        "terfi"
+
+    );
+
+
+    return;
+
+}
+
+
+
+        const rapor = `
+
+${tarih} Payban Listesi
+
+
+${liste}
+
+
+Bu kişiler maaşlarının yarısını alacaktır.
+
+`;
+
+
+
+        window.paybanMesaji = rapor;
+        window.discordMesaji = rapor;
+
+
+
+        showPopup(
+
+            "🚫 Payban Raporu",
+
+            `
+            <div style="white-space:pre-line;">
+            ${rapor}
+            </div>
+            `,
+
+            "warning",
+            "terfi"
+
+        );
+
+
+    });
+
+}
+
+// =========================
+// PAYBAN TEMİZLE
+// =========================
+
+const paybanTemizleBtn = document.getElementById("paybanTemizleBtn");
+
+
+if(paybanTemizleBtn){
+
+    paybanTemizleBtn.addEventListener("click",()=>{
+
+
+        const paybanContainer =
+        document.getElementById("paybanPersonelContainer");
+
+
+        // listeyi temizle
+        paybanContainer.innerHTML = `
+
+        <div class="payban-row">
+
+            <input 
+            type="text"
+            class="paybanAd"
+            placeholder="Personel adı">
+
+
+            <input 
+            type="checkbox"
+            class="paybanCheck">
+
+        </div>
+
+        `;
+
+
+        // tarihi temizle
+        document.getElementById("paybanTarih").value="";
+
+
+        // kopyalama mesajını temizle
+        window.discordMesaji="";
+
+
+        showToast(
+            "Payban ekranı temizlendi.",
             "success"
         );
 
