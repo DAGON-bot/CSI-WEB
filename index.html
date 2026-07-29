@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/ttPopup.css">
     <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/auth.css">
 </head>
 
 
@@ -872,6 +873,73 @@ class="main-btn">
 
 
 <div id="toastContainer"></div>
+
+<!-- ================= AUTH POPUP ================= -->
+
+<div id="authOverlay" class="auth-overlay">
+
+    <div class="auth-popup">
+
+        <button id="authClose" class="auth-close">
+            ✕
+        </button>
+
+        <img src="assets/logo.png" class="auth-logo">
+
+        <h2>CSI Giriş Sistemi</h2>
+
+        <p class="auth-text">
+            Habbo kullanıcı adınızı girerek hesabınızı doğrulayın.
+        </p>
+
+        <input
+            type="text"
+            id="habboUsername"
+            placeholder="Habbo Kullanıcı Adı">
+
+        <button
+            id="createCodeBtn"
+            class="auth-main-btn">
+
+            Kod Oluştur
+
+        </button>
+
+        <div
+            id="verifyArea"
+            style="display:none;">
+
+            <div class="verify-box">
+
+                <span>Kodunuz</span>
+
+                <h3 id="verifyCode"></h3>
+
+            </div>
+
+            <p class="verify-info">
+
+                Yukarıdaki kodu Habbo mottonuza yazın,
+                ardından doğrulama yapın.
+
+            </p>
+
+            <button
+                id="verifyBtn"
+                class="auth-main-btn">
+
+                Doğrula
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
 <script src="js/utils.js"></script>
 <script src="js/toast.js"></script>
 <script src="js/popup.js"></script>
@@ -880,6 +948,7 @@ class="main-btn">
 <script src="js/ranks.js"></script>
 <script src="js/script.js"></script>
 <script src="js/puantaj.js"></script>
+<script src="js/auth.js"></script>
 
 </div>
 
@@ -894,6 +963,8 @@ class="main-btn">
         </p>
     </div>
 </footer>
+
+
 
 
 </body>

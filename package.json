@@ -1,0 +1,29 @@
+{
+  "name": "csi-web",
+  "version": "1.0.0",
+  "description": "CSI Yönetim Paneli",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DAGON-bot/CSI-WEB.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DAGON-bot/CSI-WEB/issues"
+  },
+  "homepage": "https://github.com/DAGON-bot/CSI-WEB#readme",
+  "dependencies": {
+    "axios": "^1.19.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "sqlite3": "^6.0.1"
+  }
+}
