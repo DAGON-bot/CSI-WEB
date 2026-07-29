@@ -500,7 +500,7 @@ const yeniRutbe =
     liste[yeniIndex];
 
 discordCiktisi +=
-`${ad} >> ${yeniRutbe}\n`;
+`${ad.padEnd(18)} │ ${rutbe} → ${yeniRutbe}\n`;
 
 oyunCiktisi +=
 `${ad} --> ${yeniRutbe} rütbesine terfi etti.\n\n`;
@@ -543,11 +543,13 @@ ${rutbe}
 
         });
             discordCiktisi =
-`${saat} Toplu Terfisi
+`# 📢 ${saat} Toplu Terfi Dağıtımı
 
-${discordCiktisi}
-Dağıtan: ${dagitan}
-Kod: ${kod}`;
+**Dağıtan Kişi:** ${dagitan}
+**Dağıtan Kodu:** ${kod}
+
+\`\`\`
+${discordCiktisi}\`\`\``;
 
 popupSonuclari += `
 
