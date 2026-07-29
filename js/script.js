@@ -880,3 +880,150 @@ if(paybanTemizleBtn){
 
 }
 
+// HABER SİSTEMİ 
+
+const haberler = [
+
+
+
+];
+
+const haberContainer = document.getElementById("haberContainer");
+
+if(haberContainer){
+
+haberler.forEach(haber=>{
+
+haberContainer.innerHTML += `
+
+<div class="news-card">
+
+<div class="news-image">
+
+<img src="${haber.resim}">
+
+</div>
+
+<div class="news-content">
+
+<div class="news-category">
+
+${haber.kategori}
+
+</div>
+
+<div class="news-title">
+
+${haber.baslik}
+
+</div>
+
+<div class="news-description">
+
+${haber.aciklama}
+
+</div>
+
+<div class="news-footer">
+
+<span>${haber.tarih}</span>
+
+<span class="news-read">
+
+Devamını Oku →
+
+</span>
+
+`;
+
+});
+
+}
+
+// Boş haber kartları
+if (haberContainer) {
+
+    const toplamKart = Math.max(6, haberler.length);
+
+    const eksikKart = toplamKart - haberler.length;
+
+    for(let i = haberler.length; i < toplamKart; i++){
+
+        haberContainer.innerHTML += `
+
+        <div class="news-placeholder">
+
+            <div class="news-placeholder-image">
+                📰
+            </div>
+
+            <div class="news-placeholder-content">
+
+                <h3>Yeni Haber Yakında</h3>
+
+                <p>
+                    CSI Community'deki yeni gelişmeler
+                    ve etkinlikler çok yakında burada yayınlanacaktır.
+                </p>
+
+                <span class="news-placeholder-tag">
+                    Güncelleniyor...
+                </span>
+
+            </div>
+
+        </div>
+
+        `;
+
+    }
+
+}
+
+const duyurular = [
+
+{
+    baslik: "🌐 CSI Community Resmi Web Sitesi Yayında!",
+    aciklama: "CSI Community'nin yeni resmi web sitesi yayınlandı! Artık tüm duyurulara, etkinliklere ve yönetim sistemlerine tek bir platformdan ulaşabilirsiniz.",
+
+},
+
+{
+    baslik: "🚀 Yeni Yönetim Paneli Aktif!",
+    aciklama: "Terfi Kontrol, Toplu Terfi, Payban ve Puantaj sistemleri kullanıma açıldı.",
+
+},
+
+{
+    baslik: "🛠️ Geliştirmeler Devam Ediyor",
+    aciklama: "Web sitemiz sürekli geliştirilmektedir. Yakında yeni özellikler eklenecektir.",
+    tarih: "29 Temmuz 2026"
+}
+
+];
+
+const duyuruContainer = document.getElementById("duyuruContainer");
+
+if (duyuruContainer) {
+
+    duyurular.forEach(duyuru => {
+
+        duyuruContainer.innerHTML += `
+
+        <div class="announcement-item">
+
+            <div class="announcement-title">
+                ${duyuru.baslik}
+            </div>
+
+            <div class="announcement-text">
+                ${duyuru.aciklama}
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+}
