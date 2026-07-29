@@ -134,67 +134,33 @@ function dakikaYazi(dakika){
     return `${saat} Saat ${dk} Dakika`;
 
 }
+const sureler = {
+
+    "Standart Rütbeler":30,
+    "Güvenlik Ekibi":40,
+    "Eğitim Ekibi":60,
+    "Yasal İşler Bakanlığı":60,
+    "Yüksek Rütbe":90,
+    "Diplomatlar":90,
+    "Operasyon Yetkilileri":90,
+    "Dış İşler Bakanlığı":120,
+    "Yönetim Bürosu":120,
+    "Müdürler":150,
+    "Halk ve İlişkiler Bölümü":190,
+    "Üst Düzey Yönetim":220,
+    "Leadership":240,
+    "Soruşturma Bürosu":270,
+    "Kriminal İnceleme Birimi":270,
+    "Görevliler":300,
+    "Bakanlar":360,
+    "İstihbarat Bölümü":420,
+    "Cumhurbaşkanları":450
+
+};
+
 function sureBul(rozet){
 
-    switch(rozet){
-
-        case "Standart Rütbeler":
-            return 30;
-
-        case "Güvenlik Ekibi":
-            return 40;
-
-        case "Eğitim Ekibi":
-            return 60;
-
-        case "Yasal İşler Bakanlığı":
-            return 60;
-
-        case "Diplomatlar":
-            return 90;
-
-        case "Operasyon Yetkilileri":
-            return 90;
-
-        case "Dış İşler Bakanlığı":
-            return 120;
-
-        case "Yönetim Bürosu":
-            return 120;
-
-        case "Müdürler":
-            return 150;
-
-        case "Halk ve İlişkiler Bölümü":
-            return 190;
-
-        case "Üst Düzey Yönetim":
-            return 220;
-
-        case "Leadership":
-            return 240;
-
-        case "Soruşturma Bürosu":
-            return 270;
-
-        case "Kriminal İnceleme Birimi":
-            return 270;
-
-        case "Görevliler":
-            return 300;
-
-        case "Bakanlar":
-            return 360;
-
-        case "İstihbarat Bölümü":
-            return 420;
-
-        case "Cumhurbaşkanları":
-            return 450;
-
-        default:
-            return null;
-    }
+    return sureler[rozet] ?? null;
 
 }
 
@@ -274,7 +240,7 @@ terfiKontrolBtn.addEventListener("click",()=>{
 `Çalışan: ${personel}
 Eski Rütbe: ${rutbe}
 Yeni Rütbe: ${sonrakiRutbe}
-Oda Süresi: ${dakikaYazi(gecenSure)}
+Oda Süresi: ${dakikaYazi(yeniToplam)}
 Kod: ${yetkili}`;
 
 const popupMesaji = `
@@ -307,7 +273,7 @@ const popupMesaji = `
 
 <tr>
 <td>⏱ Oda Süresi</td>
-<td>${dakikaYazi(gecenSure)}</td>
+<td>${dakikaYazi(yeniToplam)}</td>
 </tr>
 
 </table>
