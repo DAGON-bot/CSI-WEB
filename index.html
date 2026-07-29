@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/ttPopup.css">
     <link rel="stylesheet" href="css/toast.css">
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 
 
@@ -272,7 +271,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
         <div class="org-card"><h3>yasar144</h3><span>5. Kurucu</span></div>
 
-        <div class="org-card"><h3>Emir100</h3><span>6. Kurucu</span></div>
+        <div class="org-card"><h3>-Emir100</h3><span>6. Kurucu</span></div>
 
         <div class="org-card"><h3>Ceyhun1034</h3><span>7. Kurucu</span></div>
 
@@ -590,13 +589,254 @@ class="main-btn">
 
     </button>
 
+</div>
+<!-- ================= PUANTAJ ================= -->
+
+<div class="panel tab-content" id="puantaj">
+
+    <div class="page-logo">
+        <img src="assets/logo.png" alt="CSI Logo">
+    </div>
+
+    <h1>Puantaj Hesaplama Sistemi</h1>
+
+    <p class="subtitle">
+        Personel günlük puantaj ve XP hesaplama sistemi
+    </p>
+
+    <div class="grid">
+
+        <!-- SOL TARAF -->
+
+        <div class="left-side">
+
+            <input
+                type="text"
+                id="puantajPersonel"
+                placeholder="Personel Adı">
+
+            <input
+                type="number"
+                id="puantajXP"
+                placeholder="Mevcut XP">
+
+            <select id="puantajRutbe">
+
+                <option value="">Rütbe Seçiniz</option>
+
+                <option value="750">Eş Sahip</option>
+
+                <option value="1000">Direktör</option>
+
+                <option value="1500">Oda Moderatörü</option>
+
+                <option value="2000">Oda Denetleyicisi</option>
+
+                <option value="2500">Oda Temsilcisi</option>
+
+                <option value="2750">Üst Düzey Liderler</option>
+
+                <option value="3000">Oda Yöneticisi</option>
+
+            </select>
+
+            <div class="info-card">
+
+                <h3>Cezalar</h3>
+
+                <div class="ceza-grid">
+
+                    <label>
+
+                        <input
+                            type="checkbox"
+                            id="cezaSure">
+
+                        <span>Süre Atmadı</span>
+
+                    </label>
+
+                    <label>
+
+                        <input
+                            type="checkbox"
+                            id="cezaTT">
+
+                        <span>TT Dağıtmadı</span>
+
+                    </label>
+
+                    <label>
+
+                        <input
+                            type="checkbox"
+                            id="cezaLisans">
+
+                        <span>Lisans Dağıtmadı</span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- SAĞ TARAF -->
+
+        <div class="right-side">
+
+            <div class="info-card">
+
+                <h3>Kazanılan Puanlar</h3>
+
+                <div class="puantaj-grid">
+
+                    <div class="puan-item">
+
+                        <label>MR</label>
+
+                        <input type="number" id="mrSayi" value="0" min="0">
+
+                        <span>1 XP</span>
+
+                    </div>
+
+                    <div class="puan-item">
+
+                        <label>Terfi</label>
+
+                        <input type="number" id="terfiSayi" value="0" min="0">
+
+                        <span>3 XP</span>
+
+                    </div>
+
+                    <div class="puan-item">
+
+                        <label>Eğitim</label>
+
+                        <input type="number" id="egitimSayi" value="0" min="0">
+
+                        <span>5 XP</span>
+
+                    </div>
+
+                    <div class="puan-item">
+
+                        <label>Toplu Terfi</label>
+
+                        <input type="number" id="ttSayi" value="0" min="0">
+
+                        <span>10 XP</span>
+
+                    </div>
+
+                    <div class="puan-item">
+
+                        <label>Lisans</label>
+
+                        <input type="number" id="lisansSayi" value="0" min="0">
+
+                        <span>10 XP</span>
+
+                    </div>
+
+                    <div class="puan-item">
+
+                        <label>Aktif Saat</label>
+
+                        <input type="number" id="aktifSaat" value="0" min="0">
+
+                        <span>1 XP</span>
+
+                    </div>
+
+                    <div class="puan-item">
+
+                        <label>Çalışma Saati</label>
+
+                        <input type="number" id="calismaSaat" value="0" min="0">
+
+                        <span>3 XP</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            
+
+        </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="puantaj-ozet">
+
+        <div>
+
+            <h3>Toplam</h3>
+
+            <span id="toplamXP">0 XP</span>
+
+        </div>
+
+        <div>
+
+            <h3>Ceza</h3>
+
+            <span id="cezaXP">0 XP</span>
+
+        </div>
+
+        <div>
+
+            <h3>Net</h3>
+
+            <span id="netXP">0 XP</span>
+
+        </div>
+
+        <div>
+
+    <h3>Mevcut XP</h3>
+
+    <span id="mevcutXPText">
+        0 / 0 XP
+    </span>
 
 </div>
-    <!-- PUANTAJ -->
-    <div class="panel tab-content" id="puantaj">
-        <h2>Puantaj Hesaplama</h2>
-        <p>Bu bölüm sonraki aşamada yapılacak.</p>
+
+<div>
+
+    <h3>Yeni XP</h3>
+
+    <span id="yeniXPText">
+        0 / 0 XP
+    </span>
+
+</div>
+
     </div>
+
+    <button
+        id="puantajBtn"
+        class="main-btn">
+
+        Puantaj Hesapla
+
+    </button>
+
+    <button
+    id="puantajTemizleBtn"
+    class="secondary-btn">
+
+    Temizle
+
+</button>
 
 </div>
 
@@ -623,6 +863,10 @@ class="main-btn">
     </div>
 </div>
 
+<!--=========================================
+        SONUÇ PANELİ
+==========================================-->
+
 
 <div id="toastContainer"></div>
 <script src="js/utils.js"></script>
@@ -632,8 +876,9 @@ class="main-btn">
 
 <script src="js/ranks.js"></script>
 <script src="js/script.js"></script>
+<script src="js/puantaj.js"></script>
 
-
+</div>
 
 <footer class="site-footer">
     <div class="footer-content">
