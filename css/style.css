@@ -332,160 +332,8 @@ strong{
 
 }
 
-/* PAYBAN TASARIM */
-
-#payban .info-card{
-    margin-bottom:20px;
-}
-
-
-#payban input[type="date"],
-#payban .paybanAd{
-
-    width:100%;
-    height:45px;
-
-    padding:0 15px;
-
-    background:#222;
-    border:1px solid #444;
-
-    border-radius:10px;
-
-    color:white;
-
-    font-size:15px;
-
-}
-
-
-.payban-personel{
-
-    display:flex;
-    flex-direction:column;
-
-    gap:15px;
-
-}
-
-
-.checkbox-area{
-
-    display:flex;
-    align-items:center;
-
-    gap:10px;
-
-    font-weight:700;
-
-    color:white;
-
-}
-
-
-.checkbox-area input{
-
-    width:20px;
-    height:20px;
-
-    cursor:pointer;
-
-}
-
-
-
-#paybanRaporBtn{
-
-    margin-top:15px;
-
-}
-
-
-
-#paybanTemizleBtn{
-
-    margin-top:15px;
-
-    width:100%;
-    height:50px;
-
-    border:none;
-    border-radius:12px;
-
-    background:#d63031;
-
-    color:white;
-
-    font-size:16px;
-    font-weight:700;
-
-    cursor:pointer;
-
-}
-
-
-#paybanTemizleBtn:hover{
-
-    background:#ff4757;
-
-}
-.payban-row{
-
-    display:flex;
-    align-items:center;
-
-    background:#222;
-
-    border:1px solid #444;
-
-    border-radius:12px;
-
-    padding:10px 15px;
-
-    margin-bottom:10px;
-
-}
-
-
-
-.payban-row .paybanAd{
-
-    flex:1;
-
-    background:transparent;
-
-    border:none;
-
-    outline:none;
-
-    color:white;
-
-    font-size:16px;
-
-}
-
-
-
-.payban-row .paybanCheck{
-
-    width:22px;
-    height:22px;
-
-    cursor:pointer;
-
-}
-
-#toplu .main-btn{
-    width:100%;
-    margin-top:20px;
-}
-
-#personelContainer .info-card{
-    margin-bottom:15px;
-}
-
 /*==========================
-NAVBAR
+            NAVBAR
 ==========================*/
 
 :root{
@@ -578,7 +426,9 @@ NAVBAR
 
     border-radius:8px;
 
-    transition:.25s;
+    border:1px solid transparent;
+
+    transition:all .25s ease;
 
 }
 
@@ -586,7 +436,13 @@ NAVBAR
 
     color:white;
 
-    background:#202020;
+    background:#1d1d1d;
+
+    border-color:#f0c419;
+
+    box-shadow:0 0 18px rgba(240,196,25,.18);
+
+    transform:translateY(-2px);
 
 }
 
@@ -595,6 +451,10 @@ NAVBAR
     color:var(--yellow);
 
     background:#1d1d1d;
+
+    border:1px solid var(--yellow);
+
+    box-shadow:0 0 18px rgba(240,196,25,.18);
 
 }
 
@@ -627,6 +487,70 @@ NAVBAR
     background:#32d74b;
 
     box-shadow:0 0 12px #32d74b;
+
+}
+
+.nav-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.login-btn{
+
+    padding:10px 18px;
+
+    border-radius:8px;
+
+    background:#1d1d1d;
+
+    border:1px solid #2d2d2d;
+
+    color:white;
+
+    text-decoration:none;
+
+    font-weight:700;
+
+    transition:.25s;
+
+}
+
+.login-btn:hover{
+
+    transform:translateY(-2px);
+
+    border-color:#f0c419;
+
+}
+
+.register-btn{
+
+    padding:10px 18px;
+
+    border-radius:8px;
+
+    background:#f0c419;
+
+    color:black;
+
+    text-decoration:none;
+
+    font-weight:800;
+
+    transition:.25s;
+
+}
+
+.register-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 25px rgba(240,196,25,.30);
 
 }
 
@@ -739,6 +663,8 @@ font-size:18px;
 
 }
 
+
+
 /*=========================
 DUYURULAR
 ==========================*/
@@ -830,6 +756,8 @@ DUYURULAR
 }
 
 .discord-body{
+
+    background:#2b2d31;
 
     min-height:430px;
 
@@ -1016,74 +944,6 @@ ORGANİZASYON
 
 }
 
-.org-card{
-
-    background:#171717;
-
-    border:1px solid #2d2d2d;
-
-    border-radius:18px;
-
-    padding:30px;
-
-    text-align:center;
-
-    transition:.30s;
-
-}
-
-.org-card:hover{
-
-    transform:translateY(-8px);
-
-    border-color:#f0c419;
-
-    box-shadow:0 15px 40px rgba(240,196,25,.15);
-
-}
-
-.avatar{
-
-    width:75px;
-
-    height:75px;
-
-    border-radius:50%;
-
-    background:#242424;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    margin:auto;
-
-    margin-bottom:20px;
-
-    font-size:28px;
-
-    color:#f0c419;
-
-}
-
-.org-card h3{
-
-    margin-bottom:10px;
-
-}
-
-.org-card span{
-
-    color:#b8b8b8;
-
-}
-
-/*==========================
-ORGANİZASYON V2
-==========================*/
-
 .founders-row{
     gap:40px;
     margin-bottom:35px;
@@ -1171,6 +1031,101 @@ ORGANİZASYON V2
 
 }
 
+/*==================================================
+HAKKIMIZDA
+==================================================*/
+
+.about-section{
+
+    max-width:1200px;
+
+    margin:80px auto;
+
+    padding:35px;
+
+    background:#151515;
+
+    border:1px solid #2d2d2d;
+
+    border-radius:22px;
+
+    box-shadow:0 15px 45px rgba(0,0,0,.45);
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.about-section::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    top:0;
+
+    width:100%;
+    height:3px;
+
+    background:#f0c419;
+
+}
+
+.about-title{
+
+    text-align:center;
+
+    font-size:48px;
+
+    font-weight:800;
+
+    color:white;
+
+    margin-bottom:10px;
+
+}
+
+.about-subtitle{
+
+    text-align:center;
+
+    color:#9d9d9d;
+
+    margin-bottom:50px;
+
+    font-size:17px;
+
+}
+
+.about-card{
+
+    background:#181818;
+
+    border:1px solid #323232;
+
+    border-radius:18px;
+
+    min-height:320px;
+
+    padding:35px;
+
+    transition:.30s;
+
+}
+
+.about-card:hover{
+
+    border-color:#f0c419;
+
+    box-shadow:0 15px 40px rgba(240,196,25,.15);
+
+    transform:translateY(-5px);
+
+}
+
+
 /* ===========================
    FOOTER
 =========================== */
@@ -1200,263 +1155,156 @@ ORGANİZASYON V2
     color:#777;
 }
 
-.discord-message{
+/*=========================================
+                  PAYBAN
+=========================================*/
 
-    background:#202225;
-
-    border-radius:12px;
-
-    padding:18px;
-
-    margin-bottom:16px;
-
-    border:1px solid rgba(255,255,255,.05);
-
-}
-
-.discord-user{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:15px;
-
-    margin-bottom:12px;
-
-}
-
-.discord-avatar{
-
-    width:48px;
-
-    height:48px;
-
-    border-radius:50%;
-
-}
-
-.discord-name{
-
-    color:#fff;
-
-    font-weight:700;
-
-    font-size:17px;
-
-}
-
-.discord-date{
-
-    color:#999;
-
-    font-size:13px;
-
-    margin-top:3px;
-
-}
-
-.discord-content{
-
-    color:#dbdee1;
-
-    font-size:15px;
-
-    line-height:1.6;
-
-    text-align:left;
-
-    white-space:pre-wrap;
-
-    word-break:break-word;
-
-}
-
-.loading{
-
-    text-align:center;
-
-    color:#bbb;
-
-    padding:50px;
-
+#payban .info-card{
+    margin-bottom:20px;
 }
 
 
-.discord-message{
+#payban input[type="date"],
+#payban .paybanAd{
 
-    display:flex;
+    width:100%;
+    height:45px;
 
-    gap:16px;
+    padding:0 15px;
 
-    align-items:flex-start;
-
-    background:#2b2d31;
+    background:#222;
+    border:1px solid #444;
 
     border-radius:10px;
 
-    padding:18px;
+    color:white;
 
-    transition:.2s;
-
-}
-
-.discord-message:hover{
-
-    background:#313338;
+    font-size:15px;
 
 }
 
-.discord-avatar{
 
-    width:44px;
-
-    height:44px;
-
-    border-radius:50%;
-
-    flex-shrink:0;
-
-}
-
-.discord-main{
-
-    flex:1;
-
-}
-
-.discord-header{
+.payban-personel{
 
     display:flex;
+    flex-direction:column;
 
+    gap:15px;
+
+}
+
+
+.checkbox-area{
+
+    display:flex;
     align-items:center;
 
     gap:10px;
 
-    margin-bottom:6px;
+    font-weight:700;
+
+    color:white;
 
 }
 
-.discord-name{
+
+.checkbox-area input{
+
+    width:20px;
+    height:20px;
+
+    cursor:pointer;
+
+}
+
+
+
+#paybanRaporBtn{
+
+    margin-top:15px;
+
+}
+
+
+
+#paybanTemizleBtn{
+
+    margin-top:15px;
+
+    width:100%;
+    height:50px;
+
+    border:none;
+    border-radius:12px;
+
+    background:#d63031;
+
+    color:white;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+}
+
+
+#paybanTemizleBtn:hover{
+
+    background:#ff4757;
+
+}
+.payban-row{
+
+    display:flex;
+    align-items:center;
+
+    background:#222;
+
+    border:1px solid #444;
+
+    border-radius:12px;
+
+    padding:10px 15px;
+
+    margin-bottom:10px;
+
+}
+
+
+
+.payban-row .paybanAd{
+
+    flex:1;
+
+    background:transparent;
+
+    border:none;
+
+    outline:none;
 
     color:white;
 
     font-size:16px;
 
-    font-weight:700;
+}
+
+
+
+.payban-row .paybanCheck{
+
+    width:22px;
+    height:22px;
+
+    cursor:pointer;
 
 }
 
-.discord-date{
-
-    color:#949ba4;
-
-    font-size:12px;
-
-}
-
-crate{
-
-    display:block;
-
+#toplu .main-btn{
     width:100%;
-
-    height:650px;
-
+    margin-top:20px;
 }
 
-.discord-section{
-
-    width:100%;
-
-    max-width:1100px;
-
-    margin:60px auto;
-
-    background:#171717;
-
-    border:1px solid #2d2d2d;
-
-    border-radius:18px;
-
-    overflow:hidden;
-
-    box-shadow:0 20px 60px rgba(0,0,0,.45);
-
-}
-
-.discord-body{
-
-    background:#2b2d31;
-
-    min-height:420px;
-
-}
-
-.discord-placeholder{
-
-    min-height:420px;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
-    align-items:center;
-
-    text-align:center;
-
-    padding:60px;
-
-}
-
-.placeholder-icon{
-
-    width:90px;
-
-    height:90px;
-
-    border-radius:50%;
-
-    background:#3b3d44;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    margin-bottom:30px;
-
-}
-
-.placeholder-icon i{
-
-    color:#f1c40f;
-
-    font-size:42px;
-
-}
-
-.discord-placeholder h2{
-
-    color:white;
-
-    font-size:38px;
-
-    margin-bottom:20px;
-
-}
-
-.discord-placeholder p{
-
-    color:#c7c7c7;
-
-    max-width:720px;
-
-    line-height:1.8;
-
-    font-size:18px;
-
+#personelContainer .info-card{
+    margin-bottom:15px;
 }
