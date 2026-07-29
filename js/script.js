@@ -879,3 +879,4 @@ if(paybanTemizleBtn){
     });
 
 }
+
