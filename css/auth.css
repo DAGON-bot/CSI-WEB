@@ -232,3 +232,19 @@
     margin-bottom:20px;
 
 }
+
+#passwordArea{
+    display:none;
+    margin-top:20px;
+}
+
+#passwordArea h3{
+    color:#fff;
+    text-align:center;
+    margin-bottom:20px;
+}
+
+#passwordArea input{
+    width:100%;
+    margin-bottom:15px;
+}

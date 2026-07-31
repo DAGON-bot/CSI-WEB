@@ -1,4 +1,4 @@
-const db = require("../database/database");
+const db = require("../database/db");
 
 function getUser(username) {
     return new Promise((resolve, reject) => {
@@ -74,7 +74,8 @@ module.exports = {
     createUser,
     verifyUser,
     getVerifyCode,
-    updateHabboInfo
+    updateHabboInfo,
+    setPassword
 };
 
 function updateHabboInfo(username, habbo) {
@@ -96,6 +97,23 @@ function updateHabboInfo(username, habbo) {
             function (err) {
                 if (err) reject(err);
                 else resolve();
+            }
+        );
+
+    });
+}
+
+function setPassword(username, password) {
+    return new Promise((resolve, reject) => {
+
+        db.run(
+            "UPDATE users SET password = ? WHERE username = ?",
+            [password, username],
+            function (err) {
+
+                if (err) reject(err);
+                else resolve();
+
             }
         );
 

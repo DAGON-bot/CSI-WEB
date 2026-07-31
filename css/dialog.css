@@ -1,0 +1,117 @@
+/* ===============================
+        CSI DIALOG SYSTEM
+================================== */
+
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: 0.25s ease;
+
+    z-index: 2000000;
+}
+
+.dialog-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.dialog-box {
+    width: 410px;
+    max-width: calc(100% - 30px);
+
+    padding: 35px;
+
+    background: #171717;
+
+    border: 1px solid #3a3a3a;
+    border-top: 4px solid #f0c419;
+
+    border-radius: 20px;
+
+    text-align: center;
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.75),
+        0 0 30px rgba(240, 196, 25, 0.12);
+
+    transform: scale(0.9);
+    transition: 0.25s ease;
+}
+
+.dialog-overlay.active .dialog-box {
+    transform: scale(1);
+}
+
+.dialog-icon {
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #f0c419;
+    border-radius: 50%;
+
+    color: #f0c419;
+
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.dialog-box h2 {
+    margin: 0 0 12px;
+
+    color: #ffffff;
+
+    font-size: 27px;
+}
+
+.dialog-box p {
+    margin: 0 0 25px;
+
+    color: #cfcfcf;
+
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.dialog-ok-btn {
+    width: 100%;
+    height: 52px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #f0c419;
+    color: #000000;
+
+    font-size: 17px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.dialog-ok-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 30px rgba(240, 196, 25, 0.3);
+}

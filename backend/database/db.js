@@ -13,10 +13,12 @@ const db = new sqlite3.Database(
 );
 
 db.serialize(() => {
+
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
+            password TEXT,
             habboId TEXT,
             figureString TEXT,
             motto TEXT,
@@ -27,6 +29,7 @@ db.serialize(() => {
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
 });
 
 module.exports = db;
