@@ -165,125 +165,45 @@
 
 <section id="kurucular" class="org-section">
 
-    <h2 class="org-title">Kurucu Organizasyon Şeması</h2>
+    <h2 class="org-title">Yönetim Kadrosu</h2>
 
     <p class="org-subtitle">
-        CSI Community yönetim yapısı
+        CSI Community yönetim organizasyonu
     </p>
 
-    <!-- Ortak Kurucular -->
+    <div class="org-slider">
 
-    <div class="org-row founders-row">
+       <button id="prevOrg" class="org-arrow">
+    &#10094;
+</button>
 
-    <div class="org-card founder-card">
+        <div id="organizationContainer"></div>
 
-        <div class="avatar">
-            <i class="fa-solid fa-crown"></i>
-        </div>
-
-        <h3>Oyunçu943</h3>
-
-        <span>Ortak Kurucu</span>
+       <button id="nextOrg" class="org-arrow">
+    &#10095;
+</button>
 
     </div>
 
-    <div class="org-card founder-card">
-
-        <div class="avatar">
-            <i class="fa-solid fa-crown"></i>
-        </div>
-
-        <h3>FoundersTR</h3>
-
-        <span>Ortak Kurucu</span>
-
-    </div>
-
-</div>
-
-    <!-- Owner -->
-
-    <div class="org-row owner-row">
-
-    <div class="org-card owner-card">
-
-        <div class="avatar">
-
-            <i class="fa-solid fa-user-shield"></i>
-
-        </div>
-
-        <h3>canart0</h3>
-
-        <span>Owner</span>
-
-    </div>
-
-</div>
-
-    <!-- Ast -->
-
-    <div class="org-row">
-
-    <div class="org-card manager-card">
-
-        <div class="avatar">
-
-            <i class="fa-solid fa-user-gear"></i>
-
-        </div>
-
-        <h3>CoiledTrash</h3>
-
-        <span>Ast Kurucu</span>
-
-    </div>
-
-</div>
-
-    <!-- Üst -->
-
-    <div class="org-row">
-
-    <div class="org-card manager-card">
-
-        <div class="avatar">
-
-            <i class="fa-solid fa-user-tie"></i>
-
-        </div>
-
-        <h3>1Rarefs</h3>
-
-        <span>Üst Kurucu</span>
-
-    </div>
-
-</div>
-
-    <!-- Kurucular -->
-
-    <div class="org-grid">
-
-        <div class="org-card"><h3>Boş</h3><span>1. Kurucu</span></div>
-
-        <div class="org-card"><h3>Boş</h3><span>2. Kurucu</span></div>
-
-        <div class="org-card"><h3>NerdesInpango</h3><span>3. Kurucu</span></div>
-
-        <div class="org-card"><h3>_Yuşa_</h3><span>4. Kurucu</span></div>
-
-        <div class="org-card"><h3>yasar144</h3><span>5. Kurucu</span></div>
-
-        <div class="org-card"><h3>-Emir100</h3><span>6. Kurucu</span></div>
-
-        <div class="org-card"><h3>Ceyhun1034</h3><span>7. Kurucu</span></div>
-
-        <div class="org-card"><h3>Boş</h3><span>8. Kurucu</span></div>
-
-    </div>
+    <button id="openOrganization" class="org-view-all">
+        Tümünü Gör
+    </button>
 
 </section>
+
+<div id="organizationPopup" class="organization-popup">
+
+    <div class="organization-popup-box">
+
+        <button id="closeOrganization" class="popup-close">
+            ×
+        </button>
+
+        <div id="organizationPopupContent"></div>
+
+    </div>
+
+</div>
 
 <!-- ================= HAKKIMIZDA ================= -->
 
@@ -938,6 +858,18 @@ class="main-btn">
 
 </div>
 
+<div id="organizationPopup" class="organization-popup">
+
+    <div class="organization-popup-content">
+
+        <button id="organizationClose">✕</button>
+
+        <div id="organizationPopupContent"></div>
+
+    </div>
+
+</div>
+
 
 
 <script src="js/utils.js"></script>
@@ -949,19 +881,68 @@ class="main-btn">
 <script src="js/script.js"></script>
 <script src="js/puantaj.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/organization.js"></script>
 
 </div>
 
-<footer class="site-footer">
-    <div class="footer-content">
-        <p>
-            © 2026 CSI Community. Tüm hakları saklıdır.
-        </p>
 
-        <p class="footer-copy">
-            Bu web sitesi ve içeriği, CSI Community'ye aittir. İzinsiz kopyalanması, çoğaltılması veya dağıtılması yasaktır.
-        </p>
+
+<!--=========================================
+        FOOTER
+==========================================-->
+
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div class="footer-about">
+
+            <div class="footer-logo">
+
+                <!-- PNG LOGO BURAYA -->
+                <img src="assets/logo.png" alt="CSI Logo">
+
+                <h2>CSI</h2>
+
+            </div>
+
+            <p>
+                Bu web sitesi, Sulake Corporation Oy veya bağlı kuruluşları tarafından onaylanmamış, desteklenmemiş, sponsor olunmamış veya özel olarak onaylanmamıştır. pohhabbo.com, Sulake Corporation Oy veya bağlı kuruluşlarının ticari markalarını ve diğer fikri mülkiyetlerini kullanabilir; bu kullanım, Fan Sitesi Politikası kapsamında izin verilmiştir.
+            </p>
+
+        </div>
+
+        <div class="footer-links">
+
+            <h3>Sayfalar</h3>
+
+            <a href="#hero">Ana Sayfa</a>
+
+            <a href="#duyurular">Duyurular</a>
+
+            <a href="#kurucular">Kurucular</a>
+
+            <a href="#panel">Yönetim Paneli</a>
+
+        </div>
+
+        <div class="footer-links">
+
+            <h3>Bağlantılar</h3>
+
+            <a href="https://discord.gg/3bj5kPFrkC">Discord</a>
+            <a href="https://www.habbo.com.tr/room/11481085">Habbo</a>
+
+        </div>
+
     </div>
+
+    <div class="footer-bottom">
+
+        <span>© 2026 CSI - Tüm hakları saklıdır.</span>
+
+    </div>
+
 </footer>
 
 

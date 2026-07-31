@@ -995,3 +995,41 @@ if (duyuruContainer) {
     });
 
 }
+
+const orgBtn=document.getElementById("organizationBtn");
+const orgPopup=document.getElementById("organizationPopup");
+const orgClose=document.getElementById("organizationClose");
+
+if(orgBtn){
+
+orgBtn.onclick=()=>{
+
+orgPopup.classList.add("active");
+
+}
+
+}
+
+if(orgClose){
+
+orgClose.onclick=()=>{
+
+orgPopup.classList.remove("active");
+
+}
+
+}
+
+if(orgPopup){
+
+orgPopup.onclick=(e)=>{
+
+if(e.target===orgPopup){
+
+orgPopup.classList.remove("active");
+
+}
+
+}
+
+}
