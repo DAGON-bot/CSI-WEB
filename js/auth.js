@@ -13,6 +13,7 @@ const profileSettingsBtn = document.getElementById("profileSettingsBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const managementPanelNav = document.getElementById("managementPanelNav");
 const managementPanel = document.getElementById("panel");
+const API_URL = "https://csi-web-letg.onrender.com";
 
 let isAuthenticated = false;
 
@@ -102,7 +103,7 @@ async function checkCurrentSession() {
 
     try {
 
-        const response = await fetch("/api/me", {
+        const response = await fetch(`${API_URL}/api/me`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -341,7 +342,7 @@ createCodeBtn?.addEventListener("click", async () => {
 
     try {
 
-        const response = await fetch("http://localhost:3000/api/verify/create", {
+        const response = await fetch(`${API_URL}/api/verify/create`, {
 
             method: "POST",
 
@@ -409,7 +410,7 @@ verifyBtn?.addEventListener("click", async (e) => {
 
     try {
 
-        const response = await fetch("/api/verify/check", {
+        const response = await fetch(`${API_URL}/api/verify/check`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -476,7 +477,7 @@ loginSubmitBtn?.addEventListener("click", async () => {
 
     try {
 
-        const response = await fetch("/api/login", {
+        const response = await fetch(`${API_URL}/api/login`, {
 
             method: "POST",
 
@@ -571,7 +572,7 @@ savePasswordBtn?.addEventListener("click", async (e) => {
 
     try {
 
-        const response = await fetch("/api/register/password", {
+        const response = await fetch(`${API_URL}/api/register/password`, {
 
             method: "POST",
 
