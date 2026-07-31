@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/ttPopup.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/dialog.css">
 </head>
 
 
@@ -46,7 +47,7 @@
             HAKKIMIZDA
         </a>
 
-        <a href="#panel" class="nav-btn">
+        <a href="#panel" id="managementPanelNav" class="nav-btn">
             <i class="fa-solid fa-shield-halved"></i>
             YÖNETİM PANELİ
         </a>
@@ -63,6 +64,38 @@
     <a href="#" class="register-btn">
         Kayıt Ol
     </a>
+
+    <div id="profileMenuWrapper" class="profile-menu-wrapper" style="display:none;">
+
+        <a
+            href="#"
+            id="profileBtn"
+            class="register-btn profile-btn">
+            Profil
+        </a>
+
+        <div id="profileDropdown" class="profile-dropdown">
+
+            <button type="button" id="visitProfileBtn" class="profile-dropdown-item">
+                <span>👤</span>
+                Profili Ziyaret Et
+            </button>
+
+            <button type="button" id="profileSettingsBtn" class="profile-dropdown-item">
+                <span>⚙️</span>
+                Ayarlar
+            </button>
+
+            <div class="profile-dropdown-divider"></div>
+
+            <button type="button" id="logoutBtn" class="profile-dropdown-item logout-item">
+                <span>🚪</span>
+                Çıkış Yap
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -763,6 +796,7 @@ class="main-btn">
 </button>
 
 </div>
+</div>
 
 <div id="popupOverlay" class="popup-overlay">
     <div class="popup">
@@ -794,6 +828,37 @@ class="main-btn">
 
 <div id="toastContainer"></div>
 
+
+
+<!-- ================= CSI DIALOG ================= -->
+
+<div id="dialogOverlay" class="dialog-overlay">
+
+    <div class="dialog-box">
+
+        <div id="dialogIcon" class="dialog-icon">
+            !
+        </div>
+
+        <h2 id="dialogTitle">Bildirim</h2>
+
+        <p id="dialogMessage">Mesaj</p>
+
+        <button
+            type="button"
+            id="dialogOkBtn"
+            class="dialog-ok-btn">
+            Tamam
+        </button>
+
+    </div>
+
+</div>
+
+
+
+
+
 <!-- ================= AUTH POPUP ================= -->
 
 <div id="authOverlay" class="auth-overlay">
@@ -806,24 +871,42 @@ class="main-btn">
 
         <img src="assets/logo.png" class="auth-logo">
 
-        <h2>CSI Giriş Sistemi</h2>
+        <h2 id="authTitle">
+    CSI Giriş Sistemi
+</h2>
 
-        <p class="auth-text">
-            Habbo kullanıcı adınızı girerek hesabınızı doğrulayın.
-        </p>
+<p id="authSubtitle">
+    Habbo kullanıcı adınızı girerek hesabınızı doğrulayın.
+</p>
 
         <input
-            type="text"
-            id="habboUsername"
-            placeholder="Habbo Kullanıcı Adı">
+    type="text"
+    id="habboUsername"
+    placeholder="Habbo Kullanıcı Adı">
 
-        <button
-            id="createCodeBtn"
-            class="auth-main-btn">
+<input
+    type="password"
+    id="loginPassword"
+    placeholder="Şifre"
+    style="display:none;">
 
-            Kod Oluştur
+<button
+    type="button"
+    id="createCodeBtn"
+    class="auth-main-btn">
 
-        </button>
+    Kod Oluştur
+
+</button>
+
+<button
+    id="loginSubmitBtn"
+    class="auth-main-btn"
+    style="display:none;">
+
+    Giriş Yap
+
+</button>
 
         <div
             id="verifyArea"
@@ -844,47 +927,45 @@ class="main-btn">
 
             </p>
 
-            <button
-                id="verifyBtn"
-                class="auth-main-btn">
+           <button
+    type="button"
+    id="verifyBtn"
+    class="auth-main-btn">
 
-                Doğrula
+    Doğrula
 
-            </button>
+</button>
 
         </div>
 
+        <div id="passwordArea" style="display:none;">
+
+    <h3>Şifre Oluştur</h3>
+
+    <input
+        type="password"
+        id="registerPassword"
+        placeholder="Şifre">
+
+    <input
+        type="password"
+        id="registerPassword2"
+        placeholder="Şifre Tekrar">
+
+    <button
+    type="button"
+    id="savePasswordBtn"
+    class="auth-main-btn">
+
+    Hesabı Oluştur
+
+</button>
+
+</div>
+
     </div>
 
 </div>
-
-<div id="organizationPopup" class="organization-popup">
-
-    <div class="organization-popup-content">
-
-        <button id="organizationClose">✕</button>
-
-        <div id="organizationPopupContent"></div>
-
-    </div>
-
-</div>
-
-
-
-<script src="js/utils.js"></script>
-<script src="js/toast.js"></script>
-<script src="js/popup.js"></script>
-<script src="js/ttPopup.js"></script>
-
-<script src="js/ranks.js"></script>
-<script src="js/script.js"></script>
-<script src="js/puantaj.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/organization.js"></script>
-
-</div>
-
 
 
 <!--=========================================
@@ -944,6 +1025,19 @@ class="main-btn">
     </div>
 
 </footer>
+
+
+<script src="js/utils.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/popup.js"></script>
+<script src="js/ttPopup.js"></script>
+
+<script src="js/ranks.js"></script>
+<script src="js/script.js"></script>
+<script src="js/puantaj.js"></script>
+<script src="js/dialog.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/organization.js"></script>
 
 
 

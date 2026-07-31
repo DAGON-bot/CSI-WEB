@@ -3011,3 +3011,99 @@ flex-direction:column;
 }
 
 }
+
+
+/* ===============================
+   PROFIL DROPDOWN MENU
+================================ */
+
+.profile-menu-wrapper {
+    position: relative;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 230px;
+    padding: 10px;
+    background: #171717;
+    border: 1px solid #353535;
+    border-top: 2px solid #f0c419;
+    border-radius: 12px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .55);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+    z-index: 10050;
+}
+
+.profile-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.profile-dropdown::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: #171717;
+    border-left: 1px solid #353535;
+    border-top: 1px solid #f0c419;
+    transform: rotate(45deg);
+}
+
+.profile-dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 13px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: #efefef;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.profile-dropdown-item:hover {
+    background: #242424;
+    color: #f0c419;
+}
+
+.profile-dropdown-divider {
+    height: 1px;
+    margin: 7px 4px;
+    background: #333;
+}
+
+.profile-dropdown-item.logout-item {
+    color: #ff6b6b;
+}
+
+.profile-dropdown-item.logout-item:hover {
+    background: rgba(255, 75, 75, .12);
+    color: #ff8585;
+}
+
+@media (max-width: 900px) {
+    .profile-dropdown {
+        right: 0;
+        width: 210px;
+    }
+}
+
+
+/* Yönetim paneli oturum doğrulanana kadar gizlidir. */
+#panel[style*="display:none"] {
+    display:none !important;
+}
