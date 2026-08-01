@@ -117,6 +117,8 @@ const founderResultVerified =
     document.getElementById("founderResultVerified");
 
 let selectedFounderUsername = "";
+let currentFounderPanelRole = "member";
+let currentFounderPanelUsername = "";
 
 let founderAdminLogs = [];
 let founderLogsCurrentPage = 1;
@@ -539,6 +541,53 @@ function getFounderRoleText(role) {
 
 }
 
+function configureFounderRoleOptions() {
+
+    if (!founderRoleSelect) {
+        return;
+    }
+
+    const adminOption =
+        founderRoleSelect.querySelector(
+            'option[value="admin"]'
+        );
+
+    const founderOption =
+        founderRoleSelect.querySelector(
+            'option[value="founder"]'
+        );
+
+    // Admin hiçbir kullanıcıya panelden verilemez
+    if (adminOption) {
+
+    const selectedUserIsAdmin =
+        selectedFounderUsername.toLowerCase() ===
+        "canart0";
+
+    adminOption.hidden =
+        !selectedUserIsAdmin;
+
+    adminOption.disabled =
+        !selectedUserIsAdmin;
+
+}
+
+    // Kurucu rolünü yalnızca admin verebilir
+    if (founderOption) {
+
+        const canAssignFounder =
+            currentFounderPanelRole === "admin";
+
+        founderOption.hidden =
+            !canAssignFounder;
+
+        founderOption.disabled =
+            !canAssignFounder;
+
+    }
+
+}
+
 function getAdminLogActionText(actionType) {
 
     const actions = {
@@ -941,8 +990,44 @@ fillFounderRankOptions(
     userRank
 );
 
+configureFounderRoleOptions();
+
 founderRoleSelect.value =
     userRole;
+
+
+
+const isProtectedAdmin =
+    String(user.username || "")
+        .toLowerCase() ===
+    "canart0".toLowerCase();
+
+founderDepartmentSelect.disabled =
+    isProtectedAdmin;
+
+founderBadgeSelect.disabled =
+    isProtectedAdmin;
+
+founderRankSelect.disabled =
+    isProtectedAdmin;
+
+founderRoleSelect.disabled =
+    isProtectedAdmin;
+
+founderSaveAllBtn.disabled =
+    isProtectedAdmin;
+
+if (isProtectedAdmin) {
+
+    founderSaveAllBtn.textContent =
+        "🔒 Admin Hesabı Korunuyor";
+
+} else {
+
+    founderSaveAllBtn.textContent =
+        "💾 Tüm Değişiklikleri Kaydet";
+
+}
 
     selectedFounderOriginalData = {
     department:
@@ -1022,9 +1107,22 @@ if (
     data.success &&
     allowedRoles.includes(data.user?.role)
 ) {
+
+    currentFounderPanelRole =
+        data.user.role || "member";
+
+    currentFounderPanelUsername =
+        data.user.username || "";
+
     founderPanelNav.style.display = "";
+
 } else {
+
+    currentFounderPanelRole = "member";
+    currentFounderPanelUsername = "";
+
     founderPanelNav.style.display = "none";
+
 }
 
     } catch (err) {
@@ -1061,6 +1159,14 @@ function openFounderPanel() {
 
     fillFounderRankOptions("");
 
+    founderDepartmentSelect.disabled = false;
+founderBadgeSelect.disabled = false;
+founderRoleSelect.disabled = false;
+founderSaveAllBtn.disabled = false;
+
+founderSaveAllBtn.textContent =
+    "💾 Tüm Değişiklikleri Kaydet";
+
     selectedFounderOriginalData = {
         department: "",
         badge: "",
@@ -1085,11 +1191,6 @@ function closeFounderPanel() {
     founderDepartmentSelect.value = "";
 
     founderBadgeSelect.value = "";
-founderRoleSelect.value = "";
-
-fillFounderRankOptions("");
-
-founderBadgeSelect.value = "";
 founderRoleSelect.value = "";
 
 fillFounderRankOptions("");
@@ -1228,19 +1329,6 @@ founderSearchBtn?.addEventListener(
     "click",
     searchFounderUser
 );
-
-
-founderSearchUsername?.addEventListener(
-    "keydown",
-    (e) => {
-
-        if (e.key === "Enter") {
-            searchFounderUser();
-        }
-
-    }
-);
-
 
 document.addEventListener(
     "keydown",
@@ -1583,6 +1671,21 @@ founderSaveAllBtn?.addEventListener(
             showDialog(
                 "Kullanıcı Seçilmedi",
                 "Önce bir kullanıcı aratın.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        if (
+            selectedFounderUsername.toLowerCase() ===
+            "canart0"
+        ) {
+
+            showDialog(
+                "Korumalı Admin Hesabı",
+                "Admin hesabının profil bilgileri değiştirilemez.",
                 "warning"
             );
 
