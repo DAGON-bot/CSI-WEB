@@ -16,7 +16,10 @@ const {
     completeRegistration,
     updateDepartment,
     updateRank,
+    updateBadge,
+    updateRole,
     updateRanksBulk,
+    createAdminLog,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
@@ -36,6 +39,89 @@ app.use(cors());
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "..")));
+
+async function getAuthorizedFounder(req) {
+
+    const auth =
+        req.headers.authorization;
+
+    if (
+        !auth ||
+        !auth.startsWith("Bearer ")
+    ) {
+
+        return {
+            error: {
+                status: 401,
+                message:
+                    "Oturum açmanız gerekiyor."
+            }
+        };
+
+    }
+
+    const token =
+        auth.replace("Bearer ", "").trim();
+
+    const tokenUser =
+        require("./services/jwtService")
+            .verifyToken(token);
+
+    const username =
+        tokenUser.username ||
+        tokenUser.name ||
+        tokenUser.user ||
+        tokenUser.sub;
+
+    if (!username) {
+
+        return {
+            error: {
+                status: 401,
+                message:
+                    "Geçersiz oturum bilgisi."
+            }
+        };
+
+    }
+
+    const user =
+        await getUser(username);
+
+    if (!user) {
+
+        return {
+            error: {
+                status: 404,
+                message:
+                    "Oturum sahibi bulunamadı."
+            }
+        };
+
+    }
+
+    const allowedRoles = [
+        "admin",
+        "founder"
+    ];
+
+    if (!allowedRoles.includes(user.role)) {
+
+        return {
+            error: {
+                status: 403,
+                message:
+                    "Bu işlem için yetkiniz bulunmuyor."
+            }
+        };
+
+    }
+
+    return {
+        user
+    };
+
+}
 
 app.get("/api/test", (req, res) => {
     res.json({
@@ -1273,6 +1359,356 @@ app.patch(
                 success: false,
                 message:
                     "Toplu rütbe güncelleme işlemi gerçekleştirilemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================================
+// KURUCU PANELİ - ROZET / RÜTBE / ROL GÜNCELLE
+// ===============================================
+
+app.patch(
+    "/api/founder/user/:username/profile-data",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedFounder(req);
+
+            if (authorization.error) {
+
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+
+            }
+
+            const requester =
+                authorization.user;
+
+            const targetUsername =
+                String(
+                    req.params.username || ""
+                ).trim();
+
+            const field =
+                String(
+                    req.body.field || ""
+                ).trim();
+
+            const value =
+                String(
+                    req.body.value || ""
+                ).trim();
+
+            if (
+                !targetUsername ||
+                !field ||
+                !value
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Kullanıcı, alan ve yeni değer zorunludur."
+                });
+
+            }
+
+            if (
+                targetUsername.length > 80 ||
+                value.length > 100
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Gönderilen bilgiler çok uzun."
+                });
+
+            }
+
+            const allowedFields = [
+                "badge",
+                "rank",
+                "role"
+            ];
+
+            if (!allowedFields.includes(field)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Değiştirilemeyen bir alan gönderildi."
+                });
+
+            }
+
+            const targetUser =
+                await getUser(targetUsername);
+
+            if (!targetUser) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Bu nickname ile kayıtlı kullanıcı bulunamadı."
+                });
+
+            }
+
+            let oldValue = "";
+            let updatedUser = null;
+            let actionType = "";
+
+            if (field === "badge") {
+
+                oldValue =
+                    targetUser.badge || "";
+
+                if (oldValue === value) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Kullanıcının rozeti zaten bu rozette."
+                    });
+
+                }
+
+                updatedUser =
+                    await updateBadge(
+                        targetUser.username,
+                        value
+                    );
+
+                actionType =
+                    "badge_update";
+
+            }
+
+            if (field === "rank") {
+
+                oldValue =
+                    targetUser.rank || "";
+
+                if (oldValue === value) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Kullanıcının rütbesi zaten bu rütbede."
+                    });
+
+                }
+
+                updatedUser =
+                    await updateRank(
+                        targetUser.username,
+                        value
+                    );
+
+                actionType =
+                    "rank_update";
+
+            }
+
+            if (field === "role") {
+
+                const allowedRoles = [
+                    "admin",
+                    "founder",
+                    "moderator",
+                    "reporter",
+                    "salary_officer",
+                    "promotion_controller",
+                    "member"
+                ];
+
+                if (!allowedRoles.includes(value)) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Geçersiz site rolü seçildi."
+                    });
+
+                }
+
+                // Admin rolünü yalnızca admin verebilir
+                if (
+                    value === "admin" &&
+                    requester.role !== "admin"
+                ) {
+
+                    return res.status(403).json({
+                        success: false,
+                        message:
+                            "Admin rolünü yalnızca bir admin verebilir."
+                    });
+
+                }
+
+                // Admin hesabının rolünü kurucu değiştiremez
+                if (
+                    targetUser.role === "admin" &&
+                    requester.role !== "admin"
+                ) {
+
+                    return res.status(403).json({
+                        success: false,
+                        message:
+                            "Admin hesabının rolünü değiştiremezsiniz."
+                    });
+
+                }
+
+                oldValue =
+                    targetUser.role || "member";
+
+                if (oldValue === value) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Kullanıcının site rolü zaten bu rolde."
+                    });
+
+                }
+
+                updatedUser =
+                    await updateRole(
+                        targetUser.username,
+                        value
+                    );
+
+                actionType =
+                    "role_update";
+
+            }
+
+            if (!updatedUser) {
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Kullanıcı bilgisi güncellenemedi."
+                });
+
+            }
+
+            await createAdminLog({
+                performedBy:
+                    requester.username,
+
+                targetUsername:
+                    targetUser.username,
+
+                actionType,
+
+                oldValue,
+
+                newValue: value
+            });
+
+            return res.json({
+                success: true,
+
+                message:
+                    `${targetUser.username} kullanıcısının bilgisi güncellendi.`,
+
+                update: {
+                    field,
+                    oldValue,
+                    newValue: value
+                }
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Kurucu paneli profil güncelleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Kullanıcı bilgisi güncellenemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================================
+// KURUCU PANELİ - ADMIN İŞLEM LOGLARI
+// ===============================================
+
+app.get(
+    "/api/founder/admin-logs",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedFounder(req);
+
+            if (authorization.error) {
+
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+
+            }
+
+            const { pool } =
+                require("./database/db");
+
+            const result =
+                await pool.query(
+                    `SELECT
+                        id,
+                        "performedBy",
+                        "targetUsername",
+                        "actionType",
+                        "oldValue",
+                        "newValue",
+                        "createdAt"
+                     FROM admin_logs
+                     ORDER BY "createdAt" DESC
+                     LIMIT 200`
+                );
+
+            return res.json({
+                success: true,
+                logs: result.rows
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Admin logları alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "İşlem geçmişi alınamadı."
             });
 
         }

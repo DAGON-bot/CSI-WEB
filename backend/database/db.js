@@ -46,6 +46,22 @@ async function initDatabase() {
     ADD COLUMN IF NOT EXISTS department TEXT
 `);
 
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS admin_logs (
+        id BIGSERIAL PRIMARY KEY,
+
+        "performedBy" TEXT NOT NULL,
+        "targetUsername" TEXT NOT NULL,
+
+        "actionType" TEXT NOT NULL,
+        "oldValue" TEXT,
+        "newValue" TEXT,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP
+    )
+`);
+
     console.log("PostgreSQL bağlandı.");
 }
 

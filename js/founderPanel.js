@@ -34,6 +34,21 @@ const founderDepartmentSelect =
 const founderSaveDepartmentBtn =
     document.getElementById("founderSaveDepartmentBtn");
 
+const founderBadgeSelect =
+    document.getElementById("founderBadgeSelect");
+
+const founderRankSelect =
+    document.getElementById("founderRankSelect");
+
+const founderSaveBadgeRankBtn =
+    document.getElementById("founderSaveBadgeRankBtn");
+
+const founderRoleSelect =
+    document.getElementById("founderRoleSelect");
+
+const founderSaveRoleBtn =
+    document.getElementById("founderSaveRoleBtn");
+
 const founderResultBadge =
     document.getElementById("founderResultBadge");
 
@@ -53,6 +68,71 @@ const founderResultVerified =
     document.getElementById("founderResultVerified");
 
 let selectedFounderUsername = "";
+
+function fillFounderBadgeOptions() {
+
+    if (!founderBadgeSelect || typeof rankData !== "object") {
+        return;
+    }
+
+    founderBadgeSelect.innerHTML =
+        `<option value="">Rozet Seçin</option>`;
+
+    Object.keys(rankData).forEach((badge) => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = badge;
+        option.textContent = badge;
+
+        founderBadgeSelect.appendChild(option);
+
+    });
+
+}
+
+function fillFounderRankOptions(
+    badge,
+    selected = ""
+) {
+
+    founderRankSelect.innerHTML = "";
+
+    if (
+        !badge ||
+        !rankData[badge]
+    ) {
+
+        founderRankSelect.disabled = true;
+
+        founderRankSelect.innerHTML =
+            `<option value="">Önce Rozet Seçin</option>`;
+
+        return;
+
+    }
+
+    founderRankSelect.disabled = false;
+
+    founderRankSelect.innerHTML =
+        `<option value="">Rütbe Seçin</option>`;
+
+    rankData[badge].forEach((rank) => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = rank;
+        option.textContent = rank;
+
+        founderRankSelect.appendChild(option);
+
+    });
+
+    founderRankSelect.value = selected;
+
+}
 
 
 function formatFounderDate(value) {
@@ -127,14 +207,34 @@ founderResultDepartment.textContent =
 founderDepartmentSelect.value =
     user.department || "";
 
-    founderResultBadge.textContent =
-        user.badge?.trim() || "-";
+    const userBadge =
+    user.badge?.trim() || "";
 
-    founderResultRank.textContent =
-        user.rank?.trim() || "-";
+const userRank =
+    user.rank?.trim() || "";
 
-    founderResultRole.textContent =
-        getFounderRoleText(user.role);
+const userRole =
+    user.role || "member";
+
+founderResultBadge.textContent =
+    userBadge || "-";
+
+founderResultRank.textContent =
+    userRank || "-";
+
+founderResultRole.textContent =
+    getFounderRoleText(userRole);
+
+founderBadgeSelect.value =
+    userBadge;
+
+fillFounderRankOptions(
+    userBadge,
+    userRank
+);
+
+founderRoleSelect.value =
+    userRole;
 
     founderResultCreatedAt.textContent =
         formatFounderDate(user.createdAt);
@@ -393,7 +493,15 @@ document.addEventListener(
 
 document.addEventListener(
     "DOMContentLoaded",
-    checkFounderAccess
+    () => {
+
+        fillFounderBadgeOptions();
+
+        fillFounderRankOptions("");
+
+        checkFounderAccess();
+
+    }
 );
 
 founderSaveDepartmentBtn?.addEventListener(
@@ -502,6 +610,17 @@ founderSaveDepartmentBtn?.addEventListener(
                 "Departmanı Kaydet";
 
         }
+
+    }
+);
+
+founderBadgeSelect?.addEventListener(
+    "change",
+    () => {
+
+        fillFounderRankOptions(
+            founderBadgeSelect.value
+        );
 
     }
 );

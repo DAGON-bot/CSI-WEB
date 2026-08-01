@@ -123,6 +123,82 @@ async function updateRank(username, rank) {
 
 }
 
+async function updateBadge(username, badge) {
+
+    const result = await pool.query(
+        `UPDATE users
+         SET badge = $1
+         WHERE LOWER(username) = LOWER($2)
+         RETURNING
+             username,
+             badge`,
+        [
+            badge,
+            username
+        ]
+    );
+
+    return result.rows[0];
+
+}
+
+async function updateRole(username, role) {
+
+    const result = await pool.query(
+        `UPDATE users
+         SET role = $1
+         WHERE LOWER(username) = LOWER($2)
+         RETURNING
+             username,
+             role`,
+        [
+            role,
+            username
+        ]
+    );
+
+    return result.rows[0];
+
+}
+
+async function createAdminLog({
+    performedBy,
+    targetUsername,
+    actionType,
+    oldValue,
+    newValue
+}) {
+
+    const result = await pool.query(
+        `INSERT INTO admin_logs (
+            "performedBy",
+            "targetUsername",
+            "actionType",
+            "oldValue",
+            "newValue"
+         )
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING
+            id,
+            "performedBy",
+            "targetUsername",
+            "actionType",
+            "oldValue",
+            "newValue",
+            "createdAt"`,
+        [
+            performedBy,
+            targetUsername,
+            actionType,
+            oldValue || "",
+            newValue || ""
+        ]
+    );
+
+    return result.rows[0];
+
+}
+
 async function updateRanksBulk(promotions) {
 
     const client =
@@ -317,7 +393,10 @@ module.exports = {
     completeRegistration,
     updateDepartment,
     updateRank,
+    updateBadge,
+    updateRole,
     updateRanksBulk,
+    createAdminLog,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
