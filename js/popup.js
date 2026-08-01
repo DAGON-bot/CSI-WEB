@@ -196,27 +196,171 @@ if(newControlBtn){
 
 }
 
-// Discord çıktısını kopyala
-console.log("Copy eventi yüklendi");
-document.addEventListener("click", function(e){
+// =========================================
+// GÜVENLİ DISCORD ÇIKTISI KOPYALAMA
+// =========================================
 
-    if(e.target && e.target.id === "copyDiscordBtn"){
+async function copyTextToClipboard(text) {
 
-        const text = window.discordMesaji;
+    const cleanText =
+        String(text || "").trim();
 
-        console.log("Kopyalanacak:", text);
+    if (!cleanText) {
 
-        navigator.clipboard.writeText(text)
-        .then(()=>{
-            showToast("Discord çıktısı panoya kopyalandı.","success");
-        })
-        .catch(()=>{
-            showToast("Kopyalama başarısız.","error");
-        });
+        throw new Error(
+            "Kopyalanacak Discord çıktısı bulunamadı."
+        );
 
     }
 
-});
+    // HTTPS veya localhost üzerinde modern yöntem
+    if (
+        navigator.clipboard &&
+        window.isSecureContext
+    ) {
+
+        await navigator.clipboard.writeText(
+            cleanText
+        );
+
+        return;
+
+    }
+
+    // HTTP IP adresleri için eski ama çalışan yöntem
+    const textarea =
+        document.createElement("textarea");
+
+    textarea.value = cleanText;
+
+    textarea.setAttribute(
+        "readonly",
+        ""
+    );
+
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    textarea.style.opacity = "0";
+
+    document.body.appendChild(
+        textarea
+    );
+
+    textarea.focus();
+    textarea.select();
+
+    textarea.setSelectionRange(
+        0,
+        textarea.value.length
+    );
+
+    const copied =
+        document.execCommand("copy");
+
+    document.body.removeChild(
+        textarea
+    );
+
+    if (!copied) {
+
+        throw new Error(
+            "Tarayıcı kopyalama işlemini reddetti."
+        );
+
+    }
+
+}
+
+
+document.addEventListener(
+    "click",
+    async (event) => {
+
+        const button =
+            event.target.closest(
+                "#copyDiscordBtn"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const text =
+            window.discordMesaji;
+
+        if (
+            !text ||
+            !String(text).trim()
+        ) {
+
+            showToast(
+                "Kopyalanacak Discord çıktısı bulunamadı.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        const originalText =
+            button.textContent;
+
+        button.disabled = true;
+        button.textContent =
+            "Kopyalanıyor...";
+
+        try {
+
+            await copyTextToClipboard(
+                text
+            );
+
+            showToast(
+                "Discord çıktısı panoya kopyalandı.",
+                "success"
+            );
+
+            button.textContent =
+                "✓ Panoya Kopyalandı";
+
+            setTimeout(() => {
+
+                button.textContent =
+                    originalText;
+
+            }, 1400);
+
+        } catch (err) {
+
+            console.error(
+                "Discord çıktısı kopyalama hatası:",
+                err
+            );
+
+            showToast(
+                err.message ||
+                "Kopyalama başarısız.",
+                "error"
+            );
+
+            button.textContent =
+                originalText;
+
+        } finally {
+
+            setTimeout(() => {
+
+                button.disabled = false;
+
+            }, 300);
+
+        }
+
+    }
+);
 
 updateSiteRankBtn?.addEventListener(
     "click",
