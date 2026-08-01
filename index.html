@@ -1163,6 +1163,53 @@ class="main-btn">
 
 </div>
 
+<!-- ================= İŞLEM GEÇMİŞİ ================= -->
+
+<div class="founder-department-section founder-log-section">
+
+    <div class="founder-log-header">
+
+        <div>
+            <h3>İşlem Geçmişi</h3>
+
+            <p>
+                Kurucu panelinden yapılan son yönetim işlemleri.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            id="founderRefreshLogsBtn"
+            class="founder-log-refresh-btn">
+
+            Yenile
+
+        </button>
+
+    </div>
+
+    <div
+        id="founderLogsLoading"
+        class="founder-logs-message"
+        style="display:none;">
+
+        İşlem geçmişi yükleniyor...
+
+    </div>
+
+    <div
+        id="founderLogsEmpty"
+        class="founder-logs-message"
+        style="display:none;">
+
+        Henüz kayıtlı bir yönetim işlemi bulunmuyor.
+
+    </div>
+
+    <div id="founderLogsList" class="founder-logs-list"></div>
+
+</div>
+
 <!-- ================= PROFİL POPUP ================= -->
 
 <div id="profileOverlay" class="profile-overlay">
