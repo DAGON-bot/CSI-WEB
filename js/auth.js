@@ -234,12 +234,15 @@ visitProfileBtn?.addEventListener("click", () => {
 
     profileDropdown?.classList.remove("active");
 
-    const username = profileBtn?.dataset.username || "Kullanıcı";
+    if (typeof window.openProfilePopup === "function") {
+        window.openProfilePopup();
+        return;
+    }
 
     showDialog(
-        "Profil",
-        `${username} profil sayfası yakında burada açılacak.`,
-        "success"
+        "Profil Hatası",
+        "Profil sistemi yüklenemedi.",
+        "error"
     );
 
 });
