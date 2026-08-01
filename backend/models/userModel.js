@@ -19,11 +19,12 @@ async function searchUsersByUsername(
 
     const result = await pool.query(
         `SELECT
-            username,
-            badge,
-            rank,
-            department
-         FROM users
+    username,
+    badge,
+    rank,
+    department,
+    "figureString"
+ FROM users
          WHERE username ILIKE $1
          ORDER BY
             CASE

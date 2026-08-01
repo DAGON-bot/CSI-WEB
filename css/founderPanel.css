@@ -766,3 +766,245 @@
     color: #999;
     text-align: center;
 }
+
+/* =========================================
+   KURUCU PANELİ - GELİŞMİŞ KULLANICI ARAMA
+========================================= */
+
+.founder-search-area {
+    position: relative;
+    align-items: stretch;
+}
+
+.founder-search-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.founder-search-input-wrapper input {
+    width: 100%;
+    height: 100%;
+}
+
+.founder-username-suggestions {
+    position: absolute;
+    z-index: 9999;
+
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+
+    display: none;
+
+    max-height: 340px;
+    padding: 8px;
+
+    overflow-y: auto;
+
+    background: #161616;
+    border: 1px solid #3d3d3d;
+    border-radius: 13px;
+
+    box-shadow:
+        0 18px 45px
+        rgba(0, 0, 0, .72);
+}
+
+/* Genel button stillerini sıfırlar */
+.founder-username-suggestions
+.founder-username-suggestion-item {
+    display: grid !important;
+    grid-template-columns:
+        48px minmax(0, 1fr) auto;
+    align-items: center !important;
+    gap: 12px !important;
+
+    width: 100% !important;
+    min-height: 66px !important;
+
+    margin: 0 !important;
+    padding: 9px 12px !important;
+
+    color: #f1f1f1 !important;
+    text-align: left !important;
+
+    background: transparent !important;
+    background-image: none !important;
+
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+
+    box-shadow: none !important;
+
+    cursor: pointer;
+    transform: none !important;
+
+    transition:
+        background .16s ease,
+        border-color .16s ease;
+}
+
+.founder-username-suggestions
+.founder-username-suggestion-item:hover,
+.founder-username-suggestions
+.founder-username-suggestion-item.active {
+    background: #262626 !important;
+    border-color: rgba(246, 201, 21, .45) !important;
+    transform: none !important;
+}
+
+.founder-suggestion-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+
+    overflow: hidden;
+
+    background: #292929;
+    border: 1px solid #444;
+    border-radius: 10px;
+}
+
+.founder-suggestion-avatar img {
+    display: block;
+
+    width: 46px;
+    height: 56px;
+
+    object-fit: contain;
+    object-position: center bottom;
+
+    image-rendering: auto;
+}
+
+.founder-suggestion-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    min-width: 0;
+}
+
+.founder-suggestion-name {
+    display: block;
+
+    color: #f6c915;
+    font-size: 14px;
+    font-weight: 800;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.founder-suggestion-details {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    color: #999;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.suggestion-dot {
+    color: #555;
+}
+
+.founder-suggestion-open {
+    color: #777;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    transition: color .16s ease;
+}
+
+.founder-username-suggestion-item:hover
+.founder-suggestion-open,
+.founder-username-suggestion-item.active
+.founder-suggestion-open {
+    color: #f6c915;
+}
+
+.founder-username-suggestion-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    min-height: 70px;
+    padding: 14px;
+
+    color: #aaa;
+    text-align: left;
+}
+
+.founder-username-suggestion-empty div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.founder-username-suggestion-empty strong {
+    color: #ddd;
+    font-size: 13px;
+}
+
+.founder-username-suggestion-empty span {
+    color: #888;
+    font-size: 11px;
+}
+
+.suggestion-empty-icon {
+    font-size: 22px !important;
+}
+
+/* Scrollbar */
+.founder-username-suggestions::-webkit-scrollbar {
+    width: 7px;
+}
+
+.founder-username-suggestions::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.founder-username-suggestions::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 20px;
+}
+
+.founder-username-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #5a5a5a;
+}
+
+@media (max-width: 600px) {
+
+    .founder-username-suggestions
+    .founder-username-suggestion-item {
+        grid-template-columns:
+            42px minmax(0, 1fr) !important;
+
+        min-height: 60px !important;
+    }
+
+    .founder-suggestion-avatar {
+        width: 42px;
+        height: 42px;
+    }
+
+    .founder-suggestion-avatar img {
+        width: 40px;
+        height: 50px;
+    }
+
+    .founder-suggestion-open {
+        display: none;
+    }
+
+}
