@@ -2,8 +2,38 @@
    KURUCU PANELİ
 ================================ */
 
-.founder-panel-nav {
-    font-family: inherit;
+.founder-panel-nav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    height:40px;
+    padding:0 18px;
+
+    margin-right:12px;
+
+    background:#f0c419;
+    color:#111;
+
+    border:none;
+    border-radius:8px;
+
+    font-size:15px;
+    font-weight:700;
+    font-family:inherit;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.founder-panel-nav:hover{
+    background:#ffd84d;
+    transform:translateY(-1px);
+}
+
+.founder-panel-nav:active{
+    transform:translateY(0);
 }
 
 .founder-panel-overlay {
