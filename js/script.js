@@ -1082,3 +1082,36 @@ if(menuToggle){
     });
 
 }
+
+function updateActiveNavbarLink() {
+
+    const currentHash =
+        window.location.hash || "#hero";
+
+    const navbarLinks =
+        document.querySelectorAll(".nav-btn");
+
+    navbarLinks.forEach((link) => {
+
+        link.classList.remove("active");
+
+        if (
+            link.getAttribute("href") === currentHash
+        ) {
+
+            link.classList.add("active");
+
+        }
+
+    });
+
+}
+window.addEventListener(
+    "hashchange",
+    updateActiveNavbarLink
+);
+
+document.addEventListener(
+    "DOMContentLoaded",
+    updateActiveNavbarLink
+);
