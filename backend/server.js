@@ -862,18 +862,6 @@ if (!founderPanelRoles.includes(requester.role)) {
             });
         }
 
-        if (
-    targetUser.username.toLowerCase() ===
-    ADMIN_USERNAME.toLowerCase()
-) {
-
-    return res.status(403).json({
-        success: false,
-        message:
-            "Admin hesabının rütbesi değiştirilemez."
-    });
-
-}
 
         return res.json({
             success: true,
@@ -1023,17 +1011,18 @@ app.patch(
             }
 
             if (
-    targetUser.username.toLowerCase() ===
-    ADMIN_USERNAME.toLowerCase()
+        targetUser.username.toLowerCase() ===
+        ADMIN_USERNAME.toLowerCase()
 ) {
 
-    return res.status(403).json({
+        return res.status(403).json({
         success: false,
         message:
             "Admin hesabının profil bilgileri değiştirilemez."
     });
 
 }
+
 
             const updatedUser =
                 await updateDepartment(
@@ -1188,10 +1177,11 @@ app.patch(
     return res.status(403).json({
         success: false,
         message:
-            "Admin hesabının profil bilgileri değiştirilemez."
+            "Admin hesabının rütbesi değiştirilemez."
     });
 
 }
+
 
             const oldRank =
                 targetUser.rank || "";
@@ -1367,6 +1357,19 @@ app.patch(
 
                 }
 
+                if (
+    username.toLowerCase() ===
+    ADMIN_USERNAME.toLowerCase()
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Toplu terfi listesinde admin hesabı bulunamaz."
+    });
+
+}
+
                 cleanedPromotions.push({
                     username,
                     newRank
@@ -1504,6 +1507,19 @@ app.patch(
                 });
 
             }
+            if (
+    targetUser.username.toLowerCase() ===
+    ADMIN_USERNAME.toLowerCase()
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Admin hesabının profil bilgileri değiştirilemez."
+    });
+
+}
+
 
             let oldValue = "";
             let updatedUser = null;
