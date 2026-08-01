@@ -14,6 +14,7 @@ const {
     setPassword,
     updateLastLogin,
     completeRegistration,
+    updateDepartment,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
@@ -456,6 +457,7 @@ app.get("/api/me", async (req, res) => {
                 role: user.role || "member",
                 badge: user.badge || "",
                 rank: user.rank || "",
+                department: user.department || "",
                 verified: !!user.verified,
                 createdAt: user.createdAt,
                 lastLogin: user.lastLogin
@@ -543,6 +545,7 @@ app.post("/api/profile/refresh", async (req, res) => {
                 role: updatedUser.role || "member",
                 badge: updatedUser.badge || "",
                 rank: updatedUser.rank || "",
+                department: updatedUser.department || "",
                 verified: !!updatedUser.verified,
                 createdAt: updatedUser.createdAt,
                 lastLogin: updatedUser.lastLogin
@@ -779,6 +782,7 @@ if (!founderPanelRoles.includes(requester.role)) {
                 motto: searchedUser.motto || "",
                 badge: searchedUser.badge || "",
                 rank: searchedUser.rank || "",
+                department: searchedUser.department || "",
                 role: searchedUser.role || "member",
                 verified: !!searchedUser.verified,
                 createdAt: searchedUser.createdAt,
@@ -801,6 +805,160 @@ if (!founderPanelRoles.includes(requester.role)) {
     }
 
 });
+
+// ===============================
+// KURUCU PANELİ - DEPARTMAN ATA
+// ===============================
+
+app.patch(
+    "/api/founder/user/:username/department",
+    async (req, res) => {
+
+        const auth = req.headers.authorization;
+
+        if (!auth || !auth.startsWith("Bearer ")) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Oturum açmanız gerekiyor."
+            });
+
+        }
+
+        const token =
+            auth.replace("Bearer ", "").trim();
+
+        try {
+
+            const tokenUser =
+                require("./services/jwtService")
+                    .verifyToken(token);
+
+            const requesterUsername =
+                tokenUser.username ||
+                tokenUser.name ||
+                tokenUser.user ||
+                tokenUser.sub;
+
+            if (!requesterUsername) {
+
+                return res.status(401).json({
+                    success: false,
+                    message: "Geçersiz oturum bilgisi."
+                });
+
+            }
+
+            const requester =
+                await getUser(requesterUsername);
+
+            if (!requester) {
+
+                return res.status(404).json({
+                    success: false,
+                    message: "Oturum sahibi bulunamadı."
+                });
+
+            }
+
+            const allowedRoles = [
+                "admin",
+                "founder"
+            ];
+
+            if (!allowedRoles.includes(requester.role)) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: "Departman atama yetkiniz yok."
+                });
+
+            }
+
+            const targetUsername =
+                String(req.params.username || "").trim();
+
+            const department =
+                String(req.body.department || "").trim();
+
+            const allowedDepartments = [
+                "Adalet Departmanı",
+                "Finans Departmanı",
+                "Etkinlik Departmanı",
+                "Asayiş Departmanı",
+                "Terfi Kontrol Departmanı",
+                "Genel Eğitim Departmanı"
+            ];
+
+            if (!targetUsername) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Kullanıcı adı gerekli."
+                });
+
+            }
+
+            if (!allowedDepartments.includes(department)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Geçersiz departman seçildi."
+                });
+
+            }
+
+            const targetUser =
+                await getUser(targetUsername);
+
+            if (!targetUser) {
+
+                return res.status(404).json({
+                    success: false,
+                    message: "Kullanıcı bulunamadı."
+                });
+
+            }
+
+            const updatedUser =
+                await updateDepartment(
+                    targetUser.username,
+                    department
+                );
+
+            if (!updatedUser) {
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Departman güncellenemedi."
+                });
+
+            }
+
+            return res.json({
+                success: true,
+                message:
+                    `${targetUser.username} kullanıcısının departmanı güncellendi.`,
+                department: updatedUser.department
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Departman güncelleme hatası:",
+                err
+            );
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Oturum geçersiz veya işlem gerçekleştirilemedi."
+            });
+
+        }
+
+    }
+);
 
 const PORT = process.env.PORT || 3000;
 

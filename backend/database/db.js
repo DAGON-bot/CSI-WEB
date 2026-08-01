@@ -41,6 +41,11 @@ async function initDatabase() {
     ADD COLUMN IF NOT EXISTS rank TEXT
     `);
 
+    await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS department TEXT
+`);
+
     console.log("PostgreSQL bağlandı.");
 }
 

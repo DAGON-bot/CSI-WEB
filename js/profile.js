@@ -13,8 +13,8 @@ const profileUsername =
 const profileMotto =
     document.getElementById("profileMotto");
 
-const profileHabboId =
-    document.getElementById("profileHabboId");
+const profileDepartment =
+    document.getElementById("profileDepartment");
 
 const profileRole =
     document.getElementById("profileRole");
@@ -110,8 +110,8 @@ function fillProfile(user) {
     profileMotto.textContent =
         user.motto?.trim() || "Motto bulunamadı.";
 
-    profileHabboId.textContent =
-        user.habboId || "-";
+    profileDepartment.textContent =
+        user.department?.trim() || "Atanmadı";
 
     profileRole.textContent =
         getRoleText(user.role);
