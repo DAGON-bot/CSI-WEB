@@ -125,6 +125,9 @@ let founderLogsItemsPerPage = 10;
 let founderUsernameSearchTimer = null;
 let founderUsernameSearchController = null;
 
+let founderSuggestionUsers = [];
+let founderSuggestionActiveIndex = -1;
+
 let selectedFounderOriginalData = {
     department: "",
     badge: "",
@@ -141,6 +144,9 @@ function closeFounderUsernameSuggestions() {
     founderUsernameSuggestions.innerHTML = "";
     founderUsernameSuggestions.style.display =
         "none";
+
+    founderSuggestionUsers = [];
+    founderSuggestionActiveIndex = -1;
 
 }
 
@@ -167,6 +173,22 @@ function fillFounderBadgeOptions() {
 
 }
 
+function getFounderSuggestionAvatar(
+    figureString
+) {
+
+    if (!figureString) {
+        return "assets/logo.png";
+    }
+
+    return (
+        "https://www.habbo.com.tr/habbo-imaging/avatarimage" +
+        `?figure=${encodeURIComponent(figureString)}` +
+        "&size=s&direction=2&head_direction=2&gesture=sml&headonly=0"
+    );
+
+}
+
 function renderFounderUsernameSuggestions(
     users
 ) {
@@ -177,10 +199,14 @@ function renderFounderUsernameSuggestions(
 
     founderUsernameSuggestions.innerHTML = "";
 
-    if (
-        !Array.isArray(users) ||
-        users.length === 0
-    ) {
+    founderSuggestionUsers =
+        Array.isArray(users)
+            ? users
+            : [];
+
+    founderSuggestionActiveIndex = -1;
+
+    if (founderSuggestionUsers.length === 0) {
 
         const empty =
             document.createElement("div");
@@ -188,8 +214,18 @@ function renderFounderUsernameSuggestions(
         empty.className =
             "founder-username-suggestion-empty";
 
-        empty.textContent =
-            "Benzer kullanıcı bulunamadı.";
+        empty.innerHTML = `
+            <span class="suggestion-empty-icon">
+                🔍
+            </span>
+
+            <div>
+                <strong>Kullanıcı bulunamadı</strong>
+                <span>
+                    Yazdığınız ifadeye benzer kayıt yok.
+                </span>
+            </div>
+        `;
 
         founderUsernameSuggestions.appendChild(
             empty
@@ -202,55 +238,164 @@ function renderFounderUsernameSuggestions(
 
     }
 
-    users.forEach((user) => {
+    founderSuggestionUsers.forEach(
+        (user, index) => {
 
-        const item =
-            document.createElement("button");
+            const item =
+                document.createElement("button");
 
-        item.type = "button";
-        item.className =
-            "founder-username-suggestion-item";
+            item.type = "button";
 
-        item.innerHTML = `
-            <strong>
-                ${escapeFounderHtml(
-                    user.username || ""
-                )}
-            </strong>
+            item.className =
+                "founder-username-suggestion-item";
 
-            <span>
-                ${escapeFounderHtml(
-                    user.badge || "Rozet yok"
-                )}
-                ·
-                ${escapeFounderHtml(
-                    user.rank || "Rütbe yok"
-                )}
-            </span>
-        `;
+            item.dataset.index =
+                String(index);
 
-        item.addEventListener(
-            "click",
-            () => {
+            const avatarUrl =
+                getFounderSuggestionAvatar(
+                    user.figureString
+                );
 
-                founderSearchUsername.value =
-                    user.username || "";
+            item.innerHTML = `
+                <span class="founder-suggestion-avatar">
 
-                closeFounderUsernameSuggestions();
+                    <img
+                        src="${escapeFounderHtml(avatarUrl)}"
+                        alt="${escapeFounderHtml(
+                            user.username || "Kullanıcı"
+                        )}"
+                        loading="lazy">
 
-                searchFounderUser();
+                </span>
 
-            }
-        );
+                <span class="founder-suggestion-content">
 
-        founderUsernameSuggestions.appendChild(
-            item
-        );
+                    <strong class="founder-suggestion-name">
+                        ${escapeFounderHtml(
+                            user.username || ""
+                        )}
+                    </strong>
 
-    });
+                    <span class="founder-suggestion-details">
+
+                        <span>
+                            ${escapeFounderHtml(
+                                user.badge || "Rozet yok"
+                            )}
+                        </span>
+
+                        <span class="suggestion-dot">
+                            •
+                        </span>
+
+                        <span>
+                            ${escapeFounderHtml(
+                                user.rank || "Rütbe yok"
+                            )}
+                        </span>
+
+                    </span>
+
+                </span>
+
+                <span class="founder-suggestion-open">
+                    Aç →
+                </span>
+            `;
+
+            item.addEventListener(
+                "mouseenter",
+                () => {
+
+                    setFounderSuggestionActive(
+                        index
+                    );
+
+                }
+            );
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    selectFounderSuggestion(
+                        index
+                    );
+
+                }
+            );
+
+            founderUsernameSuggestions
+                .appendChild(item);
+
+        }
+    );
 
     founderUsernameSuggestions.style.display =
         "block";
+
+}
+
+function setFounderSuggestionActive(
+    index
+) {
+
+    const items =
+        founderUsernameSuggestions
+            ?.querySelectorAll(
+                ".founder-username-suggestion-item"
+            );
+
+    if (!items || items.length === 0) {
+        return;
+    }
+
+    items.forEach((item) => {
+        item.classList.remove("active");
+    });
+
+    if (
+        index < 0 ||
+        index >= items.length
+    ) {
+
+        founderSuggestionActiveIndex = -1;
+        return;
+
+    }
+
+    founderSuggestionActiveIndex = index;
+
+    const activeItem =
+        items[index];
+
+    activeItem.classList.add("active");
+
+    activeItem.scrollIntoView({
+        block: "nearest"
+    });
+
+}
+
+
+function selectFounderSuggestion(
+    index
+) {
+
+    const user =
+        founderSuggestionUsers[index];
+
+    if (!user) {
+        return;
+    }
+
+    founderSearchUsername.value =
+        user.username || "";
+
+    closeFounderUsernameSuggestions();
+
+    searchFounderUser();
 
 }
 
@@ -1753,11 +1898,106 @@ founderSearchUsername?.addEventListener(
             founderUsernameSearchTimer
         );
 
+        founderSuggestionActiveIndex = -1;
+
+        const query =
+            founderSearchUsername.value.trim();
+
+        if (query.length < 2) {
+
+            closeFounderUsernameSuggestions();
+            return;
+
+        }
+
         founderUsernameSearchTimer =
             setTimeout(
                 loadFounderUsernameSuggestions,
-                300
+                250
             );
+
+    }
+);
+
+founderSearchUsername?.addEventListener(
+    "keydown",
+    (event) => {
+
+        const isOpen =
+            founderUsernameSuggestions &&
+            founderUsernameSuggestions.style
+                .display !== "none" &&
+            founderSuggestionUsers.length > 0;
+
+        if (!isOpen) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                searchFounderUser();
+
+            }
+
+            return;
+
+        }
+
+        if (event.key === "ArrowDown") {
+
+            event.preventDefault();
+
+            const nextIndex =
+                founderSuggestionActiveIndex + 1 >=
+                founderSuggestionUsers.length
+                    ? 0
+                    : founderSuggestionActiveIndex + 1;
+
+            setFounderSuggestionActive(
+                nextIndex
+            );
+
+            return;
+
+        }
+
+        if (event.key === "ArrowUp") {
+
+            event.preventDefault();
+
+            const previousIndex =
+                founderSuggestionActiveIndex - 1 < 0
+                    ? founderSuggestionUsers.length - 1
+                    : founderSuggestionActiveIndex - 1;
+
+            setFounderSuggestionActive(
+                previousIndex
+            );
+
+            return;
+
+        }
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            const index =
+                founderSuggestionActiveIndex >= 0
+                    ? founderSuggestionActiveIndex
+                    : 0;
+
+            selectFounderSuggestion(index);
+
+            return;
+
+        }
+
+        if (event.key === "Escape") {
+
+            closeFounderUsernameSuggestions();
+
+        }
 
     }
 );
