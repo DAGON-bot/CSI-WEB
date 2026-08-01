@@ -16,6 +16,9 @@ const newBtn =
     const newBtnExists = newBtn !== null;
    let popupHistory = null;
 
+const updateSiteRanksBtn =
+    document.getElementById("updateSiteRanksBtn");
+
 function showPopup(
     title,
     content,
@@ -61,6 +64,10 @@ function showPopup(
 
     }
 
+    if (updateSiteRanksBtn) {
+    updateSiteRanksBtn.style.display = "none";
+}
+
 }
 
 else if(mode==="toplu"){
@@ -74,6 +81,26 @@ else if(mode==="toplu"){
 
     if(newBtn){
     newBtn.style.display="none";
+}
+
+if (updateSiteRankBtn) {
+    updateSiteRankBtn.style.display = "none";
+}
+
+if (updateSiteRanksBtn) {
+
+    const hasPromotions =
+        Array.isArray(window.topluTerfiBilgisi) &&
+        window.topluTerfiBilgisi.length > 0;
+
+    updateSiteRanksBtn.style.display =
+        hasPromotions ? "inline-block" : "none";
+
+    updateSiteRanksBtn.disabled = false;
+
+    updateSiteRanksBtn.textContent =
+        "Toplu Olarak Sitede Güncelle";
+
 }
 
 }
@@ -94,6 +121,14 @@ else if(mode=="oyun"){
         newBtn.textContent="Kapat";
 
     }
+
+    if (updateSiteRankBtn) {
+    updateSiteRankBtn.style.display = "none";
+}
+
+if (updateSiteRanksBtn) {
+    updateSiteRanksBtn.style.display = "none";
+}
 
 }
 
@@ -290,6 +325,143 @@ updateSiteRankBtn?.addEventListener(
                 updateSiteRankBtn.disabled = false;
                 updateSiteRankBtn.textContent =
                     "Sitede Güncelle";
+
+            }
+
+        }
+
+    }
+);
+
+updateSiteRanksBtn?.addEventListener(
+    "click",
+    async () => {
+
+        const promotions =
+            window.topluTerfiBilgisi;
+
+        const token =
+            localStorage.getItem("token");
+
+        if (
+            !Array.isArray(promotions) ||
+            promotions.length === 0
+        ) {
+
+            showToast(
+                "Güncellenecek toplu terfi bilgisi bulunamadı.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        if (!token) {
+
+            showToast(
+                "Bu işlem için giriş yapmanız gerekiyor.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        updateSiteRanksBtn.disabled = true;
+
+        updateSiteRanksBtn.textContent =
+            "Toplu Güncelleniyor...";
+
+        try {
+
+            const response = await fetch(
+                `${window.location.origin}/api/promotion/update-ranks-bulk`,
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`,
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        promotions
+                    })
+                }
+            );
+
+            const data =
+                await response.json();
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                showToast(
+                    data.message ||
+                    "Toplu rütbe güncelleme başarısız.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            const updated =
+                data.result?.updated || [];
+
+            const notFound =
+                data.result?.notFound || [];
+
+            const unchanged =
+                data.result?.unchanged || [];
+
+            const resultMessage = [
+                `${updated.length} kişi güncellendi.`,
+                `${notFound.length} kişi sistemde bulunamadı.`,
+                `${unchanged.length} kişi zaten güncel rütbedeydi.`
+            ].join(" ");
+
+            showToast(
+                resultMessage,
+                updated.length > 0
+                    ? "success"
+                    : "warning"
+            );
+
+            updateSiteRanksBtn.textContent =
+                "Toplu Güncelleme Tamamlandı";
+
+            window.topluTerfiBilgisi = [];
+
+        } catch (err) {
+
+            console.error(
+                "Toplu site rütbe güncelleme hatası:",
+                err
+            );
+
+            showToast(
+                "Sunucuya bağlanılamadı.",
+                "error"
+            );
+
+        } finally {
+
+            if (
+                updateSiteRanksBtn.textContent !==
+                "Toplu Güncelleme Tamamlandı"
+            ) {
+
+                updateSiteRanksBtn.disabled = false;
+
+                updateSiteRanksBtn.textContent =
+                    "Toplu Olarak Sitede Güncelle";
 
             }
 

@@ -123,6 +123,107 @@ async function updateRank(username, rank) {
 
 }
 
+async function updateRanksBulk(promotions) {
+
+    const client =
+        await pool.connect();
+
+    try {
+
+        await client.query("BEGIN");
+
+        const updated = [];
+        const notFound = [];
+        const unchanged = [];
+
+        for (const promotion of promotions) {
+
+            const username =
+                String(promotion.username || "").trim();
+
+            const newRank =
+                String(promotion.newRank || "").trim();
+
+            const currentResult =
+                await client.query(
+                    `SELECT username, rank
+                     FROM users
+                     WHERE LOWER(username) = LOWER($1)
+                     LIMIT 1`,
+                    [username]
+                );
+
+            const currentUser =
+                currentResult.rows[0];
+
+            if (!currentUser) {
+
+                notFound.push({
+                    username,
+                    newRank
+                });
+
+                continue;
+
+            }
+
+            if (currentUser.rank === newRank) {
+
+                unchanged.push({
+                    username: currentUser.username,
+                    rank: currentUser.rank
+                });
+
+                continue;
+
+            }
+
+            const updateResult =
+                await client.query(
+                    `UPDATE users
+                     SET rank = $1
+                     WHERE LOWER(username) = LOWER($2)
+                     RETURNING username, rank`,
+                    [
+                        newRank,
+                        currentUser.username
+                    ]
+                );
+
+            updated.push({
+                username:
+                    updateResult.rows[0].username,
+
+                oldRank:
+                    currentUser.rank || "",
+
+                newRank:
+                    updateResult.rows[0].rank
+            });
+
+        }
+
+        await client.query("COMMIT");
+
+        return {
+            updated,
+            notFound,
+            unchanged
+        };
+
+    } catch (err) {
+
+        await client.query("ROLLBACK");
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
+
+}
+
 async function setPassword(username, password) {
     await pool.query(
         `UPDATE users
@@ -216,6 +317,7 @@ module.exports = {
     completeRegistration,
     updateDepartment,
     updateRank,
+    updateRanksBulk,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,

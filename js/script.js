@@ -410,6 +410,8 @@ if(hesaplaBtn){
         oyunCiktisi = "";
         let popupSonuclari = "";
 
+const topluTerfiListesi = [];   
+
 const dagitan =
     document.getElementById("dagitanYetkili").value.trim();
 
@@ -473,6 +475,17 @@ if (yeniIndex >= liste.length) {
 
 const yeniRutbe =
     liste[yeniIndex];
+
+    if (ad && yeniRutbe) {
+
+    topluTerfiListesi.push({
+        username: ad.trim(),
+        badge: rozet,
+        oldRank: rutbe,
+        newRank: yeniRutbe
+    });
+
+}
 
 discordCiktisi +=
 `${ad.padEnd(18)} │ ${rutbe} → ${yeniRutbe}\n`;
@@ -539,6 +552,10 @@ Oyun Çıktısını Görüntüle
 
 `;
 window.discordMesaji = discordCiktisi;
+
+window.topluTerfiBilgisi =
+    topluTerfiListesi;
+
 console.log("Discord çıktısı:", discordCiktisi);
 showPopup(
     "Toplu Terfi Sonucu",
@@ -621,6 +638,7 @@ if(ttTemizleBtn){
         discordCiktisi="";
         oyunCiktisi="";
         window.discordMesaji="";
+        window.topluTerfiBilgisi = [];
 
 
         showToast(

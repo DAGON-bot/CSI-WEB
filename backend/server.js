@@ -16,6 +16,7 @@ const {
     completeRegistration,
     updateDepartment,
     updateRank,
+    updateRanksBulk,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
@@ -1116,6 +1117,162 @@ app.patch(
                 success: false,
                 message:
                     "Oturum geçersiz veya işlem gerçekleştirilemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================
+// TOPLU TERFİ - RÜTBELERİ GÜNCELLE
+// ===============================
+
+app.patch(
+    "/api/promotion/update-ranks-bulk",
+    async (req, res) => {
+
+        const auth =
+            req.headers.authorization;
+
+        if (
+            !auth ||
+            !auth.startsWith("Bearer ")
+        ) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Oturum açmanız gerekiyor."
+            });
+
+        }
+
+        const token =
+            auth.replace("Bearer ", "").trim();
+
+        try {
+
+            const tokenUser =
+                require("./services/jwtService")
+                    .verifyToken(token);
+
+            const requesterUsername =
+                tokenUser.username ||
+                tokenUser.name ||
+                tokenUser.user ||
+                tokenUser.sub;
+
+            if (!requesterUsername) {
+
+                return res.status(401).json({
+                    success: false,
+                    message:
+                        "Geçersiz oturum bilgisi."
+                });
+
+            }
+
+            const requester =
+                await getUser(requesterUsername);
+
+            if (!requester) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Oturum sahibi bulunamadı."
+                });
+
+            }
+
+            const promotions =
+                Array.isArray(req.body.promotions)
+                    ? req.body.promotions
+                    : [];
+
+            if (promotions.length === 0) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Güncellenecek personel bulunamadı."
+                });
+
+            }
+
+            if (promotions.length > 200) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Tek seferde en fazla 200 personel güncellenebilir."
+                });
+
+            }
+
+            const cleanedPromotions = [];
+
+            for (const promotion of promotions) {
+
+                const username =
+                    String(
+                        promotion.username || ""
+                    ).trim();
+
+                const newRank =
+                    String(
+                        promotion.newRank || ""
+                    ).trim();
+
+                if (
+                    !username ||
+                    !newRank ||
+                    username.length > 80 ||
+                    newRank.length > 80 ||
+                    newRank === "SON RÜTBE"
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Toplu terfi listesinde geçersiz bilgi bulunuyor."
+                    });
+
+                }
+
+                cleanedPromotions.push({
+                    username,
+                    newRank
+                });
+
+            }
+
+            const result =
+                await updateRanksBulk(
+                    cleanedPromotions
+                );
+
+            return res.json({
+                success: true,
+
+                message:
+                    `${result.updated.length} kişinin rütbesi güncellendi.`,
+
+                result
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Toplu rütbe güncelleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Toplu rütbe güncelleme işlemi gerçekleştirilemedi."
             });
 
         }
