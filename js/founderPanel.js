@@ -55,6 +55,41 @@ const founderLogsEmpty =
 const founderLogsList =
     document.getElementById("founderLogsList");
 
+const founderLogsTableWrapper =
+    document.getElementById(
+        "founderLogsTableWrapper"
+    );
+
+const founderLogsPagination =
+    document.getElementById(
+        "founderLogsPagination"
+    );
+
+const founderLogsTotal =
+    document.getElementById(
+        "founderLogsTotal"
+    );
+
+const founderLogsPrevBtn =
+    document.getElementById(
+        "founderLogsPrevBtn"
+    );
+
+const founderLogsNextBtn =
+    document.getElementById(
+        "founderLogsNextBtn"
+    );
+
+const founderLogsPageNumbers =
+    document.getElementById(
+        "founderLogsPageNumbers"
+    );
+
+const founderLogsPageSize =
+    document.getElementById(
+        "founderLogsPageSize"
+    );
+
 const founderResultBadge =
     document.getElementById("founderResultBadge");
 
@@ -74,6 +109,10 @@ const founderResultVerified =
     document.getElementById("founderResultVerified");
 
 let selectedFounderUsername = "";
+
+let founderAdminLogs = [];
+let founderLogsCurrentPage = 1;
+let founderLogsItemsPerPage = 10;
 
 let selectedFounderOriginalData = {
     department: "",
@@ -233,21 +272,189 @@ function escapeFounderHtml(value) {
 
 }
 
-function renderFounderLogs(logs) {
+function getAdminLogIcon(actionType) {
+
+    const icons = {
+        department_update: "🏢",
+        badge_update: "🏅",
+        rank_update: "🎖",
+        role_update: "🛡",
+        single_promotion: "⬆",
+        bulk_promotion: "⇈"
+    };
+
+    return icons[actionType] || "⚙";
+
+}
+
+
+function renderFounderLogPagination() {
+
+    if (!founderLogsPageNumbers) {
+        return;
+    }
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                founderAdminLogs.length /
+                founderLogsItemsPerPage
+            )
+        );
+
+    if (founderLogsCurrentPage > totalPages) {
+        founderLogsCurrentPage = totalPages;
+    }
+
+    founderLogsPageNumbers.innerHTML = "";
+
+    const createPageButton = (page) => {
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+        button.textContent = page;
+
+        if (page === founderLogsCurrentPage) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                founderLogsCurrentPage = page;
+
+                renderFounderLogs();
+
+            }
+        );
+
+        founderLogsPageNumbers.appendChild(
+            button
+        );
+
+    };
+
+    const visiblePages = [];
+
+    if (totalPages <= 5) {
+
+        for (
+            let page = 1;
+            page <= totalPages;
+            page++
+        ) {
+
+            visiblePages.push(page);
+
+        }
+
+    } else {
+
+        visiblePages.push(1);
+
+        if (founderLogsCurrentPage > 3) {
+            visiblePages.push("...");
+        }
+
+        const start =
+            Math.max(
+                2,
+                founderLogsCurrentPage - 1
+            );
+
+        const end =
+            Math.min(
+                totalPages - 1,
+                founderLogsCurrentPage + 1
+            );
+
+        for (
+            let page = start;
+            page <= end;
+            page++
+        ) {
+
+            visiblePages.push(page);
+
+        }
+
+        if (
+            founderLogsCurrentPage <
+            totalPages - 2
+        ) {
+
+            visiblePages.push("...");
+
+        }
+
+        visiblePages.push(totalPages);
+
+    }
+
+    visiblePages.forEach((page) => {
+
+        if (page === "...") {
+
+            const dots =
+                document.createElement("span");
+
+            dots.className =
+                "founder-log-page-dots";
+
+            dots.textContent = "...";
+
+            founderLogsPageNumbers.appendChild(
+                dots
+            );
+
+            return;
+
+        }
+
+        createPageButton(page);
+
+    });
+
+    founderLogsPrevBtn.disabled =
+        founderLogsCurrentPage <= 1;
+
+    founderLogsNextBtn.disabled =
+        founderLogsCurrentPage >= totalPages;
+
+    founderLogsTotal.textContent =
+        `Toplam ${founderAdminLogs.length} kayıt`;
+
+}
+
+
+function renderFounderLogs(
+    logs = founderAdminLogs
+) {
 
     if (!founderLogsList) {
         return;
     }
 
+    if (Array.isArray(logs)) {
+        founderAdminLogs = logs;
+    }
+
     founderLogsList.innerHTML = "";
 
-    if (
-        !Array.isArray(logs) ||
-        logs.length === 0
-    ) {
+    if (founderAdminLogs.length === 0) {
 
         founderLogsEmpty.style.display =
             "block";
+
+        founderLogsTableWrapper.style.display =
+            "none";
+
+        founderLogsPagination.style.display =
+            "none";
 
         return;
 
@@ -256,16 +463,39 @@ function renderFounderLogs(logs) {
     founderLogsEmpty.style.display =
         "none";
 
-    logs.forEach((log) => {
+    founderLogsTableWrapper.style.display =
+        "block";
 
-        const item =
-            document.createElement("article");
+    founderLogsPagination.style.display =
+        "flex";
 
-        item.className =
-            "founder-log-item";
+    const startIndex =
+        (
+            founderLogsCurrentPage - 1
+        ) * founderLogsItemsPerPage;
+
+    const endIndex =
+        startIndex +
+        founderLogsItemsPerPage;
+
+    const visibleLogs =
+        founderAdminLogs.slice(
+            startIndex,
+            endIndex
+        );
+
+    visibleLogs.forEach((log) => {
+
+        const row =
+            document.createElement("tr");
 
         const actionText =
             getAdminLogActionText(
+                log.actionType
+            );
+
+        const actionIcon =
+            getAdminLogIcon(
                 log.actionType
             );
 
@@ -286,71 +516,56 @@ function renderFounderLogs(logs) {
                 log.createdAt
             );
 
-        item.innerHTML = `
-            <div class="founder-log-item-top">
-
-                <div>
-                    <strong class="founder-log-action">
-                        ${escapeFounderHtml(actionText)}
-                    </strong>
-
-                    <span class="founder-log-date">
-                        ${escapeFounderHtml(createdAt)}
+        row.innerHTML = `
+            <td>
+                <span class="
+                    founder-log-action
+                    action-${escapeFounderHtml(
+                        log.actionType || "default"
+                    )}
+                ">
+                    <span class="founder-log-icon">
+                        ${escapeFounderHtml(actionIcon)}
                     </span>
-                </div>
 
-                <span class="founder-log-target">
-                    ${escapeFounderHtml(
-                        log.targetUsername || "-"
-                    )}
+                    ${escapeFounderHtml(actionText)}
                 </span>
+            </td>
 
-            </div>
+            <td class="founder-log-username">
+                ${escapeFounderHtml(
+                    log.targetUsername || "-"
+                )}
+            </td>
 
-            <div class="founder-log-values">
+            <td>
+                ${escapeFounderHtml(oldValue)}
+            </td>
 
-                <div class="founder-log-value old">
+            <td class="founder-log-arrow">
+                →
+            </td>
 
-                    <span>Eski Değer</span>
+            <td class="founder-log-new-value">
+                ${escapeFounderHtml(newValue)}
+            </td>
 
-                    <strong>
-                        ${escapeFounderHtml(oldValue)}
-                    </strong>
+            <td>
+                ${escapeFounderHtml(
+                    log.performedBy || "-"
+                )}
+            </td>
 
-                </div>
-
-                <div class="founder-log-arrow">
-                    →
-                </div>
-
-                <div class="founder-log-value new">
-
-                    <span>Yeni Değer</span>
-
-                    <strong>
-                        ${escapeFounderHtml(newValue)}
-                    </strong>
-
-                </div>
-
-            </div>
-
-            <div class="founder-log-footer">
-
-                İşlemi yapan:
-
-                <strong>
-                    ${escapeFounderHtml(
-                        log.performedBy || "-"
-                    )}
-                </strong>
-
-            </div>
+            <td class="founder-log-date">
+                ${escapeFounderHtml(createdAt)}
+            </td>
         `;
 
-        founderLogsList.appendChild(item);
+        founderLogsList.appendChild(row);
 
     });
+
+    renderFounderLogPagination();
 
 }
 
@@ -798,10 +1013,11 @@ async function loadFounderLogs() {
 
         }
 
-        renderFounderLogs(
-            data.logs || []
-        );
+       founderLogsCurrentPage = 1;
 
+        renderFounderLogs(
+        data.logs || []
+);
     } catch (err) {
 
         console.error(
@@ -1290,6 +1506,63 @@ founderSaveAllBtn?.addEventListener(
                 "💾 Tüm Değişiklikleri Kaydet";
 
         }
+
+    }
+);
+
+founderLogsPrevBtn?.addEventListener(
+    "click",
+    () => {
+
+        if (founderLogsCurrentPage <= 1) {
+            return;
+        }
+
+        founderLogsCurrentPage--;
+
+        renderFounderLogs();
+
+    }
+);
+
+
+founderLogsNextBtn?.addEventListener(
+    "click",
+    () => {
+
+        const totalPages =
+            Math.ceil(
+                founderAdminLogs.length /
+                founderLogsItemsPerPage
+            );
+
+        if (
+            founderLogsCurrentPage >=
+            totalPages
+        ) {
+            return;
+        }
+
+        founderLogsCurrentPage++;
+
+        renderFounderLogs();
+
+    }
+);
+
+
+founderLogsPageSize?.addEventListener(
+    "change",
+    () => {
+
+        founderLogsItemsPerPage =
+            Number(
+                founderLogsPageSize.value
+            ) || 10;
+
+        founderLogsCurrentPage = 1;
+
+        renderFounderLogs();
 
     }
 );
