@@ -1168,7 +1168,7 @@ class="main-btn">
             id="founderRefreshLogsBtn"
             class="founder-log-refresh-btn">
 
-            Yenile
+            ↻ Yenile
 
         </button>
 
@@ -1192,7 +1192,91 @@ class="main-btn">
 
     </div>
 
-    <div id="founderLogsList" class="founder-logs-list"></div>
+    <div
+        id="founderLogsTableWrapper"
+        class="founder-logs-table-wrapper">
+
+        <table class="founder-logs-table">
+
+            <thead>
+                <tr>
+                    <th>İşlem</th>
+                    <th>Hedef Kullanıcı</th>
+                    <th>Eski Değer</th>
+                    <th></th>
+                    <th>Yeni Değer</th>
+                    <th>Yapan</th>
+                    <th>Tarih</th>
+                </tr>
+            </thead>
+
+            <tbody id="founderLogsList"></tbody>
+
+        </table>
+
+    </div>
+
+    <div
+        id="founderLogsPagination"
+        class="founder-logs-pagination"
+        style="display:none;">
+
+        <span id="founderLogsTotal">
+            Toplam 0 kayıt
+        </span>
+
+        <div class="founder-log-page-controls">
+
+            <button
+                type="button"
+                id="founderLogsPrevBtn">
+
+                ‹
+
+            </button>
+
+            <div id="founderLogsPageNumbers"></div>
+
+            <button
+                type="button"
+                id="founderLogsNextBtn">
+
+                ›
+
+            </button>
+
+        </div>
+
+        <select id="founderLogsPageSize">
+
+            <option value="5">5 / sayfa</option>
+
+            <option value="10" selected>
+                10 / sayfa
+            </option>
+
+            <option value="20">20 / sayfa</option>
+
+        </select>
+
+    </div>
+
+    <div class="founder-log-info">
+
+        <div class="founder-log-info-icon">
+            i
+        </div>
+
+        <div>
+            <strong>Bilgilendirme</strong>
+
+            <p>
+                Yalnızca sisteme kaydedilen yönetim işlemleri
+                gösterilmektedir.
+            </p>
+        </div>
+
+    </div>
 
 </div>
 
