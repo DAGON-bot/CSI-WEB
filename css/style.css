@@ -4056,3 +4056,207 @@ img {
         font-size: 28px;
     }
 }
+
+/* =========================================
+   HAKKIMIZDA BÖLÜMÜ
+========================================= */
+
+.about-wrapper {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 48px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0.008)
+        );
+
+    border: 1px solid #343434;
+    border-radius: 22px;
+
+    box-shadow:
+        0 18px 55px rgba(0, 0, 0, 0.35);
+}
+
+.about-intro {
+    max-width: 820px;
+    margin: 0 auto 42px;
+    text-align: center;
+}
+
+.about-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 16px;
+    padding: 8px 14px;
+
+    color: #f4c400;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+
+    background: rgba(244, 196, 0, 0.08);
+    border: 1px solid rgba(244, 196, 0, 0.25);
+    border-radius: 999px;
+}
+
+.about-intro h3 {
+    margin: 0 0 18px;
+
+    color: #f4f4f4;
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.15;
+}
+
+.about-intro p {
+    margin: 0;
+
+    color: #b7b7b7;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.about-card {
+    position: relative;
+
+    min-height: 245px;
+    padding: 28px;
+
+    background: #181818;
+    border: 1px solid #303030;
+    border-radius: 18px;
+
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.about-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(244, 196, 0, 0.55);
+
+    box-shadow:
+        0 16px 35px rgba(0, 0, 0, 0.35);
+}
+
+.about-icon{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:58px;
+    height:58px;
+
+    font-size:24px;
+
+    color:#f4c400;
+
+    background:rgba(244,196,0,.08);
+
+    border:1px solid rgba(244,196,0,.25);
+
+    border-radius:16px;
+
+    transition:.25s;
+
+}
+
+.about-icon i {
+    display: block;
+    color: inherit;
+    font-size: inherit;
+    line-height: 1;
+}
+
+.about-card:hover .about-icon{
+
+    transform:scale(1.08);
+
+    background:#f4c400;
+
+    color:#111;
+
+}
+
+.about-card h4 {
+    margin: 0 0 12px;
+
+    color: #f4f4f4;
+    font-size: 19px;
+}
+
+.about-card p {
+    margin: 0;
+
+    color: #a8a8a8;
+    font-size: 14px;
+    line-height: 1.75;
+}
+
+.about-footer-text {
+    margin-top: 24px;
+    padding: 22px 24px;
+
+    color: #c6c6c6;
+    font-size: 14px;
+    line-height: 1.7;
+    text-align: center;
+
+    background: rgba(244, 196, 0, 0.045);
+    border: 1px solid rgba(244, 196, 0, 0.16);
+    border-radius: 14px;
+}
+
+@media (max-width: 900px) {
+
+    .about-wrapper {
+        padding: 32px 24px;
+    }
+
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-card {
+        min-height: auto;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .about-wrapper {
+        width: min(100% - 20px, 1180px);
+        padding: 24px 16px;
+    }
+
+    .about-intro {
+        margin-bottom: 28px;
+    }
+
+    .about-intro h3 {
+        font-size: 27px;
+    }
+
+    .about-intro p {
+        font-size: 14px;
+    }
+
+    .about-card {
+        padding: 22px;
+    }
+
+}
