@@ -15,6 +15,38 @@ const managementPanelNav = document.getElementById("managementPanelNav");
 const managementPanel = document.getElementById("panel");
 const API_URL = window.location.origin;
 
+const forgotPasswordBtn =
+    document.getElementById("forgotPasswordBtn");
+
+const resetStartArea =
+    document.getElementById("resetStartArea");
+
+const resetCreateCodeBtn =
+    document.getElementById("resetCreateCodeBtn");
+
+const resetVerifyArea =
+    document.getElementById("resetVerifyArea");
+
+const resetVerifyCode =
+    document.getElementById("resetVerifyCode");
+
+const resetVerifyBtn =
+    document.getElementById("resetVerifyBtn");
+
+const resetPasswordArea =
+    document.getElementById("resetPasswordArea");
+
+const resetPassword =
+    document.getElementById("resetPassword");
+
+const resetPassword2 =
+    document.getElementById("resetPassword2");
+
+const resetSavePasswordBtn =
+    document.getElementById("resetSavePasswordBtn");
+
+let passwordResetToken = "";
+
 let isAuthenticated = false;
 
 let authMode = "login";
@@ -251,6 +283,13 @@ function openAuthPopup(mode){
     verifyArea.style.display = "none";
     passwordArea.style.display = "none";
 
+    resetStartArea.style.display = "none";
+    resetVerifyArea.style.display = "none";
+    resetPasswordArea.style.display = "none";
+    forgotPasswordBtn.style.display = "none";
+
+passwordResetToken = "";
+
     authOverlay.classList.add("active");
 
     const title = document.getElementById("authTitle");
@@ -283,6 +322,7 @@ function openAuthPopup(mode){
 
         createCodeBtn.style.display = "none";
         loginSubmitBtn.style.display = "block";
+        forgotPasswordBtn.style.display = "block";
 
         loginPassword.style.display = "block";
         verifyArea.style.display = "none";
@@ -298,6 +338,15 @@ function closeAuthPopup(){
 
     verifyArea.style.display = "none";
     passwordArea.style.display = "none";
+
+    resetStartArea.style.display = "none";
+    resetVerifyArea.style.display = "none";
+    resetPasswordArea.style.display = "none";
+    forgotPasswordBtn.style.display = "none";
+
+    resetPassword.value = "";
+    resetPassword2.value = "";
+    passwordResetToken = "";
 
     loginPassword.value = "";
     registerPassword.value = "";
@@ -624,4 +673,260 @@ savePasswordBtn?.addEventListener("click", async (e) => {
 
     }
 
+});
+
+// ===============================
+// ŞİFREMİ UNUTTUM EKRANINI AÇ
+// ===============================
+
+forgotPasswordBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    authMode = "reset";
+
+    document.getElementById("authTitle").textContent =
+        "Şifremi Unuttum";
+
+    document.getElementById("authSubtitle").textContent =
+        "Kayıtlı Habbo kullanıcı adınızı girerek hesabınızı doğrulayın.";
+
+    loginPassword.style.display = "none";
+    loginSubmitBtn.style.display = "none";
+    forgotPasswordBtn.style.display = "none";
+
+    createCodeBtn.style.display = "none";
+    verifyArea.style.display = "none";
+    passwordArea.style.display = "none";
+
+    resetVerifyArea.style.display = "none";
+    resetPasswordArea.style.display = "none";
+    resetStartArea.style.display = "block";
+
+    passwordResetToken = "";
+});
+
+
+// ===============================
+// ŞİFRE SIFIRLAMA KODU OLUŞTUR
+// ===============================
+
+resetCreateCodeBtn?.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const username = document
+        .getElementById("habboUsername")
+        .value
+        .trim();
+
+    if (!username) {
+        showDialog(
+            "Eksik Bilgi",
+            "Habbo kullanıcı adını gir.",
+            "warning"
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_URL}/api/password-reset/create`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            showDialog(
+                "İşlem Başarısız",
+                data.message || "Kod oluşturulamadı.",
+                "error"
+            );
+            return;
+        }
+
+        resetStartArea.style.display = "none";
+        resetVerifyArea.style.display = "block";
+        resetVerifyCode.textContent = data.code;
+
+        document.getElementById("authSubtitle").textContent =
+            "Kodu Habbo mottonuza yazın ve ardından doğrulayın.";
+
+    } catch (err) {
+        console.error(err);
+
+        showDialog(
+            "Bağlantı Hatası",
+            "Sunucuya bağlanılamadı.",
+            "error"
+        );
+    }
+});
+
+
+// ===============================
+// ŞİFRE SIFIRLAMA KODUNU DOĞRULA
+// ===============================
+
+resetVerifyBtn?.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const username = document
+        .getElementById("habboUsername")
+        .value
+        .trim();
+
+    try {
+        const response = await fetch(
+            `${API_URL}/api/password-reset/check`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            showDialog(
+                "Doğrulama Başarısız",
+                data.message || "Kod doğrulanamadı.",
+                "error"
+            );
+            return;
+        }
+
+        passwordResetToken = data.resetToken;
+
+        resetVerifyArea.style.display = "none";
+        resetPasswordArea.style.display = "block";
+
+        document.getElementById("authTitle").textContent =
+            "Yeni Şifre Oluştur";
+
+        document.getElementById("authSubtitle").textContent =
+            "Hesabınız doğrulandı. Yeni şifrenizi belirleyin.";
+
+    } catch (err) {
+        console.error(err);
+
+        showDialog(
+            "Bağlantı Hatası",
+            "Sunucuya bağlanılamadı.",
+            "error"
+        );
+    }
+});
+
+
+// ===============================
+// YENİ ŞİFREYİ KAYDET
+// ===============================
+
+resetSavePasswordBtn?.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const username = document
+        .getElementById("habboUsername")
+        .value
+        .trim();
+
+    const password = resetPassword.value.trim();
+    const passwordAgain = resetPassword2.value.trim();
+
+    if (!password || !passwordAgain) {
+        showDialog(
+            "Eksik Bilgi",
+            "Yeni şifre alanlarını doldur.",
+            "warning"
+        );
+        return;
+    }
+
+    if (password.length < 6) {
+        showDialog(
+            "Geçersiz Şifre",
+            "Şifre en az 6 karakter olmalı.",
+            "warning"
+        );
+        return;
+    }
+
+    if (password !== passwordAgain) {
+        showDialog(
+            "Şifre Hatası",
+            "Şifreler eşleşmiyor.",
+            "warning"
+        );
+        return;
+    }
+
+    if (!passwordResetToken) {
+        showDialog(
+            "Doğrulama Gerekli",
+            "Önce Habbo hesabınızı doğrulayın.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_URL}/api/password-reset/complete`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                    resetToken: passwordResetToken
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            showDialog(
+                "Şifre Yenilenemedi",
+                data.message || "Bir hata oluştu.",
+                "error"
+            );
+            return;
+        }
+
+        localStorage.removeItem("token");
+
+        showDialog(
+            "Şifre Yenilendi",
+            "Şifreniz başarıyla yenilendi. Yeni şifrenizle giriş yapabilirsiniz.",
+            "success",
+            () => {
+                resetPassword.value = "";
+                resetPassword2.value = "";
+                passwordResetToken = "";
+
+                openAuthPopup("login");
+            }
+        );
+
+    } catch (err) {
+        console.error(err);
+
+        showDialog(
+            "Bağlantı Hatası",
+            "Sunucuya bağlanılamadı.",
+            "error"
+        );
+    }
 });

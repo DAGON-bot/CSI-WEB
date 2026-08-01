@@ -79,6 +79,70 @@ async function updateLastLogin(username) {
     );
 }
 
+async function createPasswordReset(username, resetCode) {
+    const result = await pool.query(
+        `UPDATE users
+         SET "resetCode" = $1,
+             "resetExpiresAt" = CURRENT_TIMESTAMP + INTERVAL '10 minutes',
+             "resetToken" = NULL,
+             "resetVerifiedAt" = NULL
+         WHERE LOWER(username) = LOWER($2)
+         RETURNING id`,
+        [resetCode, username]
+    );
+
+    return result.rows[0];
+}
+
+async function getPasswordReset(username) {
+    const result = await pool.query(
+        `SELECT
+            username,
+            "resetCode",
+            "resetExpiresAt",
+            "resetToken",
+            "resetVerifiedAt"
+         FROM users
+         WHERE LOWER(username) = LOWER($1)
+         LIMIT 1`,
+        [username]
+    );
+
+    return result.rows[0];
+}
+
+async function verifyPasswordReset(username, resetToken) {
+    const result = await pool.query(
+        `UPDATE users
+         SET "resetToken" = $1,
+             "resetVerifiedAt" = CURRENT_TIMESTAMP
+         WHERE LOWER(username) = LOWER($2)
+           AND "resetExpiresAt" > CURRENT_TIMESTAMP
+         RETURNING id`,
+        [resetToken, username]
+    );
+
+    return result.rows[0];
+}
+
+async function completePasswordReset(username, resetToken, passwordHash) {
+    const result = await pool.query(
+        `UPDATE users
+         SET password = $1,
+             "resetCode" = NULL,
+             "resetExpiresAt" = NULL,
+             "resetToken" = NULL,
+             "resetVerifiedAt" = NULL
+         WHERE LOWER(username) = LOWER($2)
+           AND "resetToken" = $3
+           AND "resetVerifiedAt" > CURRENT_TIMESTAMP - INTERVAL '10 minutes'
+         RETURNING id`,
+        [passwordHash, username, resetToken]
+    );
+
+    return result.rows[0];
+}
+
 module.exports = {
     getUser,
     createUser,
@@ -86,5 +150,9 @@ module.exports = {
     getVerifyCode,
     updateHabboInfo,
     setPassword,
-    updateLastLogin
+    updateLastLogin,
+    createPasswordReset,
+    getPasswordReset,
+    verifyPasswordReset,
+    completePasswordReset
 };

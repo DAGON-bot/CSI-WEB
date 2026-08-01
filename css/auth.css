@@ -248,3 +248,32 @@
     width:100%;
     margin-bottom:15px;
 }
+
+.forgot-password-btn {
+    display: block;
+    width: 100%;
+    margin-top: 14px;
+    border: none;
+    background: transparent;
+    color: #f0c419;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.forgot-password-btn:hover {
+    color: #ffe36b;
+}
+
+#resetStartArea,
+#resetVerifyArea,
+#resetPasswordArea {
+    margin-top: 18px;
+}
+
+#resetPasswordArea h3 {
+    color: #fff;
+    margin-bottom: 20px;
+}
