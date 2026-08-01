@@ -43,6 +43,9 @@ const founderRoleSelect =
 const founderSaveAllBtn =
     document.getElementById("founderSaveAllBtn");
 
+const founderLogSection =
+    document.querySelector(".founder-log-section");
+
 const founderRefreshLogsBtn =
     document.getElementById("founderRefreshLogsBtn");
 
@@ -732,6 +735,10 @@ function openFounderPanel() {
 
     founderPanelOverlay?.classList.add("active");
 
+    if (founderLogSection) {
+    founderLogSection.style.display = "block";
+}
+
     loadFounderLogs();
 
     founderSearchResult.style.display = "none";
@@ -846,6 +853,10 @@ async function searchFounderUser() {
 
             return;
         }
+
+        if (founderLogSection) {
+    founderLogSection.style.display = "none";
+}
 
         fillFounderUser(data.user || {});
 
