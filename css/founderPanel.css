@@ -359,3 +359,57 @@
     opacity: .65;
     cursor: not-allowed;
 }
+
+/* =========================================
+   KURUCU PANELİ - GENEL KAYDETME BUTONU
+========================================= */
+
+.founder-save-all-section {
+    grid-column: 1 / -1;
+
+    margin-top: 26px;
+    padding-top: 24px;
+
+    border-top: 1px solid #363636;
+}
+
+.founder-save-all-btn {
+    width: 100%;
+    min-height: 58px;
+
+    padding: 16px 22px;
+
+    color: #111;
+    font-size: 16px;
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            90deg,
+            #e5b900,
+            #ffd84e
+        );
+
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        opacity .2s ease;
+}
+
+.founder-save-all-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 24px
+        rgba(244, 199, 20, .22);
+}
+
+.founder-save-all-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}

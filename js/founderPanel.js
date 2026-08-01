@@ -31,23 +31,17 @@ const founderResultDepartment =
 const founderDepartmentSelect =
     document.getElementById("founderDepartmentSelect");
 
-const founderSaveDepartmentBtn =
-    document.getElementById("founderSaveDepartmentBtn");
-
 const founderBadgeSelect =
     document.getElementById("founderBadgeSelect");
 
 const founderRankSelect =
     document.getElementById("founderRankSelect");
 
-const founderSaveBadgeRankBtn =
-    document.getElementById("founderSaveBadgeRankBtn");
-
 const founderRoleSelect =
     document.getElementById("founderRoleSelect");
 
-const founderSaveRoleBtn =
-    document.getElementById("founderSaveRoleBtn");
+const founderSaveAllBtn =
+    document.getElementById("founderSaveAllBtn");
 
 const founderRefreshLogsBtn =
     document.getElementById("founderRefreshLogsBtn");
@@ -80,6 +74,13 @@ const founderResultVerified =
     document.getElementById("founderResultVerified");
 
 let selectedFounderUsername = "";
+
+let selectedFounderOriginalData = {
+    department: "",
+    badge: "",
+    rank: "",
+    role: "member"
+};
 
 function fillFounderBadgeOptions() {
 
@@ -415,6 +416,20 @@ fillFounderRankOptions(
 founderRoleSelect.value =
     userRole;
 
+    selectedFounderOriginalData = {
+    department:
+        user.department?.trim() || "",
+
+    badge:
+        userBadge,
+
+    rank:
+        userRank,
+
+    role:
+        userRole
+};
+
     founderResultCreatedAt.textContent =
         formatFounderDate(user.createdAt);
 
@@ -501,6 +516,7 @@ if (
 function openFounderPanel() {
 
     founderPanelOverlay?.classList.add("active");
+
     loadFounderLogs();
 
     founderSearchResult.style.display = "none";
@@ -509,9 +525,16 @@ function openFounderPanel() {
     founderDepartmentSelect.value = "";
 
     founderBadgeSelect.value = "";
-founderRoleSelect.value = "";
+    founderRoleSelect.value = "";
 
-fillFounderRankOptions("");
+    fillFounderRankOptions("");
+
+    selectedFounderOriginalData = {
+        department: "",
+        badge: "",
+        rank: "",
+        role: "member"
+    };
 
     setTimeout(() => {
         founderSearchUsername?.focus();
@@ -533,6 +556,18 @@ function closeFounderPanel() {
 founderRoleSelect.value = "";
 
 fillFounderRankOptions("");
+
+founderBadgeSelect.value = "";
+founderRoleSelect.value = "";
+
+fillFounderRankOptions("");
+
+selectedFounderOriginalData = {
+    department: "",
+    badge: "",
+    rank: "",
+    role: "member"
+};
 
 }
 
@@ -694,117 +729,6 @@ document.addEventListener(
     }
 );
 
-founderSaveDepartmentBtn?.addEventListener(
-    "click",
-    async () => {
-
-        const token =
-            localStorage.getItem("token");
-
-        const department =
-            founderDepartmentSelect.value;
-
-        if (!selectedFounderUsername) {
-
-            showDialog(
-                "Kullanıcı Seçilmedi",
-                "Önce bir kullanıcı aratın.",
-                "warning"
-            );
-
-            return;
-        }
-
-        if (!department) {
-
-            showDialog(
-                "Departman Seçilmedi",
-                "Atamak istediğiniz departmanı seçin.",
-                "warning"
-            );
-
-            return;
-        }
-
-        if (!token) {
-
-            showDialog(
-                "Oturum Gerekli",
-                "Bu işlem için giriş yapmanız gerekiyor.",
-                "warning"
-            );
-
-            return;
-        }
-
-        founderSaveDepartmentBtn.disabled = true;
-        founderSaveDepartmentBtn.textContent =
-            "Kaydediliyor...";
-
-        try {
-
-            const response = await fetch(
-                `${window.location.origin}/api/founder/user/${encodeURIComponent(selectedFounderUsername)}/department`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        department
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-
-                showDialog(
-                    "Departman Güncellenemedi",
-                    data.message || "İşlem başarısız oldu.",
-                    "error"
-                );
-
-                return;
-            }
-
-            founderResultDepartment.textContent =
-                data.department || department;
-
-                await loadFounderLogs();
-
-            showDialog(
-                "Departman Güncellendi",
-                data.message ||
-                "Kullanıcının departmanı kaydedildi.",
-                "success"
-            );
-
-        } catch (err) {
-
-            console.error(
-                "Departman kaydetme hatası:",
-                err
-            );
-
-            showDialog(
-                "Bağlantı Hatası",
-                "Sunucuya bağlanılamadı.",
-                "error"
-            );
-
-        } finally {
-
-            founderSaveDepartmentBtn.disabled = false;
-            founderSaveDepartmentBtn.textContent =
-                "Departmanı Kaydet";
-
-        }
-
-    }
-);
 
 founderBadgeSelect?.addEventListener(
     "change",
@@ -910,6 +834,107 @@ async function loadFounderLogs() {
 
 }
 
+async function updateFounderDepartment(
+    department
+) {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!selectedFounderUsername) {
+
+        showDialog(
+            "Kullanıcı Seçilmedi",
+            "Önce bir kullanıcı aratın.",
+            "warning"
+        );
+
+        return null;
+
+    }
+
+    if (!department) {
+
+        showDialog(
+            "Departman Seçilmedi",
+            "Kullanıcının departmanını seçin.",
+            "warning"
+        );
+
+        return null;
+
+    }
+
+    if (!token) {
+
+        showDialog(
+            "Oturum Gerekli",
+            "Bu işlem için giriş yapmanız gerekiyor.",
+            "warning"
+        );
+
+        return null;
+
+    }
+
+    try {
+
+        const response = await fetch(
+            `${window.location.origin}/api/founder/user/${encodeURIComponent(selectedFounderUsername)}/department`,
+            {
+                method: "PATCH",
+
+                headers: {
+                    "Authorization":
+                        `Bearer ${token}`,
+
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    department
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+
+            showDialog(
+                "Departman Güncellenemedi",
+                data.message ||
+                "Departman değiştirilemedi.",
+                "error"
+            );
+
+            return null;
+
+        }
+
+        return data;
+
+    } catch (err) {
+
+        console.error(
+            "Departman güncelleme hatası:",
+            err
+        );
+
+        showDialog(
+            "Bağlantı Hatası",
+            "Sunucuya bağlanılamadı.",
+            "error"
+        );
+
+        return null;
+
+    }
+
+}
+
 async function updateFounderProfileField(
     field,
     value
@@ -1010,9 +1035,24 @@ async function updateFounderProfileField(
 
 }
 
-founderSaveBadgeRankBtn?.addEventListener(
+founderSaveAllBtn?.addEventListener(
     "click",
     async () => {
+
+        if (!selectedFounderUsername) {
+
+            showDialog(
+                "Kullanıcı Seçilmedi",
+                "Önce bir kullanıcı aratın.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        const department =
+            founderDepartmentSelect.value;
 
         const badge =
             founderBadgeSelect.value;
@@ -1020,11 +1060,19 @@ founderSaveBadgeRankBtn?.addEventListener(
         const rank =
             founderRankSelect.value;
 
-        if (!selectedFounderUsername) {
+        const role =
+            founderRoleSelect.value;
+
+        if (
+            !department ||
+            !badge ||
+            !rank ||
+            !role
+        ) {
 
             showDialog(
-                "Kullanıcı Seçilmedi",
-                "Önce bir kullanıcı aratın.",
+                "Eksik Seçim",
+                "Departman, rozet, rütbe ve site rolü alanlarını doldurun.",
                 "warning"
             );
 
@@ -1032,11 +1080,32 @@ founderSaveBadgeRankBtn?.addEventListener(
 
         }
 
-        if (!badge) {
+        const changes = {
+            department:
+                department !==
+                selectedFounderOriginalData.department,
+
+            badge:
+                badge !==
+                selectedFounderOriginalData.badge,
+
+            rank:
+                rank !==
+                selectedFounderOriginalData.rank,
+
+            role:
+                role !==
+                selectedFounderOriginalData.role
+        };
+
+        const hasChanges =
+            Object.values(changes).some(Boolean);
+
+        if (!hasChanges) {
 
             showDialog(
-                "Rozet Seçilmedi",
-                "Kullanıcıya atanacak rozeti seçin.",
+                "Değişiklik Yok",
+                "Kullanıcı bilgilerinde herhangi bir değişiklik yapılmadı.",
                 "warning"
             );
 
@@ -1044,77 +1113,161 @@ founderSaveBadgeRankBtn?.addEventListener(
 
         }
 
-        if (!rank) {
+        founderSaveAllBtn.disabled = true;
 
-            showDialog(
-                "Rütbe Seçilmedi",
-                "Kullanıcıya atanacak rütbeyi seçin.",
-                "warning"
-            );
+        founderSaveAllBtn.textContent =
+            "Değişiklikler Kaydediliyor...";
 
-            return;
-
-        }
-
-        founderSaveBadgeRankBtn.disabled =
-            true;
-
-        founderSaveBadgeRankBtn.textContent =
-            "Kaydediliyor...";
+        const updatedFields = [];
+        const failedFields = [];
 
         try {
 
-            const currentBadge =
-                founderResultBadge.textContent.trim();
+            if (changes.department) {
 
-            const currentRank =
-                founderResultRank.textContent.trim();
+                const result =
+                    await updateFounderDepartment(
+                        department
+                    );
 
-            let changed = false;
+                if (result) {
 
-            if (currentBadge !== badge) {
+                    founderResultDepartment.textContent =
+                        result.department ||
+                        department;
 
-                const badgeResult =
+                    selectedFounderOriginalData.department =
+                        department;
+
+                    updatedFields.push(
+                        "Departman"
+                    );
+
+                } else {
+
+                    failedFields.push(
+                        "Departman"
+                    );
+
+                }
+
+            }
+
+            if (changes.badge) {
+
+                const result =
                     await updateFounderProfileField(
                         "badge",
                         badge
                     );
 
-                if (!badgeResult) {
-                    return;
+                if (result) {
+
+                    founderResultBadge.textContent =
+                        badge;
+
+                    selectedFounderOriginalData.badge =
+                        badge;
+
+                    updatedFields.push(
+                        "Rozet"
+                    );
+
+                } else {
+
+                    failedFields.push(
+                        "Rozet"
+                    );
+
                 }
-
-                founderResultBadge.textContent =
-                    badge;
-
-                changed = true;
 
             }
 
-            if (currentRank !== rank) {
+            if (changes.rank) {
 
-                const rankResult =
+                const result =
                     await updateFounderProfileField(
                         "rank",
                         rank
                     );
 
-                if (!rankResult) {
-                    return;
+                if (result) {
+
+                    founderResultRank.textContent =
+                        rank;
+
+                    selectedFounderOriginalData.rank =
+                        rank;
+
+                    updatedFields.push(
+                        "Rütbe"
+                    );
+
+                } else {
+
+                    failedFields.push(
+                        "Rütbe"
+                    );
+
                 }
-
-                founderResultRank.textContent =
-                    rank;
-
-                changed = true;
 
             }
 
-            if (!changed) {
+            if (changes.role) {
+
+                const result =
+                    await updateFounderProfileField(
+                        "role",
+                        role
+                    );
+
+                if (result) {
+
+                    founderResultRole.textContent =
+                        getFounderRoleText(role);
+
+                    selectedFounderOriginalData.role =
+                        role;
+
+                    updatedFields.push(
+                        "Site Rolü"
+                    );
+
+                } else {
+
+                    failedFields.push(
+                        "Site Rolü"
+                    );
+
+                }
+
+            }
+
+            await loadFounderLogs();
+
+            if (
+                updatedFields.length > 0 &&
+                failedFields.length === 0
+            ) {
 
                 showDialog(
-                    "Değişiklik Yok",
-                    "Rozet ve rütbe zaten seçilen değerlerde.",
+                    "Değişiklikler Kaydedildi",
+                    `${updatedFields.join(", ")} başarıyla güncellendi.`,
+                    "success"
+                );
+
+                return;
+
+            }
+
+            if (
+                updatedFields.length > 0 &&
+                failedFields.length > 0
+            ) {
+
+                showDialog(
+                    "Kısmen Güncellendi",
+                    `${updatedFields.join(", ")} güncellendi. ${failedFields.join(", ")} güncellenemedi.`,
                     "warning"
                 );
 
@@ -1122,102 +1275,21 @@ founderSaveBadgeRankBtn?.addEventListener(
 
             }
 
-            await loadFounderLogs();
-
             showDialog(
-                "Bilgiler Güncellendi",
-                "Kullanıcının rozet ve rütbe bilgileri kaydedildi.",
-                "success"
+                "Güncelleme Başarısız",
+                "Seçilen bilgiler güncellenemedi.",
+                "error"
             );
 
         } finally {
 
-            founderSaveBadgeRankBtn.disabled =
+            founderSaveAllBtn.disabled =
                 false;
 
-            founderSaveBadgeRankBtn.textContent =
-                "Rozet ve Rütbeyi Kaydet";
+            founderSaveAllBtn.textContent =
+                "💾 Tüm Değişiklikleri Kaydet";
 
         }
 
     }
-);
-
-founderSaveRoleBtn?.addEventListener(
-    "click",
-    async () => {
-
-        const role =
-            founderRoleSelect.value;
-
-        if (!selectedFounderUsername) {
-
-            showDialog(
-                "Kullanıcı Seçilmedi",
-                "Önce bir kullanıcı aratın.",
-                "warning"
-            );
-
-            return;
-
-        }
-
-        if (!role) {
-
-            showDialog(
-                "Rol Seçilmedi",
-                "Kullanıcıya atanacak site rolünü seçin.",
-                "warning"
-            );
-
-            return;
-
-        }
-
-        founderSaveRoleBtn.disabled =
-            true;
-
-        founderSaveRoleBtn.textContent =
-            "Kaydediliyor...";
-
-        try {
-
-            const data =
-                await updateFounderProfileField(
-                    "role",
-                    role
-                );
-
-            if (!data) {
-                return;
-            }
-
-            founderResultRole.textContent =
-                getFounderRoleText(role);
-
-            await loadFounderLogs();
-
-            showDialog(
-                "Site Rolü Güncellendi",
-                data.message ||
-                "Kullanıcının site rolü kaydedildi.",
-                "success"
-            );
-
-        } finally {
-
-            founderSaveRoleBtn.disabled =
-                false;
-
-            founderSaveRoleBtn.textContent =
-                "Site Rolünü Kaydet";
-
-        }
-
-    }
-);
-
-founderRefreshLogsBtn?.addEventListener(
-    "click",
-    loadFounderLogs
 );
