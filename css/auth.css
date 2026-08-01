@@ -277,3 +277,108 @@
     color: #fff;
     margin-bottom: 20px;
 }
+
+.auth-switch{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:6px;
+
+    margin-top:18px;
+
+    color:#cfcfcf;
+
+    font-size:14px;
+
+}
+
+.auth-switch button{
+
+    border:none;
+
+    background:none;
+
+    color:#f0c419;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    padding:0;
+
+}
+
+.auth-switch button:hover{
+
+    text-decoration:underline;
+
+}
+
+/* =====================================
+   AUTH POPUP TABLET + MOBİL
+===================================== */
+
+.auth-overlay {
+    padding: 18px;
+    overflow-y: auto;
+}
+
+.auth-popup {
+    max-height: calc(100svh - 36px);
+    overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+
+    .auth-overlay {
+        align-items: center;
+        padding: 12px;
+    }
+
+    .auth-popup {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 20px 24px;
+        border-radius: 17px;
+    }
+
+    .auth-logo {
+        width: 75px;
+        margin-bottom: 14px;
+    }
+
+    .auth-popup h2 {
+        font-size: 25px;
+    }
+
+    .auth-popup input {
+        height: 49px;
+        padding: 0 14px;
+        font-size: 16px;
+    }
+
+    .auth-main-btn {
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .verify-box {
+        padding: 15px 10px;
+        margin: 18px 0;
+    }
+
+    .verify-box h3 {
+        font-size: 20px;
+        letter-spacing: 1px;
+        overflow-wrap: anywhere;
+    }
+
+    .auth-switch {
+        flex-wrap: wrap;
+        line-height: 1.5;
+    }
+}

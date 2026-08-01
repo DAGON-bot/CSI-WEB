@@ -1033,3 +1033,25 @@ orgPopup.classList.remove("active");
 }
 
 }
+
+// =========================
+// MOBİL NAVBAR
+// =========================
+
+const menuToggle = document.getElementById("menuToggle");
+
+if(menuToggle){
+
+    menuToggle.addEventListener("click",()=>{
+
+        document
+            .querySelector(".nav-center")
+            ?.classList.toggle("active");
+
+        document
+            .querySelector(".nav-right")
+            ?.classList.toggle("active");
+
+    });
+
+}
