@@ -13,6 +13,7 @@ const {
     updateHabboInfo,
     setPassword,
     updateLastLogin,
+    completeRegistration,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
@@ -195,13 +196,18 @@ app.post("/api/register/password", async (req, res) => {
 
     try {
 
-        const { username, password } = req.body;
+        const {
+    username,
+    password,
+    badge,
+    rank
+} = req.body;
 
-        if (!username || !password) {
+        if (!username || !password || !badge || !rank) {
 
             return res.status(400).json({
                 success: false,
-                message: "Kullanıcı adı ve şifre gerekli."
+                message: "Kullanıcı adı, rozet, rütbe ve şifre bilgileri gerekli."
             });
 
         }
@@ -214,6 +220,26 @@ app.post("/api/register/password", async (req, res) => {
             });
 
         }
+
+        const cleanBadge =
+    String(badge || "").trim();
+
+const cleanRank =
+    String(rank || "").trim();
+
+if (cleanBadge.length > 80) {
+    return res.status(400).json({
+        success: false,
+        message: "Rozet adı çok uzun."
+    });
+}
+
+if (cleanRank.length < 2 || cleanRank.length > 80) {
+    return res.status(400).json({
+        success: false,
+        message: "Rütbe adı 2 ile 80 karakter arasında olmalı."
+    });
+}
 
         const user = await getUser(username);
 
@@ -246,7 +272,12 @@ app.post("/api/register/password", async (req, res) => {
 
         const passwordHash = await bcrypt.hash(password, 12);
 
-        await setPassword(username, passwordHash);
+        await completeRegistration(
+    username,
+    passwordHash,
+    cleanBadge,
+    cleanRank
+);
 
         const token = generateToken(username);
 
@@ -423,6 +454,8 @@ app.get("/api/me", async (req, res) => {
                 figureString: user.figureString,
                 motto: user.motto || "",
                 role: user.role || "member",
+                badge: user.badge || "",
+                rank: user.rank || "",
                 verified: !!user.verified,
                 createdAt: user.createdAt,
                 lastLogin: user.lastLogin
@@ -508,6 +541,8 @@ app.post("/api/profile/refresh", async (req, res) => {
                 figureString: updatedUser.figureString,
                 motto: updatedUser.motto || "",
                 role: updatedUser.role || "member",
+                badge: updatedUser.badge || "",
+                rank: updatedUser.rank || "",
                 verified: !!updatedUser.verified,
                 createdAt: updatedUser.createdAt,
                 lastLogin: updatedUser.lastLogin

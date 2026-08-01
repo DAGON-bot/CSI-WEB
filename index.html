@@ -916,6 +916,16 @@ class="main-btn">
             </div>
 
             <div class="profile-info-card">
+    <span>Rozet</span>
+    <strong id="profileBadge">-</strong>
+</div>
+
+<div class="profile-info-card">
+    <span>Rütbe</span>
+    <strong id="profileRank">-</strong>
+</div>
+
+            <div class="profile-info-card">
                 <span>Kayıt Tarihi</span>
                 <strong id="profileCreatedAt">-</strong>
             </div>
@@ -923,13 +933,6 @@ class="main-btn">
             <div class="profile-info-card">
                 <span>Son Giriş</span>
                 <strong id="profileLastLogin">-</strong>
-            </div>
-
-            <div class="profile-info-card profile-badge-card">
-                <span>Aktif Rozet</span>
-                <strong id="profileBadge">
-                    Henüz alınmadı
-                </strong>
             </div>
 
         </div>
@@ -1071,6 +1074,51 @@ class="main-btn">
         <div id="passwordArea" style="display:none;">
 
     <h3>Şifre Oluştur</h3>
+
+    <select id="registerBadge">
+
+    <option value="">Rozetinizi Seçin</option>
+    <option value="Standart Rütbeler">Standart Rütbeler</option>
+    <option value="Güvenlik Ekibi">Güvenlik Ekibi</option>
+    <option value="Eğitim Ekibi">Eğitim Ekibi</option>
+    <option value="Yasal İşler Bakanlığı">Yasal İşler Bakanlığı</option>
+    <option value="Yüksek Rütbe">Yüksek Rütbe</option>
+    <option value="Diplomatlar">Diplomatlar</option>
+    <option value="Operasyon Yetkilileri">Operasyon Yetkilileri</option>
+    <option value="Dış İşler Bakanlığı">Dış İşler Bakanlığı</option>
+    <option value="Yönetim Bürosu">Yönetim Bürosu</option>
+    <option value="Müdürler">Müdürler</option>
+    <option value="Halk ve İlişkiler Bölümü">Halk ve İlişkiler Bölümü</option>
+    <option value="Üst Düzey Yönetim">Üst Düzey Yönetim</option>
+    <option value="Leadership">Leadership</option>
+    <option value="Soruşturma Bürosu">Soruşturma Bürosu</option>
+    <option value="Kriminal İnceleme Birimi">Kriminal İnceleme Birimi</option>
+    <option value="Görevliler">Görevliler</option>
+    <option value="Bakanlar">Bakanlar</option>
+    <option value="İstihbarat Bölümü">İstihbarat Bölümü</option>
+    <option value="Cumhurbaşkanları">Cumhurbaşkanları</option>
+    <option value="Eş Sahip">Eş Sahip</option>
+    <option value="Direktör">Direktör</option>
+    <option value="Oda Moderatörü">Oda Moderatörü</option>
+    <option value="Oda Denetleyicisi">Oda Denetleyicisi</option>
+    <option value="Oda Temsilcisi">Oda Temsilcisi</option>
+    <option value="Üst Düzey Liderler">Üst Düzey Liderler</option>
+    <option value="Oda Yöneticisi">Oda Yöneticisi</option>
+    <option value="Black Room">Black Room</option>
+    <option value="White Room">White Room</option>
+    <option value="Founders">Founders</option>
+    <option value="AS Kurucu">AS Kurucu</option>
+    <option value="Üst Kurucu">Üst Kurucu</option>
+    <option value="Co-Owner">Co-Owner</option>
+    <option value="Owner">Owner</option>
+
+</select>
+
+<input
+    type="text"
+    id="registerRank"
+    maxlength="80"
+    placeholder="Rütbenizi Yazın">
 
     <input
         type="password"

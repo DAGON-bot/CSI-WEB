@@ -5,6 +5,12 @@ const registerPassword = document.getElementById("registerPassword");
 const registerPassword2 = document.getElementById("registerPassword2");
 const savePasswordBtn = document.getElementById("savePasswordBtn");
 
+const registerBadge =
+    document.getElementById("registerBadge");
+
+const registerRank =
+    document.getElementById("registerRank");
+
 const profileBtn = document.getElementById("profileBtn");
 const profileMenuWrapper = document.getElementById("profileMenuWrapper");
 const profileDropdown = document.getElementById("profileDropdown");
@@ -310,6 +316,9 @@ passwordResetToken = "";
         registerPassword.value = "";
         registerPassword2.value = "";
 
+        registerBadge.value = "";
+        registerRank.value = "";
+
         title.textContent = "CSI Kayıt Sistemi";
         subtitle.textContent =
         "Habbo kullanıcı adınızı girerek hesabınızı doğrulayın.";
@@ -326,6 +335,9 @@ passwordResetToken = "";
 
         registerPassword.value = "";
         registerPassword2.value = "";  
+
+        registerBadge.value = "";
+        registerRank.value = "";
 
         title.textContent = "CSI Giriş Sistemi";
         subtitle.textContent =
@@ -598,6 +610,20 @@ savePasswordBtn?.addEventListener("click", async (e) => {
 
     const password = registerPassword.value.trim();
     const passwordAgain = registerPassword2.value.trim();
+    const badge = registerBadge.value.trim();
+    const rank = registerRank.value.trim();
+
+    if (!badge || !rank) {
+
+    showDialog(
+        "Eksik Bilgi",
+        "Rozetinizi seçin ve rütbenizi yazın.",
+        "warning"
+    );
+
+    return;
+}
+
 
     if (!password || !passwordAgain) {
 
@@ -643,9 +669,11 @@ savePasswordBtn?.addEventListener("click", async (e) => {
             },
 
             body: JSON.stringify({
-                username,
-                password
-            })
+    username,
+    password,
+    badge,
+    rank
+})
 
         });
 
