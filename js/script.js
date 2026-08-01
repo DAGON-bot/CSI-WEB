@@ -1083,35 +1083,113 @@ if(menuToggle){
 
 }
 
-function updateActiveNavbarLink() {
+// =========================
+// NAVBAR AKTİF BÖLÜM TAKİBİ
+// =========================
 
-    const currentHash =
-        window.location.hash || "#hero";
+const navLinks =
+    document.querySelectorAll(".nav-btn");
 
-    const navbarLinks =
-        document.querySelectorAll(".nav-btn");
+const navSections = [];
 
-    navbarLinks.forEach((link) => {
+navLinks.forEach((link) => {
 
+    const href =
+        link.getAttribute("href");
+
+    if (
+        !href ||
+        !href.startsWith("#")
+    ) {
+        return;
+    }
+
+    const section =
+        document.querySelector(href);
+
+    if (!section) {
+        return;
+    }
+
+    navSections.push({
+        link,
+        section
+    });
+
+});
+
+
+function setActiveNavLink(activeLink) {
+
+    navLinks.forEach((link) => {
         link.classList.remove("active");
+    });
+
+    activeLink?.classList.add("active");
+
+}
+
+
+function updateActiveNavOnScroll() {
+
+    if (navSections.length === 0) {
+        return;
+    }
+
+    const scrollPoint =
+        window.scrollY + 180;
+
+    let activeItem =
+        navSections[0];
+
+    navSections.forEach((item) => {
 
         if (
-            link.getAttribute("href") === currentHash
+            item.section.offsetTop <=
+            scrollPoint
         ) {
 
-            link.classList.add("active");
+            activeItem = item;
 
         }
 
     });
 
+    setActiveNavLink(
+        activeItem.link
+    );
+
 }
+
+
+navLinks.forEach((link) => {
+
+    link.addEventListener(
+        "click",
+        () => {
+
+            setActiveNavLink(link);
+
+        }
+    );
+
+});
+
+
 window.addEventListener(
-    "hashchange",
-    updateActiveNavbarLink
+    "scroll",
+    updateActiveNavOnScroll,
+    {
+        passive: true
+    }
+);
+
+window.addEventListener(
+    "load",
+    updateActiveNavOnScroll
 );
 
 document.addEventListener(
     "DOMContentLoaded",
-    updateActiveNavbarLink
+    updateActiveNavOnScroll
 );
