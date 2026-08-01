@@ -13,7 +13,7 @@ const profileSettingsBtn = document.getElementById("profileSettingsBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const managementPanelNav = document.getElementById("managementPanelNav");
 const managementPanel = document.getElementById("panel");
-const API_URL = "https://csi-web-letg.onrender.com";
+const API_URL = window.location.origin;
 
 let isAuthenticated = false;
 
