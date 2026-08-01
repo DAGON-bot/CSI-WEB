@@ -285,6 +285,7 @@ const rankData = {
 ],
 
 "Founders": [
+    "Founders",
     "1. Kurucu",
     "2. Kurucu",
     "3. Kurucu",
