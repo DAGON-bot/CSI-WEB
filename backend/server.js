@@ -7,6 +7,7 @@ const { generateToken } = require("./services/jwtService");
 const { getHabbo } = require("./services/habboService");
 const {
     getUser,
+    searchUsersByUsername,
     createUser,
     verifyUser,
     getVerifyCode,
@@ -1709,6 +1710,78 @@ app.get(
                 success: false,
                 message:
                     "İşlem geçmişi alınamadı."
+            });
+
+        }
+
+    }
+);
+
+app.get(
+    "/api/founder/users/search",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedFounder(req);
+
+            if (authorization.error) {
+
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+
+            }
+
+            const query =
+                String(req.query.q || "").trim();
+
+            if (query.length < 2) {
+
+                return res.json({
+                    success: true,
+                    users: []
+                });
+
+            }
+
+            if (query.length > 80) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Arama metni çok uzun."
+                });
+
+            }
+
+            const users =
+                await searchUsersByUsername(
+                    query,
+                    8
+                );
+
+            return res.json({
+                success: true,
+                users
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Kullanıcı öneri arama hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Kullanıcı önerileri alınamadı."
             });
 
         }

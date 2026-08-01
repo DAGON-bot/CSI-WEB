@@ -12,6 +12,41 @@ async function getUser(username) {
     return result.rows[0];
 }
 
+async function searchUsersByUsername(
+    searchText,
+    limit = 8
+) {
+
+    const result = await pool.query(
+        `SELECT
+            username,
+            badge,
+            rank,
+            department
+         FROM users
+         WHERE username ILIKE $1
+         ORDER BY
+            CASE
+                WHEN LOWER(username) = LOWER($2)
+                    THEN 0
+                WHEN LOWER(username) LIKE LOWER($3)
+                    THEN 1
+                ELSE 2
+            END,
+            username ASC
+         LIMIT $4`,
+        [
+            `%${searchText}%`,
+            searchText,
+            `${searchText}%`,
+            limit
+        ]
+    );
+
+    return result.rows;
+
+}
+
 async function createUser(username, verifyCode) {
     const result = await pool.query(
         `INSERT INTO users (username, "verifyCode")
@@ -384,6 +419,7 @@ async function completePasswordReset(username, resetToken, passwordHash) {
 
 module.exports = {
     getUser,
+    searchUsersByUsername,
     createUser,
     verifyUser,
     getVerifyCode,

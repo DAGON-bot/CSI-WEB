@@ -10,6 +10,11 @@ const founderPanelClose =
 const founderSearchUsername =
     document.getElementById("founderSearchUsername");
 
+const founderUsernameSuggestions =
+    document.getElementById(
+        "founderUsernameSuggestions"
+    );
+
 const founderSearchBtn =
     document.getElementById("founderSearchBtn");
 
@@ -117,12 +122,27 @@ let founderAdminLogs = [];
 let founderLogsCurrentPage = 1;
 let founderLogsItemsPerPage = 10;
 
+let founderUsernameSearchTimer = null;
+let founderUsernameSearchController = null;
+
 let selectedFounderOriginalData = {
     department: "",
     badge: "",
     rank: "",
     role: "member"
 };
+
+function closeFounderUsernameSuggestions() {
+
+    if (!founderUsernameSuggestions) {
+        return;
+    }
+
+    founderUsernameSuggestions.innerHTML = "";
+    founderUsernameSuggestions.style.display =
+        "none";
+
+}
 
 function fillFounderBadgeOptions() {
 
@@ -144,6 +164,93 @@ function fillFounderBadgeOptions() {
         founderBadgeSelect.appendChild(option);
 
     });
+
+}
+
+function renderFounderUsernameSuggestions(
+    users
+) {
+
+    if (!founderUsernameSuggestions) {
+        return;
+    }
+
+    founderUsernameSuggestions.innerHTML = "";
+
+    if (
+        !Array.isArray(users) ||
+        users.length === 0
+    ) {
+
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "founder-username-suggestion-empty";
+
+        empty.textContent =
+            "Benzer kullanıcı bulunamadı.";
+
+        founderUsernameSuggestions.appendChild(
+            empty
+        );
+
+        founderUsernameSuggestions.style.display =
+            "block";
+
+        return;
+
+    }
+
+    users.forEach((user) => {
+
+        const item =
+            document.createElement("button");
+
+        item.type = "button";
+        item.className =
+            "founder-username-suggestion-item";
+
+        item.innerHTML = `
+            <strong>
+                ${escapeFounderHtml(
+                    user.username || ""
+                )}
+            </strong>
+
+            <span>
+                ${escapeFounderHtml(
+                    user.badge || "Rozet yok"
+                )}
+                ·
+                ${escapeFounderHtml(
+                    user.rank || "Rütbe yok"
+                )}
+            </span>
+        `;
+
+        item.addEventListener(
+            "click",
+            () => {
+
+                founderSearchUsername.value =
+                    user.username || "";
+
+                closeFounderUsernameSuggestions();
+
+                searchFounderUser();
+
+            }
+        );
+
+        founderUsernameSuggestions.appendChild(
+            item
+        );
+
+    });
+
+    founderUsernameSuggestions.style.display =
+        "block";
 
 }
 
@@ -790,6 +897,8 @@ selectedFounderOriginalData = {
     rank: "",
     role: "member"
 };
+
+closeFounderUsernameSuggestions();
 
 }
 
@@ -1574,6 +1683,44 @@ founderLogsPageSize?.addEventListener(
         founderLogsCurrentPage = 1;
 
         renderFounderLogs();
+
+    }
+);
+
+founderSearchUsername?.addEventListener(
+    "input",
+    () => {
+
+        clearTimeout(
+            founderUsernameSearchTimer
+        );
+
+        founderUsernameSearchTimer =
+            setTimeout(
+                loadFounderUsernameSuggestions,
+                300
+            );
+
+    }
+);
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        const wrapper =
+            founderSearchUsername?.closest(
+                ".founder-search-input-wrapper"
+            );
+
+        if (
+            wrapper &&
+            !wrapper.contains(event.target)
+        ) {
+
+            closeFounderUsernameSuggestions();
+
+        }
 
     }
 );
