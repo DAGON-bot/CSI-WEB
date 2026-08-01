@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/founderPanel.css">
     <link rel="stylesheet" href="css/dialog.css">
 </head>
 
@@ -52,6 +53,16 @@
             <i class="fa-solid fa-shield-halved"></i>
             YÖNETİM PANELİ
         </a>
+
+        <button
+    type="button"
+    id="founderPanelNav"
+    class="nav-btn founder-panel-nav"
+    style="display:none;">
+
+    👑 KURUCU PANELİ
+
+</button>
 
     </div>
 
@@ -859,6 +870,130 @@ class="main-btn">
 
 </div>
 
+<!-- ================= KURUCU PANELİ ================= -->
+
+<div id="founderPanelOverlay" class="founder-panel-overlay">
+
+    <div class="founder-panel-popup">
+
+        <button
+            type="button"
+            id="founderPanelClose"
+            class="founder-panel-close">
+
+            ✕
+
+        </button>
+
+        <div class="founder-panel-header">
+
+            <span>CSI YÖNETİM</span>
+
+            <h2>Kurucu Paneli</h2>
+
+            <p>
+                Sisteme kayıtlı kullanıcıların profil bilgilerini görüntüleyin.
+            </p>
+
+        </div>
+
+        <div class="founder-search-area">
+
+            <input
+                type="text"
+                id="founderSearchUsername"
+                maxlength="80"
+                placeholder="Habbo nickname yazın">
+
+            <button
+                type="button"
+                id="founderSearchBtn">
+
+                Kullanıcıyı Ara
+
+            </button>
+
+        </div>
+
+        <div
+            id="founderSearchResult"
+            class="founder-search-result"
+            style="display:none;">
+
+            <div class="founder-result-header">
+
+                <div class="founder-avatar-box">
+
+                    <img
+                        id="founderResultAvatar"
+                        src=""
+                        alt="Habbo Avatarı">
+
+                </div>
+
+                <div>
+
+                    <span class="founder-result-label">
+                        KULLANICI PROFİLİ
+                    </span>
+
+                    <h3 id="founderResultUsername">
+                        Kullanıcı
+                    </h3>
+
+                    <p id="founderResultMotto">
+                        Motto bulunamadı.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="founder-result-grid">
+
+                <div class="founder-result-card">
+                    <span>Habbo ID</span>
+                    <strong id="founderResultHabboId">-</strong>
+                </div>
+
+                <div class="founder-result-card">
+                    <span>Rozet</span>
+                    <strong id="founderResultBadge">-</strong>
+                </div>
+
+                <div class="founder-result-card">
+                    <span>Rütbe</span>
+                    <strong id="founderResultRank">-</strong>
+                </div>
+
+                <div class="founder-result-card">
+                    <span>Site Rolü</span>
+                    <strong id="founderResultRole">-</strong>
+                </div>
+
+                <div class="founder-result-card">
+                    <span>Kayıt Tarihi</span>
+                    <strong id="founderResultCreatedAt">-</strong>
+                </div>
+
+                <div class="founder-result-card">
+                    <span>Son Giriş</span>
+                    <strong id="founderResultLastLogin">-</strong>
+                </div>
+
+                <div class="founder-result-card">
+                    <span>Hesap Doğrulaması</span>
+                    <strong id="founderResultVerified">-</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 <!-- ================= PROFİL POPUP ================= -->
 
 <div id="profileOverlay" class="profile-overlay">
@@ -1305,6 +1440,7 @@ class="main-btn">
 <script src="js/dialog.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/founderPanel.js"></script>
 <script src="js/organization.js"></script>
 
 

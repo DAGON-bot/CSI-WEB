@@ -687,6 +687,121 @@ app.post("/api/profile/change-password", async (req, res) => {
 
 });
 
+// ===============================
+// KURUCU PANELİ - KULLANICI ARA
+// ===============================
+
+app.get("/api/founder/user/:username", async (req, res) => {
+
+    const auth = req.headers.authorization;
+
+    if (!auth || !auth.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Oturum açmanız gerekiyor."
+        });
+    }
+
+    const token = auth.replace("Bearer ", "").trim();
+
+    try {
+
+        const tokenUser =
+            require("./services/jwtService").verifyToken(token);
+
+        const requesterUsername =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!requesterUsername) {
+            return res.status(401).json({
+                success: false,
+                message: "Geçersiz oturum bilgisi."
+            });
+        }
+
+        const requester = await getUser(requesterUsername);
+
+        if (!requester) {
+            return res.status(404).json({
+                success: false,
+                message: "Oturum sahibi bulunamadı."
+            });
+        }
+
+        const founderPanelRoles = [
+    "admin",
+    "founder"
+];
+
+if (!founderPanelRoles.includes(requester.role)) {
+    return res.status(403).json({
+        success: false,
+        message: "Kurucu paneline erişim yetkiniz yok."
+    });
+}
+
+        const searchedUsername =
+            String(req.params.username || "").trim();
+
+        if (!searchedUsername) {
+            return res.status(400).json({
+                success: false,
+                message: "Aranacak nickname gerekli."
+            });
+        }
+
+        if (searchedUsername.length > 80) {
+            return res.status(400).json({
+                success: false,
+                message: "Nickname çok uzun."
+            });
+        }
+
+        const searchedUser =
+            await getUser(searchedUsername);
+
+        if (!searchedUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Bu nickname ile kayıtlı kullanıcı bulunamadı."
+            });
+        }
+
+        return res.json({
+            success: true,
+            user: {
+                username: searchedUser.username,
+                habboId: searchedUser.habboId,
+                figureString: searchedUser.figureString,
+                motto: searchedUser.motto || "",
+                badge: searchedUser.badge || "",
+                rank: searchedUser.rank || "",
+                role: searchedUser.role || "member",
+                verified: !!searchedUser.verified,
+                createdAt: searchedUser.createdAt,
+                lastLogin: searchedUser.lastLogin
+            }
+        });
+
+    } catch (err) {
+
+        console.error(
+            "Kurucu paneli kullanıcı arama hatası:",
+            err
+        );
+
+        return res.status(401).json({
+            success: false,
+            message: "Oturum geçersiz veya süresi dolmuş."
+        });
+
+    }
+
+});
+
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
