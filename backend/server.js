@@ -1023,6 +1023,19 @@ app.patch(
 
 }
 
+if (
+    requester.role === "founder" &&
+    targetUser.role === "founder"
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Kurucular, başka bir kurucunun profil bilgilerini değiştiremez."
+    });
+
+}
+
 
             const updatedUser =
                 await updateDepartment(
@@ -1178,6 +1191,19 @@ app.patch(
         success: false,
         message:
             "Admin hesabının rütbesi değiştirilemez."
+    });
+
+}
+
+if (
+    requester.role === "founder" &&
+    targetUser.role === "founder"
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Kurucular, başka bir kurucunun rütbesini değiştiremez."
     });
 
 }
@@ -1370,6 +1396,22 @@ app.patch(
 
 }
 
+const promotionTargetUser =
+    await getUser(username);
+
+if (
+    requester.role === "founder" &&
+    promotionTargetUser?.role === "founder"
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            `${promotionTargetUser.username} kurucu rolüne sahip olduğu için değiştirilemez.`
+    });
+
+}
+
                 cleanedPromotions.push({
                     username,
                     newRank
@@ -1516,6 +1558,19 @@ app.patch(
         success: false,
         message:
             "Admin hesabının profil bilgileri değiştirilemez."
+    });
+
+}
+
+if (
+    requester.role === "founder" &&
+    targetUser.role === "founder"
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Kurucular, başka bir kurucunun profil bilgilerini değiştiremez."
     });
 
 }
