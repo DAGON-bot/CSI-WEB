@@ -12,7 +12,11 @@ const {
     getVerifyCode,
     updateHabboInfo,
     setPassword,
-    updateLastLogin
+    updateLastLogin,
+    createPasswordReset,
+    getPasswordReset,
+    verifyPasswordReset,
+    completePasswordReset
 } = require("./models/userModel");
 
 const { initDatabase } = require("./database/db");
@@ -20,6 +24,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 const app = express();
 
@@ -413,5 +418,193 @@ async function startServer() {
         process.exit(1);
     }
 }
+
+// ===============================
+// ŞİFRE SIFIRLAMA - KOD OLUŞTUR
+// ===============================
+
+app.post("/api/password-reset/create", async (req, res) => {
+    try {
+        const username = String(req.body.username || "").trim();
+
+        if (!username) {
+            return res.status(400).json({
+                success: false,
+                message: "Habbo kullanıcı adı gerekli."
+            });
+        }
+
+        const user = await getUser(username);
+
+        if (!user || !user.password || !user.verified) {
+            return res.status(404).json({
+                success: false,
+                message: "Bu kullanıcı adına ait kayıtlı bir hesap bulunamadı."
+            });
+        }
+
+        const habbo = await getHabbo(username);
+
+        if (!habbo || !habbo.name) {
+            return res.status(404).json({
+                success: false,
+                message: "Habbo kullanıcısı bulunamadı."
+            });
+        }
+
+        const resetCode =
+            "CSI-RESET-" +
+            crypto.randomBytes(4).toString("hex").toUpperCase();
+
+        await createPasswordReset(username, resetCode);
+
+        return res.json({
+            success: true,
+            code: resetCode,
+            message: "Şifre sıfırlama kodu oluşturuldu."
+        });
+
+    } catch (err) {
+        console.error("Şifre sıfırlama kodu hatası:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Sunucu hatası."
+        });
+    }
+});
+
+
+// ===============================
+// ŞİFRE SIFIRLAMA - MOTTO KONTROL
+// ===============================
+
+app.post("/api/password-reset/check", async (req, res) => {
+    try {
+        const username = String(req.body.username || "").trim();
+
+        if (!username) {
+            return res.status(400).json({
+                success: false,
+                message: "Habbo kullanıcı adı gerekli."
+            });
+        }
+
+        const resetData = await getPasswordReset(username);
+
+        if (
+            !resetData ||
+            !resetData.resetCode ||
+            !resetData.resetExpiresAt
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Aktif bir şifre sıfırlama isteği bulunamadı."
+            });
+        }
+
+        if (new Date(resetData.resetExpiresAt).getTime() < Date.now()) {
+            return res.status(400).json({
+                success: false,
+                message: "Şifre sıfırlama kodunun süresi dolmuş. Yeni kod oluşturun."
+            });
+        }
+
+        const habbo = await getHabbo(username);
+        const motto = habbo?.motto || "";
+
+        if (!motto.includes(resetData.resetCode)) {
+            return res.status(400).json({
+                success: false,
+                message: "Şifre sıfırlama kodu Habbo mottosunda bulunamadı."
+            });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        const verified = await verifyPasswordReset(
+            username,
+            resetToken
+        );
+
+        if (!verified) {
+            return res.status(400).json({
+                success: false,
+                message: "Kod doğrulanamadı veya kodun süresi doldu."
+            });
+        }
+
+        return res.json({
+            success: true,
+            resetToken,
+            message: "Hesap doğrulandı. Yeni şifrenizi oluşturabilirsiniz."
+        });
+
+    } catch (err) {
+        console.error("Şifre sıfırlama doğrulama hatası:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Sunucu hatası."
+        });
+    }
+});
+
+
+// ===============================
+// ŞİFRE SIFIRLAMA - YENİ ŞİFRE
+// ===============================
+
+app.post("/api/password-reset/complete", async (req, res) => {
+    try {
+        const username = String(req.body.username || "").trim();
+        const password = String(req.body.password || "");
+        const resetToken = String(req.body.resetToken || "");
+
+        if (!username || !password || !resetToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Eksik bilgi gönderildi."
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Şifre en az 6 karakter olmalı."
+            });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        const completed = await completePasswordReset(
+            username,
+            resetToken,
+            passwordHash
+        );
+
+        if (!completed) {
+            return res.status(403).json({
+                success: false,
+                message: "Şifre sıfırlama yetkisi geçersiz veya süresi dolmuş."
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: "Şifreniz başarıyla yenilendi."
+        });
+
+    } catch (err) {
+        console.error("Yeni şifre kaydetme hatası:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Sunucu hatası."
+        });
+    }
+});
+
+
 
 startServer();

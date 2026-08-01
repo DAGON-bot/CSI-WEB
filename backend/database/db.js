@@ -28,6 +28,14 @@ async function initDatabase() {
         )
     `);
 
+     await pool.query(`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS "resetCode" TEXT,
+        ADD COLUMN IF NOT EXISTS "resetExpiresAt" TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS "resetToken" TEXT,
+        ADD COLUMN IF NOT EXISTS "resetVerifiedAt" TIMESTAMPTZ
+    `);
+
     console.log("PostgreSQL bağlandı.");
 }
 

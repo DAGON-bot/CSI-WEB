@@ -908,6 +908,16 @@ class="main-btn">
 
 </button>
 
+<button
+    type="button"
+    id="forgotPasswordBtn"
+    class="forgot-password-btn"
+    style="display:none;">
+
+    Şifremi Unuttum
+
+</button>
+
         <div
             id="verifyArea"
             style="display:none;">
@@ -953,19 +963,86 @@ class="main-btn">
         placeholder="Şifre Tekrar">
 
     <button
-    type="button"
-    id="savePasswordBtn"
-    class="auth-main-btn">
+        type="button"
+        id="savePasswordBtn"
+        class="auth-main-btn">
 
-    Hesabı Oluştur
+        Hesabı Oluştur
 
-</button>
+    </button>
 
 </div>
+
+
+<!-- ŞİFRE SIFIRLAMA BAŞLANGIÇ -->
+
+<div id="resetStartArea" style="display:none;">
+
+    <button
+        type="button"
+        id="resetCreateCodeBtn"
+        class="auth-main-btn">
+
+        Şifre Sıfırlama Kodu Oluştur
+
+    </button>
+
+</div>
+
+
+<div id="resetVerifyArea" style="display:none;">
+
+    <div class="verify-box">
+
+        <span>Şifre Sıfırlama Kodunuz</span>
+
+        <h3 id="resetVerifyCode"></h3>
 
     </div>
 
+    <p class="verify-info">
+        Yukarıdaki kodu Habbo mottonuza yazın ve ardından doğrulayın.
+        Kod 10 dakika boyunca geçerlidir.
+    </p>
+
+    <button
+        type="button"
+        id="resetVerifyBtn"
+        class="auth-main-btn">
+
+        Kodu Doğrula
+
+    </button>
+
 </div>
+
+
+<div id="resetPasswordArea" style="display:none;">
+
+    <h3>Yeni Şifre Oluştur</h3>
+
+    <input
+        type="password"
+        id="resetPassword"
+        placeholder="Yeni Şifre">
+
+    <input
+        type="password"
+        id="resetPassword2"
+        placeholder="Yeni Şifre Tekrar">
+
+    <button
+        type="button"
+        id="resetSavePasswordBtn"
+        class="auth-main-btn">
+
+        Şifreyi Yenile
+
+    </button>
+
+</div>
+
+<!-- ŞİFRE SIFIRLAMA BİTİŞ -->
 
 
 <!--=========================================
