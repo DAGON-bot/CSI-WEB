@@ -371,33 +371,281 @@ if (!passwordCorrect) {
 
 });
 
-app.get("/api/me", (req, res) => {
+// ===============================
+// OTURUMDAKİ KULLANICI BİLGİLERİ
+// ===============================
+
+app.get("/api/me", async (req, res) => {
 
     const auth = req.headers.authorization;
 
-    if (!auth) {
+    if (!auth || !auth.startsWith("Bearer ")) {
         return res.status(401).json({
             success: false,
             message: "Token bulunamadı."
         });
     }
 
-    const token = auth.replace("Bearer ", "");
+    const token = auth.replace("Bearer ", "").trim();
 
     try {
 
-        const user = require("./services/jwtService").verifyToken(token);
+        const tokenUser =
+            require("./services/jwtService").verifyToken(token);
 
-        res.json({
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+            return res.status(401).json({
+                success: false,
+                message: "Token içinde kullanıcı bilgisi bulunamadı."
+            });
+        }
+
+        const user = await getUser(username);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Kullanıcı bulunamadı."
+            });
+        }
+
+        return res.json({
             success: true,
-            user
+            user: {
+                username: user.username,
+                habboId: user.habboId,
+                figureString: user.figureString,
+                motto: user.motto || "",
+                role: user.role || "member",
+                verified: !!user.verified,
+                createdAt: user.createdAt,
+                lastLogin: user.lastLogin
+            }
         });
 
-    } catch {
+    } catch (err) {
 
-        res.status(401).json({
+        console.error("Oturum bilgisi hatası:", err);
+
+        return res.status(401).json({
             success: false,
             message: "Geçersiz token."
+        });
+
+    }
+
+});
+
+// ===============================
+// PROFİL - HABBO BİLGİLERİNİ YENİLE
+// ===============================
+
+app.post("/api/profile/refresh", async (req, res) => {
+
+    const auth = req.headers.authorization;
+
+    if (!auth || !auth.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Oturum açmanız gerekiyor."
+        });
+    }
+
+    const token = auth.replace("Bearer ", "").trim();
+
+    try {
+
+        const tokenUser =
+            require("./services/jwtService").verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+            return res.status(401).json({
+                success: false,
+                message: "Kullanıcı bilgisi bulunamadı."
+            });
+        }
+
+        const user = await getUser(username);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Kullanıcı bulunamadı."
+            });
+        }
+
+        const habbo = await getHabbo(user.username);
+
+        if (!habbo || !habbo.name) {
+            return res.status(404).json({
+                success: false,
+                message: "Habbo profili bulunamadı."
+            });
+        }
+
+        await updateHabboInfo(user.username, habbo);
+
+        const updatedUser = await getUser(user.username);
+
+        return res.json({
+            success: true,
+            message: "Habbo bilgileri güncellendi.",
+            user: {
+                username: updatedUser.username,
+                habboId: updatedUser.habboId,
+                figureString: updatedUser.figureString,
+                motto: updatedUser.motto || "",
+                role: updatedUser.role || "member",
+                verified: !!updatedUser.verified,
+                createdAt: updatedUser.createdAt,
+                lastLogin: updatedUser.lastLogin
+            }
+        });
+
+    } catch (err) {
+
+        console.error("Profil yenileme hatası:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Profil bilgileri yenilenemedi."
+        });
+
+    }
+
+});
+
+// ===============================
+// PROFİL - ŞİFRE DEĞİŞTİR
+// ===============================
+
+app.post("/api/profile/change-password", async (req, res) => {
+
+    const auth = req.headers.authorization;
+
+    if (!auth || !auth.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Oturum açmanız gerekiyor."
+        });
+    }
+
+    const token = auth.replace("Bearer ", "").trim();
+
+    try {
+
+        const tokenUser =
+            require("./services/jwtService").verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        const currentPassword =
+            String(req.body.currentPassword || "");
+
+        const newPassword =
+            String(req.body.newPassword || "");
+
+        const newPasswordAgain =
+            String(req.body.newPasswordAgain || "");
+
+        if (
+            !username ||
+            !currentPassword ||
+            !newPassword ||
+            !newPasswordAgain
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Bütün şifre alanlarını doldurun."
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Yeni şifre en az 6 karakter olmalı."
+            });
+        }
+
+        if (newPassword !== newPasswordAgain) {
+            return res.status(400).json({
+                success: false,
+                message: "Yeni şifreler eşleşmiyor."
+            });
+        }
+
+        if (currentPassword === newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Yeni şifre mevcut şifreyle aynı olamaz."
+            });
+        }
+
+        const user = await getUser(username);
+
+        if (!user || !user.password) {
+            return res.status(404).json({
+                success: false,
+                message: "Kullanıcı hesabı bulunamadı."
+            });
+        }
+
+        let passwordCorrect = false;
+
+        if (user.password.startsWith("$2")) {
+
+            passwordCorrect = await bcrypt.compare(
+                currentPassword,
+                user.password
+            );
+
+        } else {
+
+            passwordCorrect =
+                user.password === currentPassword;
+
+        }
+
+        if (!passwordCorrect) {
+            return res.status(401).json({
+                success: false,
+                message: "Mevcut şifreniz yanlış."
+            });
+        }
+
+        const passwordHash =
+            await bcrypt.hash(newPassword, 12);
+
+        await setPassword(username, passwordHash);
+
+        return res.json({
+            success: true,
+            message: "Şifreniz başarıyla değiştirildi."
+        });
+
+    } catch (err) {
+
+        console.error("Şifre değiştirme hatası:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Şifre değiştirilemedi."
         });
 
     }

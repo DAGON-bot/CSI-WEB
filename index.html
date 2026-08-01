@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/ttPopup.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="css/dialog.css">
 </head>
 
@@ -858,9 +859,125 @@ class="main-btn">
 
 </div>
 
+<!-- ================= PROFİL POPUP ================= -->
 
+<div id="profileOverlay" class="profile-overlay">
 
+    <div class="profile-popup">
 
+        <button
+            type="button"
+            id="profileClose"
+            class="profile-close">
+
+            ✕
+
+        </button>
+
+        <div class="profile-header">
+
+            <div class="profile-avatar-box">
+
+                <img
+                    id="profileAvatar"
+                    src=""
+                    alt="Habbo Avatarı">
+
+            </div>
+
+            <div class="profile-title-area">
+
+                <span class="profile-label">
+                    CSI PROFİLİ
+                </span>
+
+                <h2 id="profileUsername">
+                    Kullanıcı
+                </h2>
+
+                <p id="profileMotto">
+                    Motto bulunamadı.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="profile-info-grid">
+
+            <div class="profile-info-card">
+                <span>Habbo ID</span>
+                <strong id="profileHabboId">-</strong>
+            </div>
+
+            <div class="profile-info-card">
+                <span>Site Rolü</span>
+                <strong id="profileRole">-</strong>
+            </div>
+
+            <div class="profile-info-card">
+                <span>Kayıt Tarihi</span>
+                <strong id="profileCreatedAt">-</strong>
+            </div>
+
+            <div class="profile-info-card">
+                <span>Son Giriş</span>
+                <strong id="profileLastLogin">-</strong>
+            </div>
+
+            <div class="profile-info-card profile-badge-card">
+                <span>Aktif Rozet</span>
+                <strong id="profileBadge">
+                    Henüz alınmadı
+                </strong>
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            id="refreshProfileBtn"
+            class="profile-main-btn">
+
+            Habbo Bilgilerini Yenile
+
+        </button>
+
+        <div class="profile-divider"></div>
+
+        <div class="profile-password-section">
+
+            <h3>Şifre Değiştir</h3>
+
+            <input
+                type="password"
+                id="currentProfilePassword"
+                placeholder="Mevcut Şifre">
+
+            <input
+                type="password"
+                id="newProfilePassword"
+                placeholder="Yeni Şifre">
+
+            <input
+                type="password"
+                id="newProfilePasswordAgain"
+                placeholder="Yeni Şifre Tekrar">
+
+            <button
+                type="button"
+                id="changeProfilePasswordBtn"
+                class="profile-main-btn">
+
+                Şifreyi Değiştir
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <!-- ================= AUTH POPUP ================= -->
 
@@ -1139,6 +1256,7 @@ class="main-btn">
 <script src="js/puantaj.js"></script>
 <script src="js/dialog.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
 <script src="js/organization.js"></script>
 
 
