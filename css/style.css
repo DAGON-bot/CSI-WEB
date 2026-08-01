@@ -2585,13 +2585,10 @@ grid-template-columns:1fr;
 }
 
 .preview-avatar img{
-
     width:100%;
-
     height:100%;
-
-    object-fit:cover;
-
+    object-fit:contain;
+    padding:4px;
 }
 
 .preview-card h3{
@@ -3703,5 +3700,222 @@ img {
     .site-footer {
         width: 100%;
         margin-left: 0;
+    }
+}
+
+/* =========================================
+   ORGANİZASYON - BÜYÜK KARAKTERLİ KART TASARIMI
+   Sadece dosyanın en altına ekle
+========================================= */
+
+/* Ana sayfadaki 3'lü slider kartları */
+
+.preview-card {
+    width: 260px;
+    height: 310px;
+    padding: 16px 16px 14px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    background: #171717;
+    border: 1px solid #3a3a3a;
+    border-radius: 18px;
+
+    overflow: hidden;
+}
+
+.preview-avatar {
+    width: 190px;
+    height: 210px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    margin-bottom: 8px;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+}
+
+.preview-avatar img {
+    width: auto;
+    height: 205px;
+    max-width: 190px;
+    max-height: 205px;
+
+    object-fit: contain;
+    object-position: center bottom;
+
+    padding: 0;
+    display: block;
+
+    image-rendering: pixelated;
+}
+
+.preview-card h3 {
+    margin: 4px 0 2px;
+    font-size: 22px;
+    line-height: 1.1;
+    text-align: center;
+}
+
+.preview-card span {
+    margin-top: 3px;
+    color: #f0c419;
+    font-size: 14px;
+}
+
+
+/* Ortadaki büyük organizasyon kartları */
+
+.tree-card {
+    width: 240px;
+    height: 265px;
+    padding: 12px 14px 14px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+.tree-card .preview-avatar {
+    width: 175px;
+    height: 180px;
+    margin-bottom: 6px;
+}
+
+.tree-card .preview-avatar img {
+    width: auto;
+    height: 175px;
+    max-width: 175px;
+    max-height: 175px;
+
+    object-fit: contain;
+    object-position: center bottom;
+
+    image-rendering: pixelated;
+}
+
+.tree-card h3 {
+    margin: 4px 0 0;
+    font-size: 20px;
+    line-height: 1.1;
+}
+
+.tree-card span {
+    margin-top: 5px;
+}
+
+
+/* Aşağıdaki 8 küçük kurucu kartı */
+
+.tree-small {
+    height: 230px;
+    min-height: 230px;
+    padding: 12px 10px 12px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+.tree-small .preview-avatar.small {
+    width: 135px;
+    height: 155px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    margin-bottom: 5px;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+}
+
+.tree-small .preview-avatar.small img {
+    width: auto;
+    height: 150px;
+    max-width: 135px;
+    max-height: 150px;
+
+    object-fit: contain;
+    object-position: center bottom;
+
+    padding: 0;
+    display: block;
+
+    image-rendering: pixelated;
+}
+
+.tree-small h4 {
+    margin: 3px 0 0;
+    font-size: 16px;
+    line-height: 1.1;
+    text-align: center;
+}
+
+.tree-small span {
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+
+/* Alt kartların biraz daha geniş görünmesi */
+
+.tree-grid {
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 18px;
+}
+
+
+/* Mobil düzen */
+
+@media (max-width: 900px) {
+
+    .preview-card {
+        width: 230px;
+        height: 285px;
+    }
+
+    .preview-avatar {
+        width: 165px;
+        height: 185px;
+    }
+
+    .preview-avatar img {
+        height: 180px;
+        max-width: 165px;
+    }
+
+    .tree-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+
+    .tree-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tree-small {
+        max-width: 280px;
+        width: 100%;
+        margin: 0 auto;
     }
 }
