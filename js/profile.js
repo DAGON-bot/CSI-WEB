@@ -19,14 +19,17 @@ const profileHabboId =
 const profileRole =
     document.getElementById("profileRole");
 
+const profileBadge =
+    document.getElementById("profileBadge");
+
+const profileRank =
+    document.getElementById("profileRank");
+
 const profileCreatedAt =
     document.getElementById("profileCreatedAt");
 
 const profileLastLogin =
     document.getElementById("profileLastLogin");
-
-const profileBadge =
-    document.getElementById("profileBadge");
 
 const refreshProfileBtn =
     document.getElementById("refreshProfileBtn");
@@ -110,14 +113,17 @@ function fillProfile(user) {
     profileRole.textContent =
         getRoleText(user.role);
 
+    profileBadge.textContent =
+        user.badge?.trim() || "-";
+
+    profileRank.textContent =
+        user.rank?.trim() || "-";
+
     profileCreatedAt.textContent =
         formatProfileDate(user.createdAt);
 
     profileLastLogin.textContent =
         formatProfileDate(user.lastLogin);
-
-    profileBadge.textContent =
-        user.badgeName || "Henüz alınmadı";
 
     const avatarUrl =
         getHabboAvatarUrl(user.figureString);

@@ -35,6 +35,11 @@ async function initDatabase() {
         ADD COLUMN IF NOT EXISTS "resetToken" TEXT,
         ADD COLUMN IF NOT EXISTS "resetVerifiedAt" TIMESTAMPTZ
     `);
+    await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS badge TEXT,
+    ADD COLUMN IF NOT EXISTS rank TEXT
+    `);
 
     console.log("PostgreSQL bağlandı.");
 }

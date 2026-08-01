@@ -158,10 +158,6 @@
     overflow-wrap: anywhere;
 }
 
-.profile-badge-card {
-    grid-column: 1 / -1;
-}
-
 .profile-main-btn {
     width: 100%;
     min-height: 52px;
@@ -254,7 +250,4 @@
         grid-template-columns: 1fr;
     }
 
-    .profile-badge-card {
-        grid-column: auto;
-    }
 }

@@ -32,6 +32,30 @@ async function verifyUser(username) {
     );
 }
 
+async function completeRegistration(
+    username,
+    password,
+    badge,
+    rank
+) {
+    const result = await pool.query(
+        `UPDATE users
+         SET password = $1,
+             badge = $2,
+             rank = $3
+         WHERE LOWER(username) = LOWER($4)
+         RETURNING id`,
+        [
+            password,
+            badge,
+            rank,
+            username
+        ]
+    );
+
+    return result.rows[0];
+}
+
 async function getVerifyCode(username) {
     const result = await pool.query(
         `SELECT "verifyCode"
@@ -151,6 +175,7 @@ module.exports = {
     updateHabboInfo,
     setPassword,
     updateLastLogin,
+    completeRegistration,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
