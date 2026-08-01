@@ -49,6 +49,18 @@ const founderRoleSelect =
 const founderSaveRoleBtn =
     document.getElementById("founderSaveRoleBtn");
 
+const founderRefreshLogsBtn =
+    document.getElementById("founderRefreshLogsBtn");
+
+const founderLogsLoading =
+    document.getElementById("founderLogsLoading");
+
+const founderLogsEmpty =
+    document.getElementById("founderLogsEmpty");
+
+const founderLogsList =
+    document.getElementById("founderLogsList");
+
 const founderResultBadge =
     document.getElementById("founderResultBadge");
 
@@ -171,6 +183,173 @@ function getFounderRoleText(role) {
     };
 
     return roles[role] || "Üye";
+
+}
+
+function getAdminLogActionText(actionType) {
+
+    const actions = {
+        department_update: "Departman Değişikliği",
+        badge_update: "Rozet Değişikliği",
+        rank_update: "Rütbe Değişikliği",
+        role_update: "Site Rolü Değişikliği",
+        single_promotion: "Tekli Terfi",
+        bulk_promotion: "Toplu Terfi"
+    };
+
+    return actions[actionType] ||
+        actionType ||
+        "Yönetim İşlemi";
+
+}
+
+
+function formatAdminLogValue(
+    actionType,
+    value
+) {
+
+    if (!value) {
+        return "Boş";
+    }
+
+    if (actionType === "role_update") {
+        return getFounderRoleText(value);
+    }
+
+    return value;
+
+}
+
+function escapeFounderHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+function renderFounderLogs(logs) {
+
+    if (!founderLogsList) {
+        return;
+    }
+
+    founderLogsList.innerHTML = "";
+
+    if (
+        !Array.isArray(logs) ||
+        logs.length === 0
+    ) {
+
+        founderLogsEmpty.style.display =
+            "block";
+
+        return;
+
+    }
+
+    founderLogsEmpty.style.display =
+        "none";
+
+    logs.forEach((log) => {
+
+        const item =
+            document.createElement("article");
+
+        item.className =
+            "founder-log-item";
+
+        const actionText =
+            getAdminLogActionText(
+                log.actionType
+            );
+
+        const oldValue =
+            formatAdminLogValue(
+                log.actionType,
+                log.oldValue
+            );
+
+        const newValue =
+            formatAdminLogValue(
+                log.actionType,
+                log.newValue
+            );
+
+        const createdAt =
+            formatFounderDate(
+                log.createdAt
+            );
+
+        item.innerHTML = `
+            <div class="founder-log-item-top">
+
+                <div>
+                    <strong class="founder-log-action">
+                        ${escapeFounderHtml(actionText)}
+                    </strong>
+
+                    <span class="founder-log-date">
+                        ${escapeFounderHtml(createdAt)}
+                    </span>
+                </div>
+
+                <span class="founder-log-target">
+                    ${escapeFounderHtml(
+                        log.targetUsername || "-"
+                    )}
+                </span>
+
+            </div>
+
+            <div class="founder-log-values">
+
+                <div class="founder-log-value old">
+
+                    <span>Eski Değer</span>
+
+                    <strong>
+                        ${escapeFounderHtml(oldValue)}
+                    </strong>
+
+                </div>
+
+                <div class="founder-log-arrow">
+                    →
+                </div>
+
+                <div class="founder-log-value new">
+
+                    <span>Yeni Değer</span>
+
+                    <strong>
+                        ${escapeFounderHtml(newValue)}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="founder-log-footer">
+
+                İşlemi yapan:
+
+                <strong>
+                    ${escapeFounderHtml(
+                        log.performedBy || "-"
+                    )}
+                </strong>
+
+            </div>
+        `;
+
+        founderLogsList.appendChild(item);
+
+    });
 
 }
 
@@ -322,11 +501,17 @@ if (
 function openFounderPanel() {
 
     founderPanelOverlay?.classList.add("active");
+    loadFounderLogs();
 
     founderSearchResult.style.display = "none";
     founderSearchUsername.value = "";
     selectedFounderUsername = "";
     founderDepartmentSelect.value = "";
+
+    founderBadgeSelect.value = "";
+founderRoleSelect.value = "";
+
+fillFounderRankOptions("");
 
     setTimeout(() => {
         founderSearchUsername?.focus();
@@ -343,6 +528,11 @@ function closeFounderPanel() {
     founderSearchUsername.value = "";
     selectedFounderUsername = "";
     founderDepartmentSelect.value = "";
+
+    founderBadgeSelect.value = "";
+founderRoleSelect.value = "";
+
+fillFounderRankOptions("");
 
 }
 
@@ -583,6 +773,8 @@ founderSaveDepartmentBtn?.addEventListener(
             founderResultDepartment.textContent =
                 data.department || department;
 
+                await loadFounderLogs();
+
             showDialog(
                 "Departman Güncellendi",
                 data.message ||
@@ -623,4 +815,409 @@ founderBadgeSelect?.addEventListener(
         );
 
     }
+);
+
+async function loadFounderLogs() {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!token) {
+        return;
+    }
+
+    founderLogsLoading.style.display =
+        "block";
+
+    founderLogsEmpty.style.display =
+        "none";
+
+    founderLogsList.innerHTML = "";
+
+    if (founderRefreshLogsBtn) {
+
+        founderRefreshLogsBtn.disabled =
+            true;
+
+        founderRefreshLogsBtn.textContent =
+            "Yükleniyor...";
+
+    }
+
+    try {
+
+        const response = await fetch(
+            `${window.location.origin}/api/founder/admin-logs`,
+            {
+                method: "GET",
+
+                headers: {
+                    "Authorization":
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+
+            showDialog(
+                "Loglar Yüklenemedi",
+                data.message ||
+                "İşlem geçmişi alınamadı.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        renderFounderLogs(
+            data.logs || []
+        );
+
+    } catch (err) {
+
+        console.error(
+            "Admin logları yükleme hatası:",
+            err
+        );
+
+        showDialog(
+            "Bağlantı Hatası",
+            "İşlem geçmişi alınamadı.",
+            "error"
+        );
+
+    } finally {
+
+        founderLogsLoading.style.display =
+            "none";
+
+        if (founderRefreshLogsBtn) {
+
+            founderRefreshLogsBtn.disabled =
+                false;
+
+            founderRefreshLogsBtn.textContent =
+                "Yenile";
+
+        }
+
+    }
+
+}
+
+async function updateFounderProfileField(
+    field,
+    value
+) {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!selectedFounderUsername) {
+
+        showDialog(
+            "Kullanıcı Seçilmedi",
+            "Önce bir kullanıcı aratın.",
+            "warning"
+        );
+
+        return null;
+
+    }
+
+    if (!value) {
+
+        showDialog(
+            "Seçim Yapılmadı",
+            "Kaydetmek istediğiniz değeri seçin.",
+            "warning"
+        );
+
+        return null;
+
+    }
+
+    if (!token) {
+
+        showDialog(
+            "Oturum Gerekli",
+            "Bu işlem için giriş yapmanız gerekiyor.",
+            "warning"
+        );
+
+        return null;
+
+    }
+
+    try {
+
+        const response = await fetch(
+            `${window.location.origin}/api/founder/user/${encodeURIComponent(selectedFounderUsername)}/profile-data`,
+            {
+                method: "PATCH",
+
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    field,
+                    value
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+
+            showDialog(
+                "Güncelleme Başarısız",
+                data.message ||
+                "Kullanıcı bilgisi güncellenemedi.",
+                "error"
+            );
+
+            return null;
+
+        }
+
+        return data;
+
+    } catch (err) {
+
+        console.error(
+            "Kurucu paneli profil güncelleme hatası:",
+            err
+        );
+
+        showDialog(
+            "Bağlantı Hatası",
+            "Sunucuya bağlanılamadı.",
+            "error"
+        );
+
+        return null;
+
+    }
+
+}
+
+founderSaveBadgeRankBtn?.addEventListener(
+    "click",
+    async () => {
+
+        const badge =
+            founderBadgeSelect.value;
+
+        const rank =
+            founderRankSelect.value;
+
+        if (!selectedFounderUsername) {
+
+            showDialog(
+                "Kullanıcı Seçilmedi",
+                "Önce bir kullanıcı aratın.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        if (!badge) {
+
+            showDialog(
+                "Rozet Seçilmedi",
+                "Kullanıcıya atanacak rozeti seçin.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        if (!rank) {
+
+            showDialog(
+                "Rütbe Seçilmedi",
+                "Kullanıcıya atanacak rütbeyi seçin.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        founderSaveBadgeRankBtn.disabled =
+            true;
+
+        founderSaveBadgeRankBtn.textContent =
+            "Kaydediliyor...";
+
+        try {
+
+            const currentBadge =
+                founderResultBadge.textContent.trim();
+
+            const currentRank =
+                founderResultRank.textContent.trim();
+
+            let changed = false;
+
+            if (currentBadge !== badge) {
+
+                const badgeResult =
+                    await updateFounderProfileField(
+                        "badge",
+                        badge
+                    );
+
+                if (!badgeResult) {
+                    return;
+                }
+
+                founderResultBadge.textContent =
+                    badge;
+
+                changed = true;
+
+            }
+
+            if (currentRank !== rank) {
+
+                const rankResult =
+                    await updateFounderProfileField(
+                        "rank",
+                        rank
+                    );
+
+                if (!rankResult) {
+                    return;
+                }
+
+                founderResultRank.textContent =
+                    rank;
+
+                changed = true;
+
+            }
+
+            if (!changed) {
+
+                showDialog(
+                    "Değişiklik Yok",
+                    "Rozet ve rütbe zaten seçilen değerlerde.",
+                    "warning"
+                );
+
+                return;
+
+            }
+
+            await loadFounderLogs();
+
+            showDialog(
+                "Bilgiler Güncellendi",
+                "Kullanıcının rozet ve rütbe bilgileri kaydedildi.",
+                "success"
+            );
+
+        } finally {
+
+            founderSaveBadgeRankBtn.disabled =
+                false;
+
+            founderSaveBadgeRankBtn.textContent =
+                "Rozet ve Rütbeyi Kaydet";
+
+        }
+
+    }
+);
+
+founderSaveRoleBtn?.addEventListener(
+    "click",
+    async () => {
+
+        const role =
+            founderRoleSelect.value;
+
+        if (!selectedFounderUsername) {
+
+            showDialog(
+                "Kullanıcı Seçilmedi",
+                "Önce bir kullanıcı aratın.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        if (!role) {
+
+            showDialog(
+                "Rol Seçilmedi",
+                "Kullanıcıya atanacak site rolünü seçin.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        founderSaveRoleBtn.disabled =
+            true;
+
+        founderSaveRoleBtn.textContent =
+            "Kaydediliyor...";
+
+        try {
+
+            const data =
+                await updateFounderProfileField(
+                    "role",
+                    role
+                );
+
+            if (!data) {
+                return;
+            }
+
+            founderResultRole.textContent =
+                getFounderRoleText(role);
+
+            await loadFounderLogs();
+
+            showDialog(
+                "Site Rolü Güncellendi",
+                data.message ||
+                "Kullanıcının site rolü kaydedildi.",
+                "success"
+            );
+
+        } finally {
+
+            founderSaveRoleBtn.disabled =
+                false;
+
+            founderSaveRoleBtn.textContent =
+                "Site Rolünü Kaydet";
+
+        }
+
+    }
+);
+
+founderRefreshLogsBtn?.addEventListener(
+    "click",
+    loadFounderLogs
 );
