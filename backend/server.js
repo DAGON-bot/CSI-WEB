@@ -33,7 +33,7 @@ const cors = require("cors");
 const axios = require("axios");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-
+const ADMIN_USERNAME = "canart0";
 const app = express();
 
 app.use(cors());
@@ -862,6 +862,19 @@ if (!founderPanelRoles.includes(requester.role)) {
             });
         }
 
+        if (
+    targetUser.username.toLowerCase() ===
+    ADMIN_USERNAME.toLowerCase()
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Admin hesabının rütbesi değiştirilemez."
+    });
+
+}
+
         return res.json({
             success: true,
             user: {
@@ -1009,6 +1022,19 @@ app.patch(
 
             }
 
+            if (
+    targetUser.username.toLowerCase() ===
+    ADMIN_USERNAME.toLowerCase()
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Admin hesabının profil bilgileri değiştirilemez."
+    });
+
+}
+
             const updatedUser =
                 await updateDepartment(
                     targetUser.username,
@@ -1153,6 +1179,19 @@ app.patch(
                 });
 
             }
+
+            if (
+    targetUser.username.toLowerCase() ===
+    ADMIN_USERNAME.toLowerCase()
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Admin hesabının profil bilgileri değiştirilemez."
+    });
+
+}
 
             const oldRank =
                 targetUser.rank || "";
@@ -1544,33 +1583,32 @@ app.patch(
 
                 }
 
-                // Admin rolünü yalnızca admin verebilir
-                if (
-                    value === "admin" &&
-                    requester.role !== "admin"
-                ) {
+// Admin rolü yalnızca canart0 hesabına aittir.
+// Panel üzerinden başka hiçbir kullanıcıya verilemez.
+if (value === "admin") {
 
-                    return res.status(403).json({
-                        success: false,
-                        message:
-                            "Admin rolünü yalnızca bir admin verebilir."
-                    });
+    return res.status(403).json({
+        success: false,
+        message:
+            "Admin rolü yalnızca canart0 hesabına aittir."
+    });
 
-                }
+}
 
-                // Admin hesabının rolünü kurucu değiştiremez
-                if (
-                    targetUser.role === "admin" &&
-                    requester.role !== "admin"
-                ) {
 
-                    return res.status(403).json({
-                        success: false,
-                        message:
-                            "Admin hesabının rolünü değiştiremezsiniz."
-                    });
+// Kurucu rolünü yalnızca admin verebilir
+if (
+    value === "founder" &&
+    requester.role !== "admin"
+) {
 
-                }
+    return res.status(403).json({
+        success: false,
+        message:
+            "Kurucu rolünü yalnızca admin verebilir."
+    });
+
+}
 
                 oldValue =
                     targetUser.role || "member";
