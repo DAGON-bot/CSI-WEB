@@ -280,6 +280,13 @@ const popupMesaji = `
 `;
 
        window.discordMesaji = discordMesaji;
+       window.terfiBilgisi = {
+    username: personel,
+    badge: rozet,
+    oldRank: rutbe,
+    newRank: sonrakiRutbe,
+    authorizedBy: yetkili
+};
 
 showPopup(
     "Terfi Onaylandı",
@@ -288,7 +295,9 @@ showPopup(
 );
     } else {
 
-        const kalan = gerekenSure - gecenSure;
+    window.terfiBilgisi = null;
+
+    const kalan = gerekenSure - gecenSure;
 
         showPopup(
             "Terfi Reddedildi",

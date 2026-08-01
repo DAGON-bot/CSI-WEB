@@ -15,6 +15,7 @@ const {
     updateLastLogin,
     completeRegistration,
     updateDepartment,
+    updateRank,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
@@ -946,6 +947,168 @@ app.patch(
 
             console.error(
                 "Departman güncelleme hatası:",
+                err
+            );
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Oturum geçersiz veya işlem gerçekleştirilemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================
+// TERFİ SİSTEMİ - RÜTBE GÜNCELLE
+// ===============================
+
+app.patch(
+    "/api/promotion/update-rank",
+    async (req, res) => {
+
+        const auth = req.headers.authorization;
+
+        if (!auth || !auth.startsWith("Bearer ")) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Oturum açmanız gerekiyor."
+            });
+
+        }
+
+        const token =
+            auth.replace("Bearer ", "").trim();
+
+        try {
+
+            const tokenUser =
+                require("./services/jwtService")
+                    .verifyToken(token);
+
+            const requesterUsername =
+                tokenUser.username ||
+                tokenUser.name ||
+                tokenUser.user ||
+                tokenUser.sub;
+
+            if (!requesterUsername) {
+
+                return res.status(401).json({
+                    success: false,
+                    message: "Geçersiz oturum bilgisi."
+                });
+
+            }
+
+            const requester =
+                await getUser(requesterUsername);
+
+            if (!requester) {
+
+                return res.status(404).json({
+                    success: false,
+                    message: "Oturum sahibi bulunamadı."
+                });
+
+            }
+
+            const username =
+                String(req.body.username || "").trim();
+
+            const newRank =
+                String(req.body.newRank || "").trim();
+
+            if (!username || !newRank) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Kullanıcı adı ve yeni rütbe gerekli."
+                });
+
+            }
+
+            if (
+                username.length > 80 ||
+                newRank.length < 2 ||
+                newRank.length > 80
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Gönderilen bilgiler geçersiz."
+                });
+
+            }
+
+            if (newRank === "SON RÜTBE") {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Son rütbedeki kullanıcı güncellenemez."
+                });
+
+            }
+
+            const targetUser =
+                await getUser(username);
+
+            if (!targetUser) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Bu nickname ile kayıtlı kullanıcı bulunamadı."
+                });
+
+            }
+
+            const oldRank =
+                targetUser.rank || "";
+
+            if (oldRank === newRank) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Kullanıcının rütbesi zaten bu rütbede."
+                });
+
+            }
+
+            const updatedUser =
+                await updateRank(
+                    targetUser.username,
+                    newRank
+                );
+
+            if (!updatedUser) {
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Rütbe güncellenemedi."
+                });
+
+            }
+
+            return res.json({
+                success: true,
+                message:
+                    `${updatedUser.username} kullanıcısının rütbesi güncellendi.`,
+                user: {
+                    username: updatedUser.username,
+                    oldRank,
+                    newRank: updatedUser.rank
+                }
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Terfi rütbe güncelleme hatası:",
                 err
             );
 

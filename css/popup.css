@@ -202,3 +202,25 @@
     text-align:right;
 
 }
+
+.site-update-btn {
+    width: 100%;
+
+    background: #181818;
+    color: #f0c419;
+
+    border: 1px solid #f0c419;
+}
+
+.site-update-btn:hover {
+    background: #f0c419;
+    color: #111;
+
+    transform: translateY(-2px);
+}
+
+.site-update-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
