@@ -104,6 +104,25 @@ async function updateDepartment(username, department) {
 
 }
 
+async function updateRank(username, rank) {
+
+    const result = await pool.query(
+        `UPDATE users
+         SET rank = $1
+         WHERE LOWER(username) = LOWER($2)
+         RETURNING
+             username,
+             rank`,
+        [
+            rank,
+            username
+        ]
+    );
+
+    return result.rows[0];
+
+}
+
 async function setPassword(username, password) {
     await pool.query(
         `UPDATE users
@@ -196,6 +215,7 @@ module.exports = {
     updateLastLogin,
     completeRegistration,
     updateDepartment,
+    updateRank,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,

@@ -8,6 +8,8 @@ const popupButtons =
 
 const copyBtn =
     document.getElementById("copyDiscordBtn");
+const updateSiteRankBtn =
+    document.getElementById("updateSiteRankBtn");
 
 const newBtn =
     document.getElementById("newControlBtn");
@@ -36,7 +38,28 @@ function showPopup(
     popupContent.innerHTML = content;
 
 
-    if(mode==="terfi"){
+    if (mode === "terfi") {
+
+    popupButtons.style.display = "flex";
+    popupButtons.style.flexDirection = "column";
+
+    copyBtn.style.display = "inline-block";
+
+    if (updateSiteRankBtn) {
+
+        const canUpdateRank =
+            title === "Terfi Onaylandı" &&
+            window.terfiBilgisi &&
+            window.terfiBilgisi.newRank !== "SON RÜTBE";
+
+        updateSiteRankBtn.style.display =
+            canUpdateRank ? "inline-block" : "none";
+
+        updateSiteRankBtn.disabled = false;
+        updateSiteRankBtn.textContent =
+            "Sitede Güncelle";
+
+    }
 
 }
 
@@ -45,6 +68,9 @@ else if(mode==="toplu"){
     popupButtons.style.display="flex";
 
     copyBtn.style.display="inline-block";
+    if (updateSiteRankBtn) {
+    updateSiteRankBtn.style.display = "none";
+}
 
     if(newBtn){
     newBtn.style.display="none";
@@ -57,6 +83,9 @@ else if(mode=="oyun"){
     popupButtons.style.display="flex";
 
     copyBtn.style.display="none";
+    if (updateSiteRankBtn) {
+    updateSiteRankBtn.style.display = "none";
+}
 
 
     if(newBtn){
@@ -153,3 +182,118 @@ document.addEventListener("click", function(e){
     }
 
 });
+
+updateSiteRankBtn?.addEventListener(
+    "click",
+    async () => {
+
+        const promotion =
+            window.terfiBilgisi;
+
+        const token =
+            localStorage.getItem("token");
+
+        if (!promotion) {
+
+            showToast(
+                "Güncellenecek terfi bilgisi bulunamadı.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        if (!token) {
+
+            showToast(
+                "Bu işlem için giriş yapmanız gerekiyor.",
+                "warning"
+            );
+
+            return;
+
+        }
+
+        updateSiteRankBtn.disabled = true;
+        updateSiteRankBtn.textContent =
+            "Güncelleniyor...";
+
+        try {
+
+            const response = await fetch(
+                `${window.location.origin}/api/promotion/update-rank`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: promotion.username,
+                        newRank: promotion.newRank
+                    })
+                }
+            );
+
+            const data =
+                await response.json();
+
+            if (!response.ok || !data.success) {
+
+                showToast(
+                    data.message ||
+                    "Rütbe güncellenemedi.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            showToast(
+                data.message ||
+                "Kullanıcının rütbesi güncellendi.",
+                "success"
+            );
+
+            updateSiteRankBtn.textContent =
+                "Sitede Güncellendi";
+
+            window.terfiBilgisi.oldRank =
+                data.user?.oldRank ||
+                window.terfiBilgisi.oldRank;
+
+            window.terfiBilgisi.newRank =
+                data.user?.newRank ||
+                window.terfiBilgisi.newRank;
+
+        } catch (err) {
+
+            console.error(
+                "Site rütbe güncelleme hatası:",
+                err
+            );
+
+            showToast(
+                "Sunucuya bağlanılamadı.",
+                "error"
+            );
+
+        } finally {
+
+            if (
+                updateSiteRankBtn.textContent !==
+                "Sitede Güncellendi"
+            ) {
+
+                updateSiteRankBtn.disabled = false;
+                updateSiteRankBtn.textContent =
+                    "Sitede Güncelle";
+
+            }
+
+        }
+
+    }
+);
