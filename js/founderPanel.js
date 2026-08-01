@@ -1002,25 +1002,38 @@ const isProtectedAdmin =
         .toLowerCase() ===
     "canart0".toLowerCase();
 
+const isProtectedFounder =
+    currentFounderPanelRole === "founder" &&
+    user.role === "founder";
+
+const isProtectedUser =
+    isProtectedAdmin ||
+    isProtectedFounder;
+
 founderDepartmentSelect.disabled =
-    isProtectedAdmin;
+    isProtectedUser;
 
 founderBadgeSelect.disabled =
-    isProtectedAdmin;
+    isProtectedUser;
 
 founderRankSelect.disabled =
-    isProtectedAdmin;
+    isProtectedUser;
 
 founderRoleSelect.disabled =
-    isProtectedAdmin;
+    isProtectedUser;
 
 founderSaveAllBtn.disabled =
-    isProtectedAdmin;
+    isProtectedUser;
 
 if (isProtectedAdmin) {
 
     founderSaveAllBtn.textContent =
         "🔒 Admin Hesabı Korunuyor";
+
+} else if (isProtectedFounder) {
+
+    founderSaveAllBtn.textContent =
+        "🔒 Kurucu Profili Korunuyor";
 
 } else {
 
