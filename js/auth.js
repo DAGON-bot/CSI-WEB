@@ -45,6 +45,12 @@ const resetPassword2 =
 const resetSavePasswordBtn =
     document.getElementById("resetSavePasswordBtn");
 
+const goLoginArea =
+    document.getElementById("goLoginArea");
+
+const goLoginBtn =
+    document.getElementById("goLoginBtn");
+
 let passwordResetToken = "";
 
 let isAuthenticated = false;
@@ -282,6 +288,7 @@ function openAuthPopup(mode){
     // Her açılışta eski ekranları gizle
     verifyArea.style.display = "none";
     passwordArea.style.display = "none";
+    goLoginArea.style.display = "none";
 
     resetStartArea.style.display = "none";
     resetVerifyArea.style.display = "none";
@@ -306,6 +313,7 @@ passwordResetToken = "";
 
         createCodeBtn.style.display = "block";
         loginSubmitBtn.style.display = "none";
+        goLoginArea.style.display = "flex";
 
         loginPassword.style.display = "none";
         verifyArea.style.display = "none";
@@ -338,6 +346,7 @@ function closeAuthPopup(){
 
     verifyArea.style.display = "none";
     passwordArea.style.display = "none";
+    goLoginArea.style.display = "none";
 
     resetStartArea.style.display = "none";
     resetVerifyArea.style.display = "none";
@@ -481,6 +490,7 @@ verifyBtn?.addEventListener("click", async (e) => {
         createCodeBtn.style.display = "none";
         verifyArea.style.display = "none";
         passwordArea.style.display = "block";
+        goLoginArea.style.display = "flex";
 
         document.getElementById("authTitle").textContent =
             "Şifre Oluştur";
@@ -697,6 +707,7 @@ forgotPasswordBtn?.addEventListener("click", (e) => {
     createCodeBtn.style.display = "none";
     verifyArea.style.display = "none";
     passwordArea.style.display = "none";
+    goLoginArea.style.display = "none";
 
     resetVerifyArea.style.display = "none";
     resetPasswordArea.style.display = "none";
@@ -929,4 +940,10 @@ resetSavePasswordBtn?.addEventListener("click", async (e) => {
             "error"
         );
     }
+});
+
+goLoginBtn?.addEventListener("click", () => {
+
+    openAuthPopup("login");
+
 });
