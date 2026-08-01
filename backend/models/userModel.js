@@ -85,6 +85,25 @@ async function updateHabboInfo(username, habbo) {
     );
 }
 
+async function updateDepartment(username, department) {
+
+    const result = await pool.query(
+        `UPDATE users
+         SET department = $1
+         WHERE LOWER(username) = LOWER($2)
+         RETURNING
+             username,
+             department`,
+        [
+            department,
+            username
+        ]
+    );
+
+    return result.rows[0];
+
+}
+
 async function setPassword(username, password) {
     await pool.query(
         `UPDATE users
@@ -176,6 +195,7 @@ module.exports = {
     setPassword,
     updateLastLogin,
     completeRegistration,
+    updateDepartment,
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,

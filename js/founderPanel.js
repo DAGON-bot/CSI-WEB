@@ -25,8 +25,14 @@ const founderResultUsername =
 const founderResultMotto =
     document.getElementById("founderResultMotto");
 
-const founderResultHabboId =
-    document.getElementById("founderResultHabboId");
+const founderResultDepartment =
+    document.getElementById("founderResultDepartment");
+
+const founderDepartmentSelect =
+    document.getElementById("founderDepartmentSelect");
+
+const founderSaveDepartmentBtn =
+    document.getElementById("founderSaveDepartmentBtn");
 
 const founderResultBadge =
     document.getElementById("founderResultBadge");
@@ -45,6 +51,8 @@ const founderResultLastLogin =
 
 const founderResultVerified =
     document.getElementById("founderResultVerified");
+
+let selectedFounderUsername = "";
 
 
 function formatFounderDate(value) {
@@ -110,8 +118,14 @@ function fillFounderUser(user) {
     founderResultMotto.textContent =
         user.motto?.trim() || "Motto bulunamadı.";
 
-    founderResultHabboId.textContent =
-        user.habboId || "-";
+    selectedFounderUsername =
+    user.username || "";
+
+founderResultDepartment.textContent =
+    user.department?.trim() || "Atanmadı";
+
+founderDepartmentSelect.value =
+    user.department || "";
 
     founderResultBadge.textContent =
         user.badge?.trim() || "-";
@@ -211,6 +225,8 @@ function openFounderPanel() {
 
     founderSearchResult.style.display = "none";
     founderSearchUsername.value = "";
+    selectedFounderUsername = "";
+    founderDepartmentSelect.value = "";
 
     setTimeout(() => {
         founderSearchUsername?.focus();
@@ -225,6 +241,8 @@ function closeFounderPanel() {
 
     founderSearchResult.style.display = "none";
     founderSearchUsername.value = "";
+    selectedFounderUsername = "";
+    founderDepartmentSelect.value = "";
 
 }
 
@@ -376,4 +394,114 @@ document.addEventListener(
 document.addEventListener(
     "DOMContentLoaded",
     checkFounderAccess
+);
+
+founderSaveDepartmentBtn?.addEventListener(
+    "click",
+    async () => {
+
+        const token =
+            localStorage.getItem("token");
+
+        const department =
+            founderDepartmentSelect.value;
+
+        if (!selectedFounderUsername) {
+
+            showDialog(
+                "Kullanıcı Seçilmedi",
+                "Önce bir kullanıcı aratın.",
+                "warning"
+            );
+
+            return;
+        }
+
+        if (!department) {
+
+            showDialog(
+                "Departman Seçilmedi",
+                "Atamak istediğiniz departmanı seçin.",
+                "warning"
+            );
+
+            return;
+        }
+
+        if (!token) {
+
+            showDialog(
+                "Oturum Gerekli",
+                "Bu işlem için giriş yapmanız gerekiyor.",
+                "warning"
+            );
+
+            return;
+        }
+
+        founderSaveDepartmentBtn.disabled = true;
+        founderSaveDepartmentBtn.textContent =
+            "Kaydediliyor...";
+
+        try {
+
+            const response = await fetch(
+                `${window.location.origin}/api/founder/user/${encodeURIComponent(selectedFounderUsername)}/department`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        department
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+
+                showDialog(
+                    "Departman Güncellenemedi",
+                    data.message || "İşlem başarısız oldu.",
+                    "error"
+                );
+
+                return;
+            }
+
+            founderResultDepartment.textContent =
+                data.department || department;
+
+            showDialog(
+                "Departman Güncellendi",
+                data.message ||
+                "Kullanıcının departmanı kaydedildi.",
+                "success"
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Departman kaydetme hatası:",
+                err
+            );
+
+            showDialog(
+                "Bağlantı Hatası",
+                "Sunucuya bağlanılamadı.",
+                "error"
+            );
+
+        } finally {
+
+            founderSaveDepartmentBtn.disabled = false;
+            founderSaveDepartmentBtn.textContent =
+                "Departmanı Kaydet";
+
+        }
+
+    }
 );
