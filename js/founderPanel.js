@@ -254,6 +254,64 @@ function renderFounderUsernameSuggestions(
 
 }
 
+async function loadFounderUsernameSuggestions() {
+
+    const query =
+        founderSearchUsername.value.trim();
+
+    const token =
+        localStorage.getItem("token");
+
+    if (query.length < 2 || !token) {
+
+        closeFounderUsernameSuggestions();
+        return;
+
+    }
+
+    if (founderUsernameSearchController) {
+        founderUsernameSearchController.abort();
+    }
+
+    founderUsernameSearchController =
+        new AbortController();
+
+    try {
+
+        const response = await fetch(
+            `${window.location.origin}/api/founder/users/search?q=${encodeURIComponent(query)}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                signal:
+                    founderUsernameSearchController.signal
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+
+            closeFounderUsernameSuggestions();
+            return;
+
+        }
+
+        renderFounderUsernameSuggestions(
+            data.users || []
+        );
+
+    } catch (err) {
+
+        if (err.name !== "AbortError") {
+            console.error(err);
+        }
+
+    }
+
+}
+
 function fillFounderRankOptions(
     badge,
     selected = ""
