@@ -73,13 +73,16 @@ function formatProfileDate(value) {
 function getRoleText(role) {
 
     const roles = {
-        member: "Üye",
+        admin: "Admin",
+        founder: "Kurucu",
         moderator: "Moderatör",
-        admin: "Yönetici",
-        owner: "Kurucu"
+        reporter: "Haberci",
+        salary_officer: "Maaş Görevlisi",
+        promotion_controller: "Terfi Kontrolcüsü",
+        member: "Üye"
     };
 
-    return roles[role] || role || "Üye";
+    return roles[role] || "Üye";
 
 }
 
