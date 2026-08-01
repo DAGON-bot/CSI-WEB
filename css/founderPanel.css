@@ -683,3 +683,9 @@
     }
 
 }
+
+.founder-log-section {
+    transition:
+        opacity .2s ease,
+        transform .2s ease;
+}
