@@ -925,11 +925,18 @@ class="main-btn">
 
         <div class="founder-search-area">
 
-            <input
-                type="text"
-                id="founderSearchUsername"
-                maxlength="80"
-                placeholder="Habbo nickname yazın">
+                <input
+        type="text"
+        id="founderSearchUsername"
+        maxlength="80"
+        autocomplete="off"
+        placeholder="Habbo nickname yazın">
+
+            <div
+        id="founderUsernameSuggestions"
+        class="founder-username-suggestions"
+        style="display:none;">
+            </div>
 
             <button
                 type="button"
