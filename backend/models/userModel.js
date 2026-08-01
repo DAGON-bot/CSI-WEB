@@ -1,72 +1,82 @@
-const db = require("../database/db");
+const { pool } = require("../database/db");
 
-function getUser(username) {
-    return new Promise((resolve, reject) => {
+async function getUser(username) {
+    const result = await pool.query(
+        `SELECT *
+         FROM users
+         WHERE LOWER(username) = LOWER($1)
+         LIMIT 1`,
+        [username]
+    );
 
-        db.get(
-            "SELECT * FROM users WHERE username = ?",
-            [username],
-            (err, row) => {
-
-                if (err) reject(err);
-                else resolve(row);
-
-            }
-        );
-
-    });
+    return result.rows[0];
 }
 
-function createUser(username, verifyCode) {
-    return new Promise((resolve, reject) => {
+async function createUser(username, verifyCode) {
+    const result = await pool.query(
+        `INSERT INTO users (username, "verifyCode")
+         VALUES ($1, $2)
+         RETURNING id`,
+        [username, verifyCode]
+    );
 
-        db.run(
-            "INSERT INTO users(username, verifyCode) VALUES(?,?)",
-            [username, verifyCode],
-            function(err){
-
-                if(err) reject(err);
-                else resolve(this.lastID);
-
-            }
-
-        );
-
-    });
+    return result.rows[0].id;
 }
 
-function verifyUser(username){
-    return new Promise((resolve,reject)=>{
-
-        db.run(
-            "UPDATE users SET verified = 1 WHERE username = ?",
-            [username],
-            function(err){
-
-                if(err) reject(err);
-                else resolve();
-
-            }
-        );
-
-    });
+async function verifyUser(username) {
+    await pool.query(
+        `UPDATE users
+         SET verified = TRUE
+         WHERE LOWER(username) = LOWER($1)`,
+        [username]
+    );
 }
 
-function getVerifyCode(username) {
-    return new Promise((resolve, reject) => {
+async function getVerifyCode(username) {
+    const result = await pool.query(
+        `SELECT "verifyCode"
+         FROM users
+         WHERE LOWER(username) = LOWER($1)
+         LIMIT 1`,
+        [username]
+    );
 
-        db.get(
-            "SELECT verifyCode FROM users WHERE username = ?",
-            [username],
-            (err, row) => {
+    return result.rows[0];
+}
 
-                if (err) reject(err);
-                else resolve(row);
+async function updateHabboInfo(username, habbo) {
+    await pool.query(
+        `UPDATE users
+         SET "habboId" = $1,
+             "figureString" = $2,
+             motto = $3,
+             "lastLogin" = CURRENT_TIMESTAMP
+         WHERE LOWER(username) = LOWER($4)`,
+        [
+            habbo.uniqueId,
+            habbo.figureString,
+            habbo.motto,
+            username
+        ]
+    );
+}
 
-            }
-        );
+async function setPassword(username, password) {
+    await pool.query(
+        `UPDATE users
+         SET password = $1
+         WHERE LOWER(username) = LOWER($2)`,
+        [password, username]
+    );
+}
 
-    });
+async function updateLastLogin(username) {
+    await pool.query(
+        `UPDATE users
+         SET "lastLogin" = CURRENT_TIMESTAMP
+         WHERE LOWER(username) = LOWER($1)`,
+        [username]
+    );
 }
 
 module.exports = {
@@ -75,47 +85,6 @@ module.exports = {
     verifyUser,
     getVerifyCode,
     updateHabboInfo,
-    setPassword
+    setPassword,
+    updateLastLogin
 };
-
-function updateHabboInfo(username, habbo) {
-    return new Promise((resolve, reject) => {
-
-        db.run(
-            `UPDATE users
-             SET habboId = ?,
-                 figureString = ?,
-                 motto = ?,
-                 lastLogin = CURRENT_TIMESTAMP
-             WHERE username = ?`,
-            [
-                habbo.uniqueId,
-                habbo.figureString,
-                habbo.motto,
-                username
-            ],
-            function (err) {
-                if (err) reject(err);
-                else resolve();
-            }
-        );
-
-    });
-}
-
-function setPassword(username, password) {
-    return new Promise((resolve, reject) => {
-
-        db.run(
-            "UPDATE users SET password = ? WHERE username = ?",
-            [password, username],
-            function (err) {
-
-                if (err) reject(err);
-                else resolve();
-
-            }
-        );
-
-    });
-}
