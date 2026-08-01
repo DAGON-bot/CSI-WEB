@@ -245,6 +245,69 @@ const rankData = {
     "Savaş Danışmanı",
     "Yasal Danışman",
     "Hazine Sekreteri",
-    "Müfettiş Sekreteri"
+    "Müfettiş Sekreteri",
+],
+
+"Eş Sahip": [
+    "Eş Sahip"
+],
+
+"Direktör": [
+    "Direktör"
+],
+
+"Oda Moderatörü": [
+    "Oda Moderatörü"
+],
+
+"Oda Denetleyicisi": [
+    "Oda Denetleyicisi"
+],
+
+"Oda Temsilcisi": [
+    "Oda Temsilcisi"
+],
+
+"Üst Düzey Liderler": [
+    "Üst Düzey Liderler"
+],
+
+"Oda Yöneticisi": [
+    "Oda Yöneticisi"
+],
+
+"Black Room": [
+    "Black Room"
+],
+
+"White Room": [
+    "White Room"
+],
+
+"Founders": [
+    "1. Kurucu",
+    "2. Kurucu",
+    "3. Kurucu",
+    "4. Kurucu",
+    "5. Kurucu",
+    "6. Kurucu",
+    "7. Kurucu",
+    "8. Kurucu"
+],
+
+"AS Kurucu": [
+    "AS Kurucu"
+],
+
+"Üst Kurucu": [
+    "Üst Kurucu"
+],
+
+"Co-Owner": [
+    "Co-Owner"
+],
+
+"Owner": [
+    "Owner"
 ]
 };
