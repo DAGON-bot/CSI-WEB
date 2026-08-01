@@ -1,35 +1,37 @@
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
+const { Pool } = require("pg");
 
-const db = new sqlite3.Database(
-    path.join(__dirname, "csi.db"),
-    (err) => {
-        if (err) {
-            console.error(err.message);
-        } else {
-            console.log("SQLite bağlandı.");
-        }
-    }
-);
+const pool = new Pool({
+    host: process.env.PGHOST || "127.0.0.1",
+    port: Number(process.env.PGPORT || 5432),
+    database: process.env.PGDATABASE,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000
+});
 
-db.serialize(() => {
-
-    db.run(`
+async function initDatabase() {
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
+            id BIGSERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
             password TEXT,
-            habboId TEXT,
-            figureString TEXT,
+            "habboId" TEXT,
+            "figureString" TEXT,
             motto TEXT,
-            verifyCode TEXT,
-            verified INTEGER DEFAULT 0,
-            role TEXT DEFAULT 'member',
-            lastLogin DATETIME,
-            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            "verifyCode" TEXT,
+            verified BOOLEAN NOT NULL DEFAULT FALSE,
+            role TEXT NOT NULL DEFAULT 'member',
+            "lastLogin" TIMESTAMPTZ,
+            "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
     `);
 
-});
+    console.log("PostgreSQL bağlandı.");
+}
 
-module.exports = db;
+module.exports = {
+    pool,
+    initDatabase
+};

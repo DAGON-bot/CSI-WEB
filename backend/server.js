@@ -11,9 +11,11 @@ const {
     verifyUser,
     getVerifyCode,
     updateHabboInfo,
-    setPassword
+    setPassword,
+    updateLastLogin
 } = require("./models/userModel");
-const db = require("./database/db");
+
+const { initDatabase } = require("./database/db");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -341,20 +343,7 @@ if (!passwordCorrect) {
 
 }
 
-        await new Promise((resolve, reject) => {
-
-            db.run(
-                "UPDATE users SET lastLogin = CURRENT_TIMESTAMP WHERE username = ?",
-                [username],
-                function (err) {
-
-                    if (err) reject(err);
-                    else resolve();
-
-                }
-            );
-
-        });
+        await updateLastLogin(username);
 
         const token = generateToken(username);
 
@@ -412,6 +401,17 @@ app.get("/api/me", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server ${PORT} portunda çalışıyor.`);
-});
+async function startServer() {
+    try {
+        await initDatabase();
+
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`Server ${PORT} portunda çalışıyor.`);
+        });
+    } catch (err) {
+        console.error("Sunucu başlatılamadı:", err);
+        process.exit(1);
+    }
+}
+
+startServer();
