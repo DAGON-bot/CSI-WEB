@@ -42,8 +42,8 @@ const founderBadgeSelect =
 const founderRankSelect =
     document.getElementById("founderRankSelect");
 
-const founderRoleSelect =
-    document.getElementById("founderRoleSelect");
+const founderRoleCheckboxes =
+    document.getElementById("founderRoleCheckboxes");
 
 const founderSaveAllBtn =
     document.getElementById("founderSaveAllBtn");
@@ -118,6 +118,7 @@ const founderResultVerified =
 
 let selectedFounderUsername = "";
 let currentFounderPanelRole = "member";
+let currentFounderPanelRoles = ["member"];
 let currentFounderPanelUsername = "";
 
 let founderAdminLogs = [];
@@ -134,7 +135,7 @@ let selectedFounderOriginalData = {
     department: "",
     badge: "",
     rank: "",
-    role: "member"
+    roles: ["member"]
 };
 
 function closeFounderUsernameSuggestions() {
@@ -541,51 +542,106 @@ function getFounderRoleText(role) {
 
 }
 
-function configureFounderRoleOptions() {
+function getSelectedFounderRoles() {
 
-    if (!founderRoleSelect) {
+    if (!founderRoleCheckboxes) {
+        return [];
+    }
+
+    return Array.from(
+        founderRoleCheckboxes.querySelectorAll(
+            'input[type="checkbox"]:checked'
+        )
+    ).map(checkbox => checkbox.value);
+}
+
+function setSelectedFounderRoles(roles) {
+
+    if (!founderRoleCheckboxes) {
         return;
     }
 
-    const adminOption =
-        founderRoleSelect.querySelector(
-            'option[value="admin"]'
-        );
+    const cleanRoles =
+        Array.isArray(roles) && roles.length > 0
+            ? roles
+            : ["member"];
 
-    const founderOption =
-        founderRoleSelect.querySelector(
-            'option[value="founder"]'
-        );
+    founderRoleCheckboxes
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach(checkbox => {
 
-    // Admin hiçbir kullanıcıya panelden verilemez
-    if (adminOption) {
+            checkbox.checked =
+                cleanRoles.includes(checkbox.value);
 
-    const selectedUserIsAdmin =
-        selectedFounderUsername.toLowerCase() ===
-        "canart0";
-
-    adminOption.hidden =
-        !selectedUserIsAdmin;
-
-    adminOption.disabled =
-        !selectedUserIsAdmin;
-
+        });
 }
 
-    // Kurucu rolünü yalnızca admin verebilir
-    if (founderOption) {
+function setFounderRoleCheckboxesDisabled(disabled) {
+
+    if (!founderRoleCheckboxes) {
+        return;
+    }
+
+    founderRoleCheckboxes
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach(checkbox => {
+
+            checkbox.disabled = disabled;
+
+        });
+}
+
+function getFounderRolesText(roles) {
+
+    const cleanRoles =
+        Array.isArray(roles) && roles.length > 0
+            ? roles
+            : ["member"];
+
+    return cleanRoles
+        .map(role => getFounderRoleText(role))
+        .join(", ");
+}
+
+function configureFounderRoleOptions() {
+
+    if (!founderRoleCheckboxes) {
+        return;
+    }
+
+    const adminCheckbox =
+        founderRoleCheckboxes.querySelector(
+            'input[value="admin"]'
+        );
+
+    const founderCheckbox =
+        founderRoleCheckboxes.querySelector(
+            'input[value="founder"]'
+        );
+
+    if (adminCheckbox) {
+
+        const selectedUserIsAdmin =
+            selectedFounderUsername.toLowerCase() ===
+            "canart0";
+
+        adminCheckbox.closest("label").style.display =
+            selectedUserIsAdmin ? "" : "none";
+
+        adminCheckbox.disabled = true;
+    }
+
+    if (founderCheckbox) {
 
         const canAssignFounder =
             currentFounderPanelRole === "admin";
 
-        founderOption.hidden =
-            !canAssignFounder;
+        founderCheckbox.closest("label").style.display =
+            canAssignFounder ? "" : "none";
 
-        founderOption.disabled =
+        founderCheckbox.disabled =
             !canAssignFounder;
-
     }
-
 }
 
 function getAdminLogActionText(actionType) {
@@ -970,17 +1026,20 @@ founderDepartmentSelect.value =
 const userRank =
     user.rank?.trim() || "";
 
-const userRole =
-    user.role || "member";
-
 founderResultBadge.textContent =
     userBadge || "-";
 
 founderResultRank.textContent =
     userRank || "-";
 
+const userRoles =
+    Array.isArray(user.roles) &&
+    user.roles.length > 0
+        ? user.roles
+        : [user.role || "member"];
+
 founderResultRole.textContent =
-    getFounderRoleText(userRole);
+    getFounderRolesText(userRoles);
 
 founderBadgeSelect.value =
     userBadge;
@@ -990,10 +1049,9 @@ fillFounderRankOptions(
     userRank
 );
 
-configureFounderRoleOptions();
+setSelectedFounderRoles(userRoles);
 
-founderRoleSelect.value =
-    userRole;
+configureFounderRoleOptions();
 
 
 
@@ -1004,7 +1062,8 @@ const isProtectedAdmin =
 
 const isProtectedFounder =
     currentFounderPanelRole === "founder" &&
-    user.role === "founder";
+    !currentFounderPanelRoles.includes("admin") &&
+    userRoles.includes("founder");
 
 const isProtectedUser =
     isProtectedAdmin ||
@@ -1019,8 +1078,9 @@ founderBadgeSelect.disabled =
 founderRankSelect.disabled =
     isProtectedUser;
 
-founderRoleSelect.disabled =
-    isProtectedUser;
+setFounderRoleCheckboxesDisabled(
+    isProtectedUser
+);
 
 founderSaveAllBtn.disabled =
     isProtectedUser;
@@ -1052,8 +1112,8 @@ if (isProtectedAdmin) {
     rank:
         userRank,
 
-    role:
-        userRole
+    roles:
+        [...userRoles].sort()
 };
 
     founderResultCreatedAt.textContent =
@@ -1115,14 +1175,32 @@ async function checkFounderAccess() {
     "founder"
 ];
 
+const userRoles =
+    Array.isArray(data.user?.roles) &&
+    data.user.roles.length > 0
+        ? data.user.roles
+        : [data.user?.role || "member"];
+
+const hasFounderAccess =
+    allowedRoles.some(
+        role => userRoles.includes(role)
+    );
+
 if (
     response.ok &&
     data.success &&
-    allowedRoles.includes(data.user?.role)
+    hasFounderAccess
 ) {
 
+    currentFounderPanelRoles =
+        userRoles;
+
     currentFounderPanelRole =
-        data.user.role || "member";
+        userRoles.includes("admin")
+            ? "admin"
+            : userRoles.includes("founder")
+                ? "founder"
+                : "member";
 
     currentFounderPanelUsername =
         data.user.username || "";
@@ -1131,6 +1209,7 @@ if (
 
 } else {
 
+    currentFounderPanelRoles = ["member"];
     currentFounderPanelRole = "member";
     currentFounderPanelUsername = "";
 
@@ -1168,24 +1247,27 @@ function openFounderPanel() {
     founderDepartmentSelect.value = "";
 
     founderBadgeSelect.value = "";
-    founderRoleSelect.value = "";
 
-    fillFounderRankOptions("");
+setSelectedFounderRoles(["member"]);
 
-    founderDepartmentSelect.disabled = false;
+fillFounderRankOptions("");
+
+founderDepartmentSelect.disabled = false;
 founderBadgeSelect.disabled = false;
-founderRoleSelect.disabled = false;
+
+setFounderRoleCheckboxesDisabled(false);
+
 founderSaveAllBtn.disabled = false;
 
 founderSaveAllBtn.textContent =
     "💾 Tüm Değişiklikleri Kaydet";
 
     selectedFounderOriginalData = {
-        department: "",
-        badge: "",
-        rank: "",
-        role: "member"
-    };
+    department: "",
+    badge: "",
+    rank: "",
+    roles: ["member"]
+};
 
     setTimeout(() => {
         founderSearchUsername?.focus();
@@ -1204,7 +1286,8 @@ function closeFounderPanel() {
     founderDepartmentSelect.value = "";
 
     founderBadgeSelect.value = "";
-founderRoleSelect.value = "";
+
+setSelectedFounderRoles(["member"]);
 
 fillFounderRankOptions("");
 
@@ -1212,7 +1295,7 @@ selectedFounderOriginalData = {
     department: "",
     badge: "",
     rank: "",
-    role: "member"
+    roles: ["member"]
 };
 
 closeFounderUsernameSuggestions();
@@ -1675,6 +1758,74 @@ async function updateFounderProfileField(
 
 }
 
+async function updateFounderRoles(roles) {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!token) {
+
+        showDialog(
+            "Oturum Hatası",
+            "Oturum bilgisi bulunamadı.",
+            "error"
+        );
+
+        return null;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${window.location.origin}/api/founder/user/${encodeURIComponent(selectedFounderUsername)}/roles`,
+            {
+                method: "PATCH",
+
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    roles
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+
+            showDialog(
+                "Rol Güncelleme Başarısız",
+                data.message ||
+                    "Kullanıcı rolleri güncellenemedi.",
+                "error"
+            );
+
+            return null;
+        }
+
+        return data;
+
+    } catch (err) {
+
+        console.error(
+            "Çoklu rol güncelleme hatası:",
+            err
+        );
+
+        showDialog(
+            "Bağlantı Hatası",
+            "Sunucuya bağlanılamadı.",
+            "error"
+        );
+
+        return null;
+    }
+}
+
 founderSaveAllBtn?.addEventListener(
     "click",
     async () => {
@@ -1715,43 +1866,55 @@ founderSaveAllBtn?.addEventListener(
         const rank =
             founderRankSelect.value;
 
-        const role =
-            founderRoleSelect.value;
+        const roles =
+            getSelectedFounderRoles();
 
         if (
-            !department ||
-            !badge ||
-            !rank ||
-            !role
-        ) {
+    !department ||
+    !badge ||
+    !rank
+) {
 
-            showDialog(
-                "Eksik Seçim",
-                "Departman, rozet, rütbe ve site rolü alanlarını doldurun.",
-                "warning"
-            );
+    showDialog(
+        "Eksik Seçim",
+        "Departman, rozet ve rütbe alanlarını doldurun.",
+        "warning"
+    );
 
-            return;
+    return;
+}
 
-        }
+const sortedRoles =
+    [...roles].sort();
+
+const sortedOriginalRoles =
+    [
+        ...(
+            Array.isArray(
+                selectedFounderOriginalData.roles
+            )
+                ? selectedFounderOriginalData.roles
+                : ["member"]
+        )
+    ].sort();
 
         const changes = {
-            department:
-                department !==
-                selectedFounderOriginalData.department,
+    department:
+        department !==
+        selectedFounderOriginalData.department,
 
-            badge:
-                badge !==
-                selectedFounderOriginalData.badge,
+    badge:
+        badge !==
+        selectedFounderOriginalData.badge,
 
-            rank:
-                rank !==
-                selectedFounderOriginalData.rank,
+    rank:
+        rank !==
+        selectedFounderOriginalData.rank,
 
-            role:
-                role !==
-                selectedFounderOriginalData.role
-        };
+    roles:
+        JSON.stringify(sortedRoles) !==
+        JSON.stringify(sortedOriginalRoles)
+};
 
         const hasChanges =
             Object.values(changes).some(Boolean);
@@ -1868,35 +2031,45 @@ founderSaveAllBtn?.addEventListener(
 
             }
 
-            if (changes.role) {
+            if (changes.roles) {
 
-                const result =
-                    await updateFounderProfileField(
-                        "role",
-                        role
-                    );
+    const result =
+        await updateFounderRoles(
+            roles
+        );
 
-                if (result) {
+    if (result) {
 
-                    founderResultRole.textContent =
-                        getFounderRoleText(role);
+        const updatedRoles =
+            Array.isArray(result.roles) &&
+            result.roles.length > 0
+                ? result.roles
+                : ["member"];
 
-                    selectedFounderOriginalData.role =
-                        role;
+        setSelectedFounderRoles(
+            updatedRoles
+        );
 
-                    updatedFields.push(
-                        "Site Rolü"
-                    );
+        founderResultRole.textContent =
+            getFounderRolesText(
+                updatedRoles
+            );
 
-                } else {
+        selectedFounderOriginalData.roles =
+            [...updatedRoles].sort();
 
-                    failedFields.push(
-                        "Site Rolü"
-                    );
+        updatedFields.push(
+            "Site Rolleri"
+        );
 
-                }
+    } else {
 
-            }
+        failedFields.push(
+            "Site Rolleri"
+        );
+
+    }
+}
 
             await loadFounderLogs();
 

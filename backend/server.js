@@ -19,6 +19,7 @@ const {
     updateRank,
     updateBadge,
     updateRole,
+    setUserRoles,
     updateRanksBulk,
     createAdminLog,
     createPasswordReset,
@@ -195,10 +196,6 @@ async function getAuthorizedFounder(req) {
         "founder"
     ];
 
-    const allowedRoles = [
-    "admin",
-    "founder"
-];
 
 if (!hasAnyRole(user, allowedRoles)) {
 
@@ -994,7 +991,14 @@ if (!hasAnyRole(requester, founderPanelRoles)) {
                 rank: searchedUser.rank || "",
                 department: searchedUser.department || "",
                 role: searchedUser.role || "member",
-                verified: !!searchedUser.verified,
+
+roles:
+    Array.isArray(searchedUser.roles) &&
+    searchedUser.roles.length > 0
+        ? searchedUser.roles
+        : [searchedUser.role || "member"],
+
+verified: !!searchedUser.verified,
                 createdAt: searchedUser.createdAt,
                 lastLogin: searchedUser.lastLogin
             }
@@ -1317,8 +1321,9 @@ app.patch(
 }
 
 if (
-    requester.role === "founder" &&
-    targetUser.role === "founder"
+    hasRole(requester, "founder") &&
+    !hasRole(requester, "admin") &&
+    hasRole(targetUser, "founder")
 ) {
 
     return res.status(403).json({
@@ -1874,6 +1879,262 @@ if (
                 success: false,
                 message:
                     "Kullanıcı bilgisi güncellenemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================================
+// KURUCU PANELİ - ÇOKLU ROL GÜNCELLE
+// ===============================================
+
+app.patch(
+    "/api/founder/user/:username/roles",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedFounder(req);
+
+            if (authorization.error) {
+
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+
+            }
+
+            const requester =
+                authorization.user;
+
+            const targetUsername =
+                String(
+                    req.params.username || ""
+                ).trim();
+
+            const receivedRoles =
+                Array.isArray(req.body.roles)
+                    ? req.body.roles
+                    : [];
+
+            if (!targetUsername) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Kullanıcı adı gerekli."
+                });
+
+            }
+
+            const allowedRoles = [
+                "member",
+                "promotion_controller",
+                "salary_officer",
+                "reporter",
+                "moderator",
+                "founder",
+                "admin"
+            ];
+
+            let cleanRoles = [
+                ...new Set(
+                    receivedRoles
+                        .map(role =>
+                            String(role || "").trim()
+                        )
+                        .filter(Boolean)
+                )
+            ];
+
+            if (
+                cleanRoles.some(
+                    role => !allowedRoles.includes(role)
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz bir site rolü gönderildi."
+                });
+
+            }
+
+            const targetUser =
+                await getUser(targetUsername);
+
+            if (!targetUser) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Kullanıcı bulunamadı."
+                });
+
+            }
+
+            if (
+                targetUser.username.toLowerCase() ===
+                ADMIN_USERNAME.toLowerCase()
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Admin hesabının rolleri değiştirilemez."
+                });
+
+            }
+
+            if (
+                hasRole(requester, "founder") &&
+                !hasRole(requester, "admin") &&
+                hasRole(targetUser, "founder")
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Kurucular, başka bir kurucunun rollerini değiştiremez."
+                });
+
+            }
+
+            if (
+                cleanRoles.includes("admin")
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Admin rolü başka bir kullanıcıya verilemez."
+                });
+
+            }
+
+            if (
+                cleanRoles.includes("founder") &&
+                !hasRole(requester, "admin")
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Kurucu rolünü yalnızca admin verebilir."
+                });
+
+            }
+
+            /*
+             * Üye rolü başka yetkili rollerle birlikte tutulmaz.
+             */
+            const hasAuthorityRole =
+                cleanRoles.some(
+                    role => role !== "member"
+                );
+
+            if (hasAuthorityRole) {
+
+                cleanRoles =
+                    cleanRoles.filter(
+                        role => role !== "member"
+                    );
+
+            }
+
+            /*
+             * Hiç rol seçilmediyse otomatik üye yap.
+             */
+            if (cleanRoles.length === 0) {
+
+                cleanRoles = ["member"];
+
+            }
+
+            const oldRoles =
+                getUserRoleList(targetUser);
+
+            const sortedOldRoles =
+                [...oldRoles].sort();
+
+            const sortedNewRoles =
+                [...cleanRoles].sort();
+
+            const rolesUnchanged =
+                JSON.stringify(sortedOldRoles) ===
+                JSON.stringify(sortedNewRoles);
+
+            if (rolesUnchanged) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Kullanıcının rollerinde değişiklik yapılmadı."
+                });
+
+            }
+
+            const updatedRoles =
+                await setUserRoles(
+                    targetUser.username,
+                    cleanRoles
+                );
+
+            if (!updatedRoles) {
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Kullanıcının rolleri güncellenemedi."
+                });
+
+            }
+
+            await createAdminLog({
+                performedBy:
+                    requester.username,
+
+                targetUsername:
+                    targetUser.username,
+
+                actionType:
+                    "roles_update",
+
+                oldValue:
+                    sortedOldRoles.join(", "),
+
+                newValue:
+                    [...updatedRoles]
+                        .sort()
+                        .join(", ")
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    `${targetUser.username} kullanıcısının rolleri güncellendi.`,
+                roles: updatedRoles
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Çoklu rol güncelleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Kullanıcı rolleri güncellenemedi."
             });
 
         }
