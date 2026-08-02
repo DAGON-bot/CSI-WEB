@@ -1017,3 +1017,88 @@ goLoginBtn?.addEventListener("click", () => {
 });
 
 registerType?.addEventListener("change", updateRegisterType);
+
+document.addEventListener("keydown", (e) => {
+
+    if (e.key !== "Enter") {
+        return;
+    }
+
+    if (!authOverlay?.classList.contains("active")) {
+        return;
+    }
+
+    e.preventDefault();
+
+    if (
+        authMode === "login" &&
+        loginSubmitBtn &&
+        isElementVisible(loginSubmitBtn)
+    ) {
+        loginSubmitBtn.click();
+        return;
+    }
+
+    if (
+        authMode === "register" &&
+        createCodeBtn &&
+        createCodeBtn.style.display !== "none"
+    ) {
+        createCodeBtn.click();
+        return;
+    }
+
+    if (
+        verifyArea &&
+        verifyArea.style.display !== "none" &&
+        verifyBtn
+    ) {
+        verifyBtn.click();
+        return;
+    }
+
+    if (
+        passwordArea &&
+        passwordArea.style.display !== "none" &&
+        savePasswordBtn
+    ) {
+        savePasswordBtn.click();
+        return;
+    }
+
+    if (
+        resetStartArea &&
+        resetStartArea.style.display !== "none" &&
+        resetCreateCodeBtn
+    ) {
+        resetCreateCodeBtn.click();
+        return;
+    }
+
+    if (
+        resetVerifyArea &&
+        resetVerifyArea.style.display !== "none" &&
+        resetVerifyBtn
+    ) {
+        resetVerifyBtn.click();
+        return;
+    }
+
+    if (
+        resetPasswordArea &&
+        resetPasswordArea.style.display !== "none" &&
+        resetSavePasswordBtn
+    ) {
+        resetSavePasswordBtn.click();
+    }
+
+});
+
+function isElementVisible(element) {
+
+    if (!element) {
+        return false;
+    }
+
+    return window.getComputedStyle(element).display !== "none";
+}
