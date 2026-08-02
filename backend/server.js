@@ -34,6 +34,95 @@ const axios = require("axios");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const ADMIN_USERNAME = "canart0";
+const PANEL_PERMISSIONS = {
+
+    promotion: [
+        "admin",
+        "founder",
+        "moderator",
+        "promotion_controller"
+    ],
+
+    bulkPromotion: [
+        "admin",
+        "founder",
+        "moderator",
+        "promotion_controller"
+    ],
+
+    payban: [
+        "admin",
+        "founder",
+        "moderator",
+        "salary_officer"
+    ],
+
+    puantaj: [
+        "admin",
+        "founder",
+        "moderator",
+        "salary_officer"
+    ],
+
+    news: [
+        "admin",
+        "founder",
+        "moderator",
+        "reporter"
+    ]
+
+};
+function getUserRoleList(user) {
+
+    if (!user) {
+        return [];
+    }
+
+    if (
+        Array.isArray(user.roles) &&
+        user.roles.length > 0
+    ) {
+        return user.roles;
+    }
+
+    if (user.role) {
+        return [user.role];
+    }
+
+    return ["member"];
+}
+
+function hasRole(user, role) {
+
+    const roles = getUserRoleList(user);
+
+    return roles.includes(role);
+}
+
+function hasAnyRole(user, allowedRoles) {
+
+    if (!Array.isArray(allowedRoles)) {
+        return false;
+    }
+
+    const roles = getUserRoleList(user);
+
+    return allowedRoles.some(
+        role => roles.includes(role)
+    );
+}
+
+function hasPanelPermission(user, panelName) {
+
+    const allowedRoles =
+        PANEL_PERMISSIONS[panelName];
+
+    if (!allowedRoles) {
+        return false;
+    }
+
+    return hasAnyRole(user, allowedRoles);
+}
 const app = express();
 
 app.use(cors());
@@ -106,17 +195,22 @@ async function getAuthorizedFounder(req) {
         "founder"
     ];
 
-    if (!allowedRoles.includes(user.role)) {
+    const allowedRoles = [
+    "admin",
+    "founder"
+];
 
-        return {
-            error: {
-                status: 403,
-                message:
-                    "Bu işlem için yetkiniz bulunmuyor."
-            }
-        };
+if (!hasAnyRole(user, allowedRoles)) {
 
-    }
+    return {
+        error: {
+            status: 403,
+            message:
+                "Bu işlem için yetkiniz bulunmuyor."
+        }
+    };
+
+}
 
     return {
         user
@@ -551,21 +645,27 @@ app.get("/api/me", async (req, res) => {
         }
 
         return res.json({
-            success: true,
-            user: {
-                username: user.username,
-                habboId: user.habboId,
-                figureString: user.figureString,
-                motto: user.motto || "",
-                role: user.role || "member",
-                badge: user.badge || "",
-                rank: user.rank || "",
-                department: user.department || "",
-                verified: !!user.verified,
-                createdAt: user.createdAt,
-                lastLogin: user.lastLogin
-            }
-        });
+    success: true,
+    user: {
+        username: user.username,
+        habboId: user.habboId,
+        figureString: user.figureString,
+        motto: user.motto || "",
+
+        role: user.role || "member",
+
+        roles: Array.isArray(user.roles) && user.roles.length > 0
+            ? user.roles
+            : [user.role || "member"],
+
+        badge: user.badge || "",
+        rank: user.rank || "",
+        department: user.department || "",
+        verified: !!user.verified,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+    }
+});
 
     } catch (err) {
 
@@ -638,22 +738,28 @@ app.post("/api/profile/refresh", async (req, res) => {
         const updatedUser = await getUser(user.username);
 
         return res.json({
-            success: true,
-            message: "Habbo bilgileri güncellendi.",
-            user: {
-                username: updatedUser.username,
-                habboId: updatedUser.habboId,
-                figureString: updatedUser.figureString,
-                motto: updatedUser.motto || "",
-                role: updatedUser.role || "member",
-                badge: updatedUser.badge || "",
-                rank: updatedUser.rank || "",
-                department: updatedUser.department || "",
-                verified: !!updatedUser.verified,
-                createdAt: updatedUser.createdAt,
-                lastLogin: updatedUser.lastLogin
-            }
-        });
+    success: true,
+    message: "Habbo bilgileri güncellendi.",
+    user: {
+        username: updatedUser.username,
+        habboId: updatedUser.habboId,
+        figureString: updatedUser.figureString,
+        motto: updatedUser.motto || "",
+
+        role: updatedUser.role || "member",
+
+        roles: Array.isArray(updatedUser.roles) && updatedUser.roles.length > 0
+            ? updatedUser.roles
+            : [updatedUser.role || "member"],
+
+        badge: updatedUser.badge || "",
+        rank: updatedUser.rank || "",
+        department: updatedUser.department || "",
+        verified: !!updatedUser.verified,
+        createdAt: updatedUser.createdAt,
+        lastLogin: updatedUser.lastLogin
+    }
+});
 
     } catch (err) {
 
@@ -842,7 +948,7 @@ app.get("/api/founder/user/:username", async (req, res) => {
     "founder"
 ];
 
-if (!founderPanelRoles.includes(requester.role)) {
+if (!hasAnyRole(requester, founderPanelRoles)) {
     return res.status(403).json({
         success: false,
         message: "Kurucu paneline erişim yetkiniz yok."
@@ -1038,8 +1144,9 @@ app.patch(
 }
 
 if (
-    requester.role === "founder" &&
-    targetUser.role === "founder"
+    hasRole(requester, "founder") &&
+    !hasRole(requester, "admin") &&
+    hasRole(targetUser, "founder")
 ) {
 
     return res.status(403).json({
@@ -1684,7 +1791,7 @@ if (value === "admin") {
 // Kurucu rolünü yalnızca admin verebilir
 if (
     value === "founder" &&
-    requester.role !== "admin"
+    !hasRole(requester, "admin")
 ) {
 
     return res.status(403).json({
