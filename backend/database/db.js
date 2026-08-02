@@ -98,6 +98,79 @@ await pool.query(`
 `);
 
 await pool.query(`
+    CREATE TABLE IF NOT EXISTS news_articles (
+        id BIGSERIAL PRIMARY KEY,
+
+        "authorUserId" BIGINT NOT NULL,
+
+        title TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        content TEXT NOT NULL,
+
+        category TEXT NOT NULL
+            DEFAULT 'general',
+
+        "imageUrl" TEXT,
+
+        status TEXT NOT NULL
+            DEFAULT 'draft',
+
+        "isFeatured" BOOLEAN NOT NULL
+            DEFAULT FALSE,
+
+        "publishedAt" TIMESTAMPTZ,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        "updatedAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT news_articles_author_fk
+            FOREIGN KEY ("authorUserId")
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT news_articles_status_check
+            CHECK (
+                status IN (
+                    'draft',
+                    'published',
+                    'archived'
+                )
+            ),
+
+        CONSTRAINT news_articles_category_check
+            CHECK (
+                category IN (
+                    'general',
+                    'announcement',
+                    'event',
+                    'interview',
+                    'update'
+                )
+            )
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        news_articles_status_published_idx
+    ON news_articles (
+        status,
+        "publishedAt" DESC
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        news_articles_author_idx
+    ON news_articles (
+        "authorUserId"
+    )
+`);
+
+await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_logs (
         id BIGSERIAL PRIMARY KEY,
 

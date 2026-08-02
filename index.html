@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/founderPanel.css">
     <link rel="stylesheet" href="css/dialog.css">
     <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/newsPanel.css">
     <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -74,6 +75,17 @@
     <a href="#" class="register-btn">
         Kayıt Ol
     </a>
+
+    <button
+    type="button"
+    id="newsPanelNav"
+    class="nav-btn news-panel-nav"
+    style="display:none;">
+
+    <i class="fa-solid fa-newspaper"></i>
+    HABER PANELİ
+
+    </button>
 
     <button
     type="button"
@@ -1099,6 +1111,433 @@ class="main-btn">
 
 </div>
 
+<!-- ================= HABER PANELİ ================= -->
+
+<div
+    id="newsPanelOverlay"
+    class="news-panel-overlay">
+
+    <div class="news-admin-popup">
+
+        <button
+            type="button"
+            id="newsPanelClose"
+            class="news-admin-close">
+
+            ✕
+
+        </button>
+
+        <div class="news-admin-header">
+
+            <span>CSI HABER MERKEZİ</span>
+
+            <h2>Haber Paneli</h2>
+
+            <p>
+                Haber oluşturun, taslak kaydedin,
+                yayınlayın ve mevcut haberleri yönetin.
+            </p>
+
+        </div>
+
+        <div class="news-admin-layout">
+
+            <!-- SOL: HABER LİSTESİ -->
+
+            <aside class="news-admin-sidebar">
+
+                <div class="news-admin-sidebar-header">
+
+                    <div>
+                        <h3>Haberler</h3>
+                        <p>Oluşturulan haber kayıtları</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="newsCreateNewBtn"
+                        class="news-create-new-btn">
+
+                        <i class="fa-solid fa-plus"></i>
+                        Yeni Haber
+
+                    </button>
+
+                </div>
+
+                <div class="news-admin-filter-row">
+
+                    <select id="newsPanelStatusFilter">
+
+                        <option value="all">
+                            Tüm Durumlar
+                        </option>
+
+                        <option value="published">
+                            Yayınlananlar
+                        </option>
+
+                        <option value="draft">
+                            Taslaklar
+                        </option>
+
+                        <option value="archived">
+                            Arşivlenenler
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div
+                    id="newsPanelLoading"
+                    class="news-admin-message">
+
+                    Haberler yükleniyor...
+
+                </div>
+
+                <div
+                    id="newsPanelEmpty"
+                    class="news-admin-message"
+                    style="display:none;">
+
+                    Henüz haber bulunmuyor.
+
+                </div>
+
+                <div
+                    id="newsPanelArticleList"
+                    class="news-admin-article-list">
+
+                </div>
+
+            </aside>
+
+            <!-- SAĞ: HABER EDİTÖRÜ -->
+
+            <section class="news-admin-editor">
+
+                <div class="news-admin-editor-title">
+
+                    <div>
+                        <span id="newsEditorModeLabel">
+                            YENİ HABER
+                        </span>
+
+                        <h3 id="newsEditorTitle">
+                            Haber Oluştur
+                        </h3>
+                    </div>
+
+                    <div
+                        id="newsEditorStatusBadge"
+                        class="news-editor-status draft">
+
+                        Taslak
+
+                    </div>
+
+                </div>
+
+                <input
+                    type="hidden"
+                    id="newsArticleId">
+
+                <div class="news-admin-form-grid">
+
+                    <div class="news-admin-field news-admin-field-full">
+
+                        <label for="newsTitleInput">
+                            Haber Başlığı
+                        </label>
+
+                        <input
+                            type="text"
+                            id="newsTitleInput"
+                            maxlength="150"
+                            placeholder="Haber başlığını yazın">
+
+                        <span
+                            id="newsTitleCounter"
+                            class="news-character-counter">
+
+                            0 / 150
+
+                        </span>
+
+                    </div>
+
+                    <div class="news-admin-field">
+
+                        <label for="newsCategorySelect">
+                            Kategori
+                        </label>
+
+                        <select id="newsCategorySelect">
+
+                            <option value="general">
+                                Genel
+                            </option>
+
+                            <option value="announcement">
+                                Duyuru
+                            </option>
+
+                            <option value="event">
+                                Etkinlik
+                            </option>
+
+                            <option value="interview">
+                                Röportaj
+                            </option>
+
+                            <option value="update">
+                                Güncelleme
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="news-admin-field">
+
+                        <label for="newsStatusSelect">
+                            Durum
+                        </label>
+
+                        <select id="newsStatusSelect">
+
+                            <option value="draft">
+                                Taslak
+                            </option>
+
+                            <option value="published">
+                                Yayınla
+                            </option>
+
+                            <option value="archived">
+                                Arşivle
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="news-admin-field news-admin-field-full">
+
+                        <label for="newsImageUrlInput">
+                            Kapak Görseli URL
+                        </label>
+
+                        <input
+                            type="url"
+                            id="newsImageUrlInput"
+                            maxlength="1000"
+                            placeholder="https://...">
+
+                    </div>
+
+                    <div
+                        id="newsImagePreviewWrapper"
+                        class="news-image-preview-wrapper"
+                        style="display:none;">
+
+                        <img
+                            id="newsImagePreview"
+                            src=""
+                            alt="Haber kapak önizlemesi">
+
+                    </div>
+
+                    <div class="news-admin-field news-admin-field-full">
+
+                        <label for="newsSummaryInput">
+                            Kısa Özet
+                        </label>
+
+                        <textarea
+                            id="newsSummaryInput"
+                            maxlength="300"
+                            rows="4"
+                            placeholder="Ana sayfadaki haber kartında görünecek kısa açıklama"></textarea>
+
+                        <span
+                            id="newsSummaryCounter"
+                            class="news-character-counter">
+
+                            0 / 300
+
+                        </span>
+
+                    </div>
+
+                    <div class="news-admin-field news-admin-field-full">
+
+                        <label for="newsContentInput">
+                            Haber İçeriği
+                        </label>
+
+                        <textarea
+                            id="newsContentInput"
+                            maxlength="20000"
+                            rows="12"
+                            placeholder="Haberin tam içeriğini yazın"></textarea>
+
+                        <span
+                            id="newsContentCounter"
+                            class="news-character-counter">
+
+                            0 / 20000
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div
+                    id="newsFeatureArea"
+                    class="news-feature-area"
+                    style="display:none;">
+
+                    <label>
+
+                        <input
+                            type="checkbox"
+                            id="newsFeaturedCheckbox">
+
+                        <span>
+                            Bu haberi öne çıkar
+                        </span>
+
+                    </label>
+
+                    <p>
+                        Aynı anda yalnızca bir haber öne çıkarılabilir.
+                    </p>
+
+                </div>
+
+                <div
+                    id="newsPanelFeedback"
+                    class="news-panel-feedback">
+
+                </div>
+
+                <div class="news-admin-actions">
+
+                    <button
+                        type="button"
+                        id="newsResetBtn"
+                        class="news-admin-secondary-btn">
+
+                        Temizle
+
+                    </button>
+
+                    <button
+                        type="button"
+                        id="newsDeleteBtn"
+                        class="news-admin-danger-btn"
+                        style="display:none;">
+
+                        <i class="fa-solid fa-trash"></i>
+                        Sil
+
+                    </button>
+
+                    <button
+                        type="button"
+                        id="newsPreviewBtn"
+                        class="news-admin-secondary-btn">
+
+                        <i class="fa-regular fa-eye"></i>
+                        Önizle
+
+                    </button>
+
+                    <button
+                        type="button"
+                        id="newsSaveBtn"
+                        class="news-admin-primary-btn">
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Kaydet
+
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= HABER ÖNİZLEME ================= -->
+
+<div
+    id="newsPreviewOverlay"
+    class="news-preview-overlay">
+
+    <div class="news-preview-popup">
+
+        <button
+            type="button"
+            id="newsPreviewClose"
+            class="news-preview-close">
+
+            ✕
+
+        </button>
+
+        <div class="news-preview-cover">
+
+            <img
+                id="newsPreviewImage"
+                src="assets/logo.png"
+                alt="Haber kapak görseli">
+
+        </div>
+
+        <div class="news-preview-body">
+
+            <span
+                id="newsPreviewCategory"
+                class="news-preview-category">
+
+                Genel
+
+            </span>
+
+            <h2 id="newsPreviewHeading">
+                Haber Başlığı
+            </h2>
+
+            <p
+                id="newsPreviewSummary"
+                class="news-preview-summary">
+
+                Haber özeti
+
+            </p>
+
+            <div
+                id="newsPreviewContent"
+                class="news-preview-content">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 <!-- ================= KURUCU PANELİ ================= -->
 
 <div id="founderPanelOverlay" class="founder-panel-overlay">
@@ -1962,6 +2401,7 @@ Admin
 <script src="js/profile.js"></script>
 <script src="js/founderPanel.js"></script>
 <script src="js/organization.js?v=8"></script>
+<script src="js/newsPanel.js?v=1"></script>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/chat.js?v=4"></script>
