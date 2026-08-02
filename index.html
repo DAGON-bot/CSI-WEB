@@ -1595,6 +1595,16 @@ class="main-btn">
 
     <h3>Şifre Oluştur</h3>
 
+    <div class="auth-register-type">
+    <label>Kayıt Türü</label>
+
+    <select id="registerType">
+        <option value="staff" selected>Personel</option>
+        <option value="guest">Misafir</option>
+    </select>
+</div>
+
+<div id="staffRegisterFields">
     <select id="registerBadge">
 
     <option value="">Rozetinizi Seçin</option>
@@ -1639,7 +1649,7 @@ class="main-btn">
     id="registerRank"
     maxlength="80"
     placeholder="Rütbenizi Yazın">
-
+</div>
     <input
         type="password"
         id="registerPassword"

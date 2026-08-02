@@ -290,17 +290,29 @@ app.post("/api/register/password", async (req, res) => {
     username,
     password,
     badge,
-    rank
+    rank,
+    registerType
 } = req.body;
 
-        if (!username || !password || !badge || !rank) {
+        const isGuest = registerType === "guest";
 
-            return res.status(400).json({
-                success: false,
-                message: "Kullanıcı adı, rozet, rütbe ve şifre bilgileri gerekli."
-            });
+if (!username || !password) {
 
-        }
+    return res.status(400).json({
+        success: false,
+        message: "Kullanıcı adı ve şifre gerekli."
+    });
+
+}
+
+if (!isGuest && (!badge || !rank)) {
+
+    return res.status(400).json({
+        success: false,
+        message: "Rozet ve rütbe seçmelisiniz."
+    });
+
+}
 
         if (password.length < 6) {
 
@@ -311,11 +323,13 @@ app.post("/api/register/password", async (req, res) => {
 
         }
 
-        const cleanBadge =
-    String(badge || "").trim();
+        const cleanBadge = isGuest
+    ? "Misafir"
+    : String(badge || "").trim();
 
-const cleanRank =
-    String(rank || "").trim();
+const cleanRank = isGuest
+    ? "Misafir"
+    : String(rank || "").trim();
 
 if (cleanBadge.length > 80) {
     return res.status(400).json({
