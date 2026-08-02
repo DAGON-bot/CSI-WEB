@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="css/founderPanel.css">
     <link rel="stylesheet" href="css/dialog.css">
+    <link rel="stylesheet" href="css/chat.css">
     <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -207,7 +208,128 @@
         
         </div>
 
-    </section>
+        </section>
+
+    <!-- ================= CANLI SOHBET ================= -->
+
+    <aside class="live-chat-panel">
+
+        <div class="live-chat-header">
+
+            <div class="live-chat-title">
+                <i class="fa-regular fa-message"></i>
+                <span>Canlı Sohbet</span>
+            </div>
+
+            <div class="live-chat-status">
+
+                <span class="live-chat-status-dot"></span>
+
+                <span id="chatOnlineText">
+                    Canlı
+                </span>
+
+            </div>
+
+        </div>
+
+        <div
+            id="chatMessages"
+            class="live-chat-messages">
+
+            <div
+                id="chatLoading"
+                class="chat-system-message">
+
+                Mesajlar yükleniyor...
+
+            </div>
+
+        </div>
+
+        <div
+            id="chatTypingInfo"
+            class="chat-typing-info">
+
+        </div>
+
+        <div
+            id="chatLoginRequired"
+            class="chat-login-required">
+
+            <i class="fa-solid fa-lock"></i>
+
+            <button
+                type="button"
+                id="chatLoginBtn">
+
+                Mesaj göndermek için giriş yapın
+
+            </button>
+
+        </div>
+
+        <div
+            id="chatComposer"
+            class="chat-composer"
+            style="display:none;">
+
+            <div
+                id="chatEmojiPanel"
+                class="chat-emoji-panel"
+                style="display:none;">
+
+                <button type="button">😀</button>
+                <button type="button">😂</button>
+                <button type="button">😍</button>
+                <button type="button">😎</button>
+                <button type="button">🥳</button>
+                <button type="button">😢</button>
+                <button type="button">😡</button>
+                <button type="button">👍</button>
+                <button type="button">👎</button>
+                <button type="button">❤️</button>
+                <button type="button">🔥</button>
+                <button type="button">🎉</button>
+
+            </div>
+
+            <button
+                type="button"
+                id="chatEmojiBtn"
+                class="chat-emoji-btn"
+                aria-label="Emoji seç">
+
+                🙂
+
+            </button>
+
+            <input
+                type="text"
+                id="chatMessageInput"
+                maxlength="300"
+                autocomplete="off"
+                placeholder="Mesajınızı yazın...">
+
+            <button
+                type="button"
+                id="chatSendBtn"
+                class="chat-send-btn"
+                aria-label="Mesaj gönder">
+
+                <i class="fa-solid fa-paper-plane"></i>
+
+            </button>
+
+        </div>
+
+        <div
+            id="chatFeedback"
+            class="chat-feedback">
+
+        </div>
+
+    </aside>
 
 </div>
 
@@ -1840,6 +1962,9 @@ Admin
 <script src="js/profile.js"></script>
 <script src="js/founderPanel.js"></script>
 <script src="js/organization.js?v=8"></script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/chat.js"></script>
 
 
 
