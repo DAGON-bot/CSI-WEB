@@ -600,7 +600,7 @@ function connectChatSocket() {
     }
 );
 
-    chatSocket.on(
+        chatSocket.on(
         "chat:message",
         (message) => {
 
@@ -618,11 +618,9 @@ function connectChatSocket() {
         }
     );
 
-}
-
-chatSocket.on(
-    "chat:deleted",
-    data => {
+    chatSocket.on(
+        "chat:deleted",
+        data => {
 
         const messageId =
             String(
@@ -666,6 +664,8 @@ chatSocket.on(
 
     }
 );
+
+}
 
 function deleteChatMessage(
     messageId,
