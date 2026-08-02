@@ -667,7 +667,139 @@ function connectChatSocket() {
 
 }
 
-function deleteChatMessage(
+function showChatDeleteConfirm() {
+
+    return new Promise(resolve => {
+
+        const overlay =
+            document.createElement("div");
+
+        overlay.className =
+            "chat-confirm-overlay";
+
+        const box =
+            document.createElement("div");
+
+        box.className =
+            "chat-confirm-box";
+
+        const icon =
+            document.createElement("div");
+
+        icon.className =
+            "chat-confirm-icon";
+
+        icon.innerHTML =
+            '<i class="fa-solid fa-trash"></i>';
+
+        const title =
+            document.createElement("h3");
+
+        title.textContent =
+            "Mesajı Sil";
+
+        const message =
+            document.createElement("p");
+
+        message.textContent =
+            "Bu mesajı kalıcı olarak silmek istediğinize emin misiniz?";
+
+        const buttons =
+            document.createElement("div");
+
+        buttons.className =
+            "chat-confirm-buttons";
+
+        const cancelButton =
+            document.createElement("button");
+
+        cancelButton.type =
+            "button";
+
+        cancelButton.className =
+            "chat-confirm-cancel";
+
+        cancelButton.textContent =
+            "İptal";
+
+        const confirmButton =
+            document.createElement("button");
+
+        confirmButton.type =
+            "button";
+
+        confirmButton.className =
+            "chat-confirm-delete";
+
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-trash"></i> Mesajı Sil';
+
+        function closeDialog(result) {
+
+            document.removeEventListener(
+                "keydown",
+                handleKeydown
+            );
+
+            overlay.remove();
+
+            resolve(result);
+        }
+
+        function handleKeydown(event) {
+
+            if (event.key === "Escape") {
+                closeDialog(false);
+            }
+
+            if (event.key === "Enter") {
+                closeDialog(true);
+            }
+        }
+
+        cancelButton.addEventListener(
+            "click",
+            () => closeDialog(false)
+        );
+
+        confirmButton.addEventListener(
+            "click",
+            () => closeDialog(true)
+        );
+
+        overlay.addEventListener(
+            "click",
+            event => {
+
+                if (event.target === overlay) {
+                    closeDialog(false);
+                }
+
+            }
+        );
+
+        document.addEventListener(
+            "keydown",
+            handleKeydown
+        );
+
+        buttons.appendChild(cancelButton);
+        buttons.appendChild(confirmButton);
+
+        box.appendChild(icon);
+        box.appendChild(title);
+        box.appendChild(message);
+        box.appendChild(buttons);
+
+        overlay.appendChild(box);
+
+        document.body.appendChild(overlay);
+
+        confirmButton.focus();
+    });
+}
+
+async function deleteChatMessage(
     messageId,
     button
 ) {
@@ -696,13 +828,11 @@ function deleteChatMessage(
     }
 
     const confirmed =
-        window.confirm(
-            "Bu mesajı silmek istediğinize emin misiniz?"
-        );
+    await showChatDeleteConfirm();
 
-    if (!confirmed) {
-        return;
-    }
+if (!confirmed) {
+    return;
+}
 
     if (button) {
         button.disabled = true;

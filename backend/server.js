@@ -32,6 +32,16 @@ const {
 } = require("./models/userModel");
 
 const {
+    createNewsArticle,
+    getPublishedNewsArticles,
+    getNewsArticleById,
+    getNewsArticlesForPanel,
+    updateNewsArticle,
+    deleteNewsArticle,
+    setNewsArticleFeatured
+} = require("./models/newsModel");
+
+const {
     pool,
     initDatabase
 } = require("./database/db");
@@ -133,6 +143,45 @@ function hasPanelPermission(user, panelName) {
 
     return hasAnyRole(user, allowedRoles);
 }
+
+function canAccessNewsPanel(user) {
+    return hasPanelPermission(
+        user,
+        "news"
+    );
+}
+
+function canManageAllNews(user) {
+    return hasAnyRole(
+        user,
+        [
+            "admin",
+            "founder",
+            "moderator"
+        ]
+    );
+}
+
+function canManageNewsArticle(
+    user,
+    article
+) {
+
+    if (!user || !article) {
+        return false;
+    }
+
+    if (canManageAllNews(user)) {
+        return true;
+    }
+
+    return (
+        hasRole(user, "reporter") &&
+        Number(article.authorUserId) ===
+        Number(user.id)
+    );
+}
+
 const app = express();
 
 const httpServer =
@@ -554,7 +603,25 @@ io.on("connection", async (socket) => {
     }
 );
 
-    // ===============================
+
+
+    socket.on("disconnect", () => {
+
+        if (socket.data.user?.id) {
+
+            chatLastMessageTimes.delete(
+                String(
+                    socket.data.user.id
+                )
+            );
+
+        }
+
+    });
+
+});
+
+// ===============================
 // CANLI SOHBET - SON MESAJLAR
 // ===============================
 
@@ -633,22 +700,6 @@ app.get(
 
     }
 );
-
-    socket.on("disconnect", () => {
-
-        if (socket.data.user?.id) {
-
-            chatLastMessageTimes.delete(
-                String(
-                    socket.data.user.id
-                )
-            );
-
-        }
-
-    });
-
-});
 
 async function getAuthorizedFounder(req) {
 
@@ -734,12 +785,911 @@ if (!hasAnyRole(user, allowedRoles)) {
 
 }
 
+async function getAuthorizedNewsUser(req) {
+
+    const auth =
+        req.headers.authorization;
+
+    if (
+        !auth ||
+        !auth.startsWith("Bearer ")
+    ) {
+
+        return {
+            error: {
+                status: 401,
+                message:
+                    "Oturum açmanız gerekiyor."
+            }
+        };
+    }
+
+    const token =
+        auth.replace(
+            "Bearer ",
+            ""
+        ).trim();
+
+    try {
+
+        const tokenUser =
+            verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+
+            return {
+                error: {
+                    status: 401,
+                    message:
+                        "Geçersiz oturum bilgisi."
+                }
+            };
+        }
+
+        const user =
+            await getUser(username);
+
+        if (!user) {
+
+            return {
+                error: {
+                    status: 404,
+                    message:
+                        "Kullanıcı bulunamadı."
+                }
+            };
+        }
+
+        if (!canAccessNewsPanel(user)) {
+
+            return {
+                error: {
+                    status: 403,
+                    message:
+                        "Haber paneline erişim yetkiniz yok."
+                }
+            };
+        }
+
+        return {
+            user
+        };
+
+    } catch (err) {
+
+        return {
+            error: {
+                status: 401,
+                message:
+                    "Oturum geçersiz veya süresi dolmuş."
+            }
+        };
+    }
+}
+
+function validateNewsPayload(body) {
+
+    const title =
+        String(
+            body?.title || ""
+        ).trim();
+
+    const summary =
+        String(
+            body?.summary || ""
+        ).trim();
+
+    const content =
+        String(
+            body?.content || ""
+        ).trim();
+
+    const category =
+        String(
+            body?.category || "general"
+        ).trim();
+
+    const imageUrl =
+        String(
+            body?.imageUrl || ""
+        ).trim();
+
+    const status =
+        String(
+            body?.status || "draft"
+        ).trim();
+
+    const allowedCategories = [
+        "general",
+        "announcement",
+        "event",
+        "interview",
+        "update"
+    ];
+
+    const allowedStatuses = [
+        "draft",
+        "published",
+        "archived"
+    ];
+
+    if (
+        title.length < 3 ||
+        title.length > 150
+    ) {
+
+        return {
+            error:
+                "Başlık 3 ile 150 karakter arasında olmalı."
+        };
+    }
+
+    if (
+        summary.length < 10 ||
+        summary.length > 300
+    ) {
+
+        return {
+            error:
+                "Özet 10 ile 300 karakter arasında olmalı."
+        };
+    }
+
+    if (
+        content.length < 20 ||
+        content.length > 20000
+    ) {
+
+        return {
+            error:
+                "Haber içeriği 20 ile 20000 karakter arasında olmalı."
+        };
+    }
+
+    if (
+        !allowedCategories.includes(
+            category
+        )
+    ) {
+
+        return {
+            error:
+                "Geçersiz haber kategorisi."
+        };
+    }
+
+    if (
+        !allowedStatuses.includes(
+            status
+        )
+    ) {
+
+        return {
+            error:
+                "Geçersiz haber durumu."
+        };
+    }
+
+    if (
+        imageUrl &&
+        !/^https?:\/\/.+/i.test(
+            imageUrl
+        )
+    ) {
+
+        return {
+            error:
+                "Kapak görseli geçerli bir http veya https adresi olmalı."
+        };
+    }
+
+    return {
+        data: {
+            title,
+            summary,
+            content,
+            category,
+            imageUrl,
+            status
+        }
+    };
+}
+
 app.get("/api/test", (req, res) => {
     res.json({
         status: "OK",
         message: "CSI Backend çalışıyor 🚀"
     });
 });
+
+// ===============================
+// HABERLER - YAYINLANMIŞ LİSTE
+// ===============================
+
+app.get(
+    "/api/news",
+    async (req, res) => {
+
+        try {
+
+            const limit =
+                Number(
+                    req.query.limit || 20
+                );
+
+            const articles =
+                await getPublishedNewsArticles(
+                    limit
+                );
+
+            return res.json({
+                success: true,
+                articles
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Yayınlanmış haberleri yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haberler yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// HABERLER - TEK HABER DETAYI
+// ===============================
+
+app.get(
+    "/api/news/:id",
+    async (req, res) => {
+
+        try {
+
+            const articleId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber bilgisi."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (
+                !article ||
+                article.status !==
+                    "published"
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Haber bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                article
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber detayı yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haber detayı yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// HABER PANELİ - HABERLERİ LİSTELE
+// ===============================
+
+app.get(
+    "/api/news-panel/articles",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const includeAll =
+                canManageAllNews(user);
+
+            const articles =
+                await getNewsArticlesForPanel({
+                    authorUserId:
+                        user.id,
+                    includeAll
+                });
+
+            return res.json({
+                success: true,
+                articles,
+                permissions: {
+                    canManageAll:
+                        includeAll,
+                    canFeature:
+                        includeAll
+                }
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber paneli listeleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haberler yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// HABER PANELİ - HABER OLUŞTUR
+// ===============================
+
+app.post(
+    "/api/news-panel/articles",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const validation =
+                validateNewsPayload(
+                    req.body
+                );
+
+            if (validation.error) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        validation.error
+                });
+            }
+
+            const article =
+                await createNewsArticle({
+                    authorUserId:
+                        user.id,
+
+                    ...validation.data
+                });
+
+            if (!article) {
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Haber oluşturulamadı."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    user.username,
+
+                actionType:
+                    "news_created",
+
+                oldValue:
+                    null,
+
+                newValue:
+                    article.title
+            });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    article.status ===
+                    "published"
+                        ? "Haber yayınlandı."
+                        : "Haber taslak olarak kaydedildi.",
+                article
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber oluşturma hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haber oluşturulamadı."
+            });
+        }
+    }
+);
+
+// ===============================
+// HABER PANELİ - HABER GÜNCELLE
+// ===============================
+
+app.patch(
+    "/api/news-panel/articles/:id",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(req);
+
+            if (authorization.error) {
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const articleId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber bilgisi."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (!article) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Haber bulunamadı."
+                });
+            }
+
+            if (
+                !canManageNewsArticle(
+                    user,
+                    article
+                )
+            ) {
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Bu haberi düzenleme yetkiniz yok."
+                });
+            }
+
+            const validation =
+                validateNewsPayload(
+                    req.body
+                );
+
+            if (validation.error) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        validation.error
+                });
+            }
+
+            const updatedArticle =
+                await updateNewsArticle(
+                    articleId,
+                    validation.data
+                );
+
+            if (!updatedArticle) {
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Haber güncellenemedi."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    article.authorUsername ||
+                    user.username,
+
+                actionType:
+                    "news_updated",
+
+                oldValue:
+                    article.title,
+
+                newValue:
+                    updatedArticle.title
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    "Haber başarıyla güncellendi.",
+                article:
+                    updatedArticle
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber güncelleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haber güncellenemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================
+// HABER PANELİ - HABER SİL
+// ===============================
+
+app.delete(
+    "/api/news-panel/articles/:id",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(req);
+
+            if (authorization.error) {
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const articleId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber bilgisi."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (!article) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Haber bulunamadı."
+                });
+            }
+
+            if (
+                !canManageNewsArticle(
+                    user,
+                    article
+                )
+            ) {
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Bu haberi silme yetkiniz yok."
+                });
+            }
+
+            const deletedArticle =
+                await deleteNewsArticle(
+                    articleId
+                );
+
+            if (!deletedArticle) {
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Haber silinemedi."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    article.authorUsername ||
+                    user.username,
+
+                actionType:
+                    "news_deleted",
+
+                oldValue:
+                    article.title,
+
+                newValue:
+                    null
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    "Haber başarıyla silindi."
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber silme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haber silinemedi."
+            });
+
+        }
+
+    }
+);
+
+// ===============================
+// HABER PANELİ - ÖNE ÇIKAR
+// ===============================
+
+app.patch(
+    "/api/news-panel/articles/:id/featured",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(req);
+
+            if (authorization.error) {
+                return res
+                    .status(authorization.error.status)
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            if (!canManageAllNews(user)) {
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Haberi öne çıkarma yetkiniz yok."
+                });
+            }
+
+            const articleId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber bilgisi."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (!article) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Haber bulunamadı."
+                });
+            }
+
+            const isFeatured =
+                req.body.isFeatured === true;
+
+            if (
+                isFeatured &&
+                article.status !== "published"
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Yalnızca yayınlanmış haberler öne çıkarılabilir."
+                });
+            }
+
+            const updatedArticle =
+                await setNewsArticleFeatured(
+                    articleId,
+                    isFeatured
+                );
+
+            if (!updatedArticle) {
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Haber öne çıkarma durumu güncellenemedi."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    article.authorUsername ||
+                    user.username,
+
+                actionType:
+                    isFeatured
+                        ? "news_featured"
+                        : "news_unfeatured",
+
+                oldValue:
+                    article.title,
+
+                newValue:
+                    isFeatured
+                        ? "Öne çıkarıldı"
+                        : "Öne çıkarma kaldırıldı"
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    isFeatured
+                        ? "Haber öne çıkarıldı."
+                        : "Haberin öne çıkarma durumu kaldırıldı.",
+                article:
+                    updatedArticle
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber öne çıkarma hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haber öne çıkarma durumu güncellenemedi."
+            });
+
+        }
+
+    }
+);
 
 app.get("/api/habbo/:username", async (req, res) => {
 
