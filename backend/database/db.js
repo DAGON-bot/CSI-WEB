@@ -74,6 +74,30 @@ await pool.query(`
 `);
 
 await pool.query(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+        id BIGSERIAL PRIMARY KEY,
+
+        "userId" BIGINT NOT NULL,
+
+        message TEXT NOT NULL,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT chat_messages_user_fk
+            FOREIGN KEY ("userId")
+            REFERENCES users(id)
+            ON DELETE CASCADE
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        chat_messages_created_at_idx
+    ON chat_messages ("createdAt" DESC)
+`);
+
+await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_logs (
         id BIGSERIAL PRIMARY KEY,
 

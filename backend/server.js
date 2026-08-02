@@ -3,7 +3,10 @@ const path = require("path");
 require("dotenv").config({
     path: path.join(__dirname, ".env")
 });
-const { generateToken } = require("./services/jwtService");
+const {
+    generateToken,
+    verifyToken
+} = require("./services/jwtService");
 const { getHabbo } = require("./services/habboService");
 const {
     getUser,
@@ -28,10 +31,16 @@ const {
     completePasswordReset
 } = require("./models/userModel");
 
-const { initDatabase } = require("./database/db");
+const {
+    pool,
+    initDatabase
+} = require("./database/db");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+
+const http = require("http");
+const { Server } = require("socket.io");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const ADMIN_USERNAME = "canart0";
@@ -126,10 +135,397 @@ function hasPanelPermission(user, panelName) {
 }
 const app = express();
 
+const httpServer =
+    http.createServer(app);
+
+const io =
+    new Server(httpServer, {
+        cors: {
+            origin: true,
+            methods: [
+                "GET",
+                "POST"
+            ]
+        }
+    });
+
 app.use(cors());
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "..")));
+
+const chatLastMessageTimes =
+    new Map();
+
+function getSocketToken(socket) {
+
+    const authToken =
+        socket.handshake.auth?.token;
+
+    if (authToken) {
+        return String(authToken).trim();
+    }
+
+    const authorization =
+        socket.handshake.headers
+            ?.authorization;
+
+    if (
+        authorization &&
+        authorization.startsWith("Bearer ")
+    ) {
+        return authorization
+            .replace("Bearer ", "")
+            .trim();
+    }
+
+    return "";
+}
+
+async function getSocketUser(socket) {
+
+    const token =
+        getSocketToken(socket);
+
+    if (!token) {
+        return null;
+    }
+
+    try {
+
+        const tokenUser =
+            verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+            return null;
+        }
+
+        const user =
+            await getUser(username);
+
+        if (
+            !user ||
+            !user.verified ||
+            !user.password
+        ) {
+            return null;
+        }
+
+        return user;
+
+    } catch (err) {
+
+        return null;
+
+    }
+}
+
+function formatChatMessage(row) {
+
+    return {
+        id: row.id,
+        username: row.username,
+        figureString:
+            row.figureString || "",
+        message:
+            row.message || "",
+        createdAt:
+            row.createdAt,
+        role:
+            row.role || "member",
+        roles:
+            Array.isArray(row.roles)
+                ? row.roles
+                : []
+    };
+}
+
+io.on("connection", async (socket) => {
+
+    const socketUser =
+        await getSocketUser(socket);
+
+    socket.data.user =
+        socketUser;
+
+    socket.emit("chat:auth", {
+        authenticated:
+            !!socketUser,
+
+        user: socketUser
+            ? {
+                username:
+                    socketUser.username,
+
+                figureString:
+                    socketUser.figureString || "",
+
+                role:
+                    socketUser.role || "member",
+
+                roles:
+                    getUserRoleList(socketUser)
+            }
+            : null
+    });
+
+    socket.on(
+        "chat:send",
+        async (payload, callback) => {
+
+            const respond =
+                typeof callback === "function"
+                    ? callback
+                    : () => {};
+
+            try {
+
+                const user =
+                    socket.data.user;
+
+                if (!user) {
+
+                    respond({
+                        success: false,
+                        message:
+                            "Mesaj göndermek için giriş yapmalısınız."
+                    });
+
+                    return;
+                }
+
+                const message =
+                    String(
+                        payload?.message || ""
+                    ).trim();
+
+                if (!message) {
+
+                    respond({
+                        success: false,
+                        message:
+                            "Boş mesaj gönderemezsiniz."
+                    });
+
+                    return;
+                }
+
+                if (message.length > 300) {
+
+                    respond({
+                        success: false,
+                        message:
+                            "Mesaj en fazla 300 karakter olabilir."
+                    });
+
+                    return;
+                }
+
+                const userKey =
+                    String(user.id);
+
+                const currentTime =
+                    Date.now();
+
+                const lastMessageTime =
+                    chatLastMessageTimes
+                        .get(userKey) || 0;
+
+                const remainingTime =
+                    2000 -
+                    (
+                        currentTime -
+                        lastMessageTime
+                    );
+
+                if (remainingTime > 0) {
+
+                    respond({
+                        success: false,
+                        message:
+                            "Yeni mesaj göndermek için biraz bekleyin."
+                    });
+
+                    return;
+                }
+
+                chatLastMessageTimes.set(
+                    userKey,
+                    currentTime
+                );
+
+                const inserted =
+                    await pool.query(
+                        `INSERT INTO chat_messages
+                            ("userId", message)
+                         VALUES ($1, $2)
+                         RETURNING
+                            id,
+                            message,
+                            "createdAt"`,
+                        [
+                            user.id,
+                            message
+                        ]
+                    );
+
+                const savedMessage =
+                    inserted.rows[0];
+
+                const chatMessage =
+                    formatChatMessage({
+                        id:
+                            savedMessage.id,
+
+                        username:
+                            user.username,
+
+                        figureString:
+                            user.figureString || "",
+
+                        message:
+                            savedMessage.message,
+
+                        createdAt:
+                            savedMessage.createdAt,
+
+                        role:
+                            user.role || "member",
+
+                        roles:
+                            getUserRoleList(user)
+                    });
+
+                io.emit(
+                    "chat:message",
+                    chatMessage
+                );
+
+                respond({
+                    success: true,
+                    message:
+                        chatMessage
+                });
+
+            } catch (err) {
+
+                console.error(
+                    "Chat mesaj gönderme hatası:",
+                    err
+                );
+
+                respond({
+                    success: false,
+                    message:
+                        "Mesaj gönderilemedi."
+                });
+
+            }
+
+        }
+    );
+
+    // ===============================
+// CANLI SOHBET - SON MESAJLAR
+// ===============================
+
+app.get(
+    "/api/chat/messages",
+    async (req, res) => {
+
+        try {
+
+            const result =
+                await pool.query(
+                    `SELECT
+                        cm.id,
+                        cm.message,
+                        cm."createdAt",
+                        u.username,
+                        u."figureString",
+                        u.role,
+
+                        COALESCE(
+                            ARRAY_AGG(
+                                DISTINCT ur.role
+                            ) FILTER (
+                                WHERE ur.role IS NOT NULL
+                            ),
+                            ARRAY[]::TEXT[]
+                        ) AS roles
+
+                     FROM chat_messages cm
+
+                     INNER JOIN users u
+                        ON u.id = cm."userId"
+
+                     LEFT JOIN user_roles ur
+                        ON ur."userId" = u.id
+
+                     GROUP BY
+                        cm.id,
+                        cm.message,
+                        cm."createdAt",
+                        u.id,
+                        u.username,
+                        u."figureString",
+                        u.role
+
+                     ORDER BY
+                        cm."createdAt" DESC
+
+                     LIMIT 50`
+                );
+
+            const messages =
+                result.rows
+                    .reverse()
+                    .map(formatChatMessage);
+
+            return res.json({
+                success: true,
+                messages
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Chat mesajları yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Sohbet mesajları yüklenemedi."
+            });
+
+        }
+
+    }
+);
+
+    socket.on("disconnect", () => {
+
+        if (socket.data.user?.id) {
+
+            chatLastMessageTimes.delete(
+                String(
+                    socket.data.user.id
+                )
+            );
+
+        }
+
+    });
+
+});
 
 async function getAuthorizedFounder(req) {
 
@@ -2299,9 +2695,15 @@ async function startServer() {
     try {
         await initDatabase();
 
-        app.listen(PORT, "0.0.0.0", () => {
-            console.log(`Server ${PORT} portunda çalışıyor.`);
-        });
+        httpServer.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+        console.log(
+            `Server ${PORT} portunda çalışıyor.`
+        );
+    }
+);
     } catch (err) {
         console.error("Sunucu başlatılamadı:", err);
         process.exit(1);

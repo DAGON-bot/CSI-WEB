@@ -1,0 +1,778 @@
+/* =========================================
+   CSI CANLI SOHBET
+========================================= */
+
+/*
+ * Ana haber düzeni:
+ * Duyurular | Haberler | Canlı Sohbet
+ */
+
+#duyurular .news-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 260px)
+        minmax(0, 1fr)
+        minmax(310px, 360px);
+
+    align-items: stretch;
+    gap: 22px;
+}
+
+/*
+ * Orta haber alanı iki sütun olacak.
+ */
+
+#duyurular #haberContainer {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+/*
+ * Haber panelinin grid içinde taşmasını önler.
+ */
+
+#duyurular .news-panel {
+    min-width: 0;
+}
+
+/* =========================================
+   CHAT ANA PANELİ
+========================================= */
+
+.live-chat-panel {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    height: 100%;
+    min-height: 610px;
+    max-height: 760px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20, 25, 36, 0.98),
+            rgba(12, 16, 25, 0.98)
+        );
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.24);
+}
+
+/* =========================================
+   CHAT BAŞLIK
+========================================= */
+
+.live-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 58px;
+    padding: 14px 16px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.live-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.live-chat-title i {
+    color: #f6c94c;
+    font-size: 17px;
+}
+
+.live-chat-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 6px 9px;
+
+    border:
+        1px solid rgba(64, 210, 120, 0.2);
+
+    border-radius: 999px;
+
+    background:
+        rgba(64, 210, 120, 0.08);
+
+    color: #85e5a9;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.live-chat-status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #4ade80;
+
+    box-shadow:
+        0 0 8px rgba(74, 222, 128, 0.85);
+
+    animation:
+        chatStatusPulse 1.8s infinite;
+}
+
+@keyframes chatStatusPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.55;
+        transform: scale(0.85);
+    }
+
+}
+
+/* =========================================
+   MESAJ LİSTESİ
+========================================= */
+
+.live-chat-messages {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+
+    min-height: 0;
+    padding: 14px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scroll-behavior: smooth;
+}
+
+.live-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.live-chat-messages::-webkit-scrollbar-track {
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.live-chat-messages::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.16);
+}
+
+.live-chat-messages::-webkit-scrollbar-thumb:hover {
+    background:
+        rgba(246, 201, 76, 0.55);
+}
+
+/* =========================================
+   TEK MESAJ
+========================================= */
+
+.chat-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    width: 100%;
+    padding: 10px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.075);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.chat-message:hover {
+    border-color:
+        rgba(255, 255, 255, 0.14);
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    transform:
+        translateY(-1px);
+}
+
+.chat-message-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 48px;
+
+    flex: 0 0 42px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 9px;
+
+    background:
+        rgba(0, 0, 0, 0.2);
+}
+
+.chat-message-avatar img {
+    width: 50px;
+    height: 58px;
+
+    object-fit: contain;
+    object-position: center bottom;
+}
+
+.chat-message-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-message-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    margin-bottom: 4px;
+}
+
+.chat-message-username {
+    overflow: hidden;
+
+    color: #f1f3f7;
+    font-size: 13px;
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-message-role {
+    flex-shrink: 0;
+
+    font-size: 13px;
+    line-height: 1;
+}
+
+.chat-message-text {
+    color: #d8dce5;
+    font-size: 13px;
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.chat-message-time {
+    display: block;
+
+    margin-top: 6px;
+
+    color: #777f90;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* =========================================
+   ROL RENKLERİ
+========================================= */
+
+.chat-role-admin {
+    border-color:
+        rgba(245, 196, 66, 0.48);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(245, 196, 66, 0.12),
+            rgba(255, 255, 255, 0.025)
+        );
+}
+
+.chat-role-admin .chat-message-username {
+    color: #ffd75e;
+
+    text-shadow:
+        0 0 10px rgba(255, 215, 94, 0.25);
+}
+
+.chat-role-founder {
+    border-color:
+        rgba(183, 129, 255, 0.4);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(153, 94, 255, 0.12),
+            rgba(255, 255, 255, 0.025)
+        );
+}
+
+.chat-role-founder .chat-message-username {
+    color: #caa0ff;
+}
+
+.chat-role-moderator {
+    border-color:
+        rgba(255, 91, 114, 0.38);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 72, 96, 0.1),
+            rgba(255, 255, 255, 0.025)
+        );
+}
+
+.chat-role-moderator .chat-message-username {
+    color: #ff8294;
+}
+
+.chat-role-reporter {
+    border-color:
+        rgba(92, 185, 255, 0.36);
+}
+
+.chat-role-reporter .chat-message-username {
+    color: #78c7ff;
+}
+
+.chat-role-salary {
+    border-color:
+        rgba(67, 210, 144, 0.34);
+}
+
+.chat-role-salary .chat-message-username {
+    color: #70dda9;
+}
+
+.chat-role-promotion {
+    border-color:
+        rgba(79, 146, 255, 0.36);
+}
+
+.chat-role-promotion .chat-message-username {
+    color: #82afff;
+}
+
+.chat-role-member .chat-message-username {
+    color: #f0f2f6;
+}
+
+/* =========================================
+   SİSTEM MESAJLARI
+========================================= */
+
+.chat-system-message {
+    margin: auto;
+    padding: 18px 14px;
+
+    color: #8e96a8;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* =========================================
+   YAZIYOR BİLGİSİ
+========================================= */
+
+.chat-typing-info {
+    min-height: 18px;
+    padding: 0 15px;
+
+    color: #8e96a8;
+    font-size: 10px;
+    font-style: italic;
+}
+
+/* =========================================
+   GİRİŞ GEREKLİ ALANI
+========================================= */
+
+.chat-login-required {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 62px;
+    padding: 12px 14px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.chat-login-required i {
+    color: #f6c94c;
+    font-size: 13px;
+}
+
+.chat-login-required button {
+    padding: 0;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+
+    color: #d7dae2;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease;
+}
+
+.chat-login-required button:hover {
+    color: #f6c94c;
+}
+
+/* =========================================
+   MESAJ YAZMA ALANI
+========================================= */
+
+.chat-composer {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 12px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+        rgba(9, 12, 19, 0.96);
+}
+
+.chat-composer input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 9px;
+    outline: none;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 12px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.chat-composer input::placeholder {
+    color: #737b8c;
+}
+
+.chat-composer input:focus {
+    border-color:
+        rgba(246, 201, 76, 0.68);
+
+    background:
+        rgba(255, 255, 255, 0.075);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(246, 201, 76, 0.08);
+}
+
+.chat-emoji-btn,
+.chat-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 9px;
+    outline: none;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.chat-emoji-btn {
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    color: #ffffff;
+    font-size: 17px;
+}
+
+.chat-send-btn {
+    border-color:
+        rgba(246, 201, 76, 0.3);
+
+    background:
+        linear-gradient(
+            135deg,
+            #eebf3b,
+            #d79f1f
+        );
+
+    color: #17130a;
+    font-size: 14px;
+}
+
+.chat-emoji-btn:hover,
+.chat-send-btn:hover {
+    transform:
+        translateY(-1px);
+}
+
+.chat-emoji-btn:hover {
+    border-color:
+        rgba(246, 201, 76, 0.48);
+
+    background:
+        rgba(246, 201, 76, 0.1);
+}
+
+.chat-send-btn:hover {
+    box-shadow:
+        0 7px 18px
+        rgba(215, 159, 31, 0.24);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* =========================================
+   EMOJİ PANELİ
+========================================= */
+
+.chat-emoji-panel {
+    position: absolute;
+    left: 12px;
+    bottom: 62px;
+    z-index: 20;
+
+    grid-template-columns:
+        repeat(6, 34px);
+
+    gap: 5px;
+
+    padding: 9px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.12);
+
+    border-radius: 11px;
+
+    background:
+        rgba(20, 24, 34, 0.99);
+
+    box-shadow:
+        0 16px 35px
+        rgba(0, 0, 0, 0.38);
+}
+
+.chat-emoji-panel button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 7px;
+
+    background: transparent;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.chat-emoji-panel button:hover {
+    background:
+        rgba(255, 255, 255, 0.09);
+
+    transform:
+        scale(1.1);
+}
+
+/* =========================================
+   ALT BİLDİRİM
+========================================= */
+
+.chat-feedback {
+    min-height: 18px;
+    padding: 0 13px 7px;
+
+    background:
+        rgba(9, 12, 19, 0.96);
+
+    color: #ff7d8c;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.chat-feedback.success {
+    color: #67dba0;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1250px) {
+
+    #duyurular .news-layout {
+        grid-template-columns:
+            minmax(200px, 240px)
+            minmax(0, 1fr)
+            minmax(290px, 320px);
+
+        gap: 16px;
+    }
+
+}
+
+/* =========================================
+   KÜÇÜK MASAÜSTÜ / TABLET
+========================================= */
+
+@media (max-width: 1050px) {
+
+    #duyurular .news-layout {
+        grid-template-columns:
+            minmax(210px, 250px)
+            minmax(0, 1fr);
+    }
+
+    .live-chat-panel {
+        grid-column: 1 / -1;
+
+        min-height: 520px;
+        max-height: 620px;
+    }
+
+}
+
+/* =========================================
+   MOBİL
+========================================= */
+
+@media (max-width: 760px) {
+
+    #duyurular .news-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    #duyurular #haberContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .live-chat-panel {
+        width: 100%;
+        min-height: 500px;
+        max-height: 600px;
+    }
+
+    .live-chat-messages {
+        padding: 11px;
+    }
+
+    .chat-message {
+        gap: 8px;
+        padding: 9px;
+    }
+
+    .chat-message-avatar {
+        width: 38px;
+        height: 44px;
+        flex-basis: 38px;
+    }
+
+    .chat-message-avatar img {
+        width: 46px;
+        height: 54px;
+    }
+
+    .chat-emoji-panel {
+        grid-template-columns:
+            repeat(4, 34px);
+    }
+
+}
