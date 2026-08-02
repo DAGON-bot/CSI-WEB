@@ -642,6 +642,24 @@ function configureFounderRoleOptions() {
         founderCheckbox.disabled =
             !canAssignFounder;
     }
+
+    const moderatorCheckbox =
+    founderRoleCheckboxes.querySelector(
+        'input[value="moderator"]'
+    );
+
+if (moderatorCheckbox) {
+
+    const canAssignModerator =
+        currentFounderPanelRole === "admin";
+
+    moderatorCheckbox.closest("label").style.display =
+        canAssignModerator ? "" : "none";
+
+    moderatorCheckbox.disabled =
+        !canAssignModerator;
+
+}
 }
 
 function getAdminLogActionText(actionType) {

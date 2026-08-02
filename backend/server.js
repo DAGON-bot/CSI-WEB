@@ -1807,6 +1807,19 @@ if (
 
 }
 
+if (
+    cleanRoles.includes("moderator") &&
+    !hasRole(requester, "admin")
+) {
+
+    return res.status(403).json({
+        success: false,
+        message:
+            "Moderatör rolünü yalnızca admin verebilir."
+    });
+
+}
+
                 oldValue =
                     targetUser.role || "member";
 
