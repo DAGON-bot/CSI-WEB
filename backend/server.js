@@ -42,6 +42,17 @@ const {
 } = require("./models/newsModel");
 
 const {
+    createAnnouncement,
+    getPublishedAnnouncements,
+    getAnnouncementById,
+    getAnnouncementsForPanel,
+    updateAnnouncement,
+    deleteAnnouncement
+} = require("./models/announcementModel");
+
+
+
+const {
     pool,
     initDatabase
 } = require("./database/db");
@@ -229,6 +240,26 @@ function getSocketToken(socket) {
     }
 
     return "";
+}
+
+function canManageAnnouncement(
+    user,
+    announcement
+) {
+
+    if (!user || !announcement) {
+        return false;
+    }
+
+    if (canManageAllNews(user)) {
+        return true;
+    }
+
+    return (
+        hasRole(user, "reporter") &&
+        Number(announcement.authorUserId) ===
+        Number(user.id)
+    );
 }
 
 async function getSocketUser(socket) {
@@ -1001,6 +1032,106 @@ function validateNewsPayload(body) {
     };
 }
 
+function validateAnnouncementPayload(body) {
+
+    const title =
+        String(
+            body?.title || ""
+        ).trim();
+
+    const content =
+        String(
+            body?.content || ""
+        ).trim();
+
+    const icon =
+        String(
+            body?.icon || "📢"
+        ).trim();
+
+    const status =
+        String(
+            body?.status || "draft"
+        ).trim();
+
+    const sortOrder =
+        Number(
+            body?.sortOrder ?? 0
+        );
+
+    const allowedStatuses = [
+        "draft",
+        "published"
+    ];
+
+    if (
+        title.length < 3 ||
+        title.length > 120
+    ) {
+
+        return {
+            error:
+                "Duyuru başlığı 3 ile 120 karakter arasında olmalı."
+        };
+    }
+
+    if (
+        content.length < 5 ||
+        content.length > 1000
+    ) {
+
+        return {
+            error:
+                "Duyuru içeriği 5 ile 1000 karakter arasında olmalı."
+        };
+    }
+
+    if (
+        icon.length < 1 ||
+        icon.length > 10
+    ) {
+
+        return {
+            error:
+                "Duyuru ikonu en fazla 10 karakter olabilir."
+        };
+    }
+
+    if (
+        !allowedStatuses.includes(
+            status
+        )
+    ) {
+
+        return {
+            error:
+                "Geçersiz duyuru durumu."
+        };
+    }
+
+    if (
+        !Number.isInteger(sortOrder) ||
+        sortOrder < 0 ||
+        sortOrder > 999
+    ) {
+
+        return {
+            error:
+                "Duyuru sırası 0 ile 999 arasında tam sayı olmalı."
+        };
+    }
+
+    return {
+        data: {
+            title,
+            content,
+            icon,
+            status,
+            sortOrder
+        }
+    };
+}
+
 app.get("/api/test", (req, res) => {
     res.json({
         status: "OK",
@@ -1044,6 +1175,507 @@ app.get(
                 success: false,
                 message:
                     "Haberler yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// DUYURULAR - YAYINLANMIŞ LİSTE
+// ===============================
+
+app.get(
+    "/api/announcements",
+    async (req, res) => {
+
+        try {
+
+            const announcements =
+                await getPublishedAnnouncements();
+
+            return res.json({
+                success: true,
+                announcements
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Yayınlanmış duyuruları yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Duyurular yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// DUYURU PANELİ - DUYURULARI LİSTELE
+// ===============================
+
+app.get(
+    "/api/announcement-panel/items",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const includeAll =
+                canManageAllNews(user);
+
+            const announcements =
+                await getAnnouncementsForPanel({
+                    authorUserId:
+                        user.id,
+
+                    includeAll
+                });
+
+            return res.json({
+                success: true,
+                announcements,
+                permissions: {
+                    canManageAll:
+                        includeAll
+                }
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Duyuru paneli listeleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Duyurular yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// DUYURU PANELİ - DUYURU OLUŞTUR
+// ===============================
+
+app.post(
+    "/api/announcement-panel/items",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const validation =
+                validateAnnouncementPayload(
+                    req.body
+                );
+
+            if (validation.error) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        validation.error
+                });
+            }
+
+            const announcement =
+                await createAnnouncement({
+                    authorUserId:
+                        user.id,
+
+                    ...validation.data
+                });
+
+            if (!announcement) {
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Duyuru oluşturulamadı."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    user.username,
+
+                actionType:
+                    "announcement_created",
+
+                oldValue:
+                    null,
+
+                newValue:
+                    announcement.title
+            });
+
+            return res.status(201).json({
+                success: true,
+
+                message:
+                    announcement.status ===
+                    "published"
+                        ? "Duyuru yayınlandı."
+                        : "Duyuru taslak olarak kaydedildi.",
+
+                announcement
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Duyuru oluşturma hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Duyuru oluşturulamadı."
+            });
+        }
+    }
+);
+
+// ===============================
+// DUYURU PANELİ - DUYURU GÜNCELLE
+// ===============================
+
+app.patch(
+    "/api/announcement-panel/items/:id",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const announcementId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(
+                    announcementId
+                ) ||
+                announcementId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz duyuru bilgisi."
+                });
+            }
+
+            const announcement =
+                await getAnnouncementById(
+                    announcementId
+                );
+
+            if (!announcement) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Duyuru bulunamadı."
+                });
+            }
+
+            if (
+                !canManageAnnouncement(
+                    user,
+                    announcement
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Bu duyuruyu düzenleme yetkiniz yok."
+                });
+            }
+
+            const validation =
+                validateAnnouncementPayload(
+                    req.body
+                );
+
+            if (validation.error) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        validation.error
+                });
+            }
+
+            const updatedAnnouncement =
+                await updateAnnouncement(
+                    announcementId,
+                    validation.data
+                );
+
+            if (!updatedAnnouncement) {
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Duyuru güncellenemedi."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    announcement.authorUsername ||
+                    user.username,
+
+                actionType:
+                    "announcement_updated",
+
+                oldValue:
+                    announcement.title,
+
+                newValue:
+                    updatedAnnouncement.title
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    "Duyuru başarıyla güncellendi.",
+                announcement:
+                    updatedAnnouncement
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Duyuru güncelleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Duyuru güncellenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// DUYURU PANELİ - DUYURU SİL
+// ===============================
+
+app.delete(
+    "/api/announcement-panel/items/:id",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const user =
+                authorization.user;
+
+            const announcementId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(
+                    announcementId
+                ) ||
+                announcementId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz duyuru bilgisi."
+                });
+            }
+
+            const announcement =
+                await getAnnouncementById(
+                    announcementId
+                );
+
+            if (!announcement) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Duyuru bulunamadı."
+                });
+            }
+
+            if (
+                !canManageAnnouncement(
+                    user,
+                    announcement
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Bu duyuruyu silme yetkiniz yok."
+                });
+            }
+
+            const deletedAnnouncement =
+                await deleteAnnouncement(
+                    announcementId
+                );
+
+            if (!deletedAnnouncement) {
+
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Duyuru silinemedi."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    announcement.authorUsername ||
+                    user.username,
+
+                actionType:
+                    "announcement_deleted",
+
+                oldValue:
+                    announcement.title,
+
+                newValue:
+                    null
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    "Duyuru başarıyla silindi."
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Duyuru silme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Duyuru silinemedi."
             });
         }
     }

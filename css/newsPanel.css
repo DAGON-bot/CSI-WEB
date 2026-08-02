@@ -1811,3 +1811,295 @@
     }
 
 }
+
+/* =========================================
+   HABER / DUYURU PANEL SEKMELERİ
+========================================= */
+
+.content-panel-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 18px;
+}
+
+.content-panel-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 39px;
+    padding: 0 15px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.11);
+
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: #aeb5c2;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.content-panel-tab:hover {
+    transform:
+        translateY(-1px);
+
+    border-color:
+        rgba(246, 201, 76, 0.32);
+
+    color: #e9c451;
+}
+
+.content-panel-tab.active {
+    border-color:
+        rgba(246, 201, 76, 0.5);
+
+    background:
+        rgba(246, 201, 76, 0.12);
+
+    color: #f0c94f;
+
+    box-shadow:
+        0 7px 20px
+        rgba(0, 0, 0, 0.15);
+}
+
+.content-management-section {
+    display: none;
+    flex: 1;
+    min-height: 0;
+}
+
+.content-management-section.active {
+    display: flex;
+}
+
+.content-management-section
+.news-admin-layout {
+    flex: 1;
+    width: 100%;
+}
+
+/* =========================================
+   DUYURU CANLI ÖNİZLEME
+========================================= */
+
+.announcement-live-preview {
+    margin-top: 18px;
+    padding: 15px;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.15);
+
+    border-radius: 12px;
+
+    background:
+        rgba(246, 201, 76, 0.035);
+}
+
+.announcement-preview-label {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #d8b13c;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.announcement-preview-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    padding: 13px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.announcement-preview-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    border-radius: 9px;
+
+    background:
+        rgba(246, 201, 76, 0.1);
+
+    font-size: 18px;
+}
+
+.announcement-preview-card strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.announcement-preview-card p {
+    margin: 0;
+
+    color: #9ca4b3;
+    font-size: 10px;
+    line-height: 1.55;
+
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 560px) {
+
+    .content-panel-tabs {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .content-panel-tab {
+        width: 100%;
+        padding: 0 8px;
+    }
+
+}
+
+/* =========================================
+   ANA SAYFA DUYURULARI
+========================================= */
+
+#duyuruContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.public-announcement-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    padding: 13px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.public-announcement-item:hover {
+    transform:
+        translateY(-1px);
+
+    border-color:
+        rgba(246, 201, 76, 0.3);
+
+    background:
+        rgba(246, 201, 76, 0.055);
+}
+
+.public-announcement-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.17);
+
+    border-radius: 9px;
+
+    background:
+        rgba(246, 201, 76, 0.08);
+
+    font-size: 18px;
+}
+
+.public-announcement-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.public-announcement-content strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.4;
+}
+
+.public-announcement-content p {
+    margin: 0;
+
+    color: #a0a8b6;
+    font-size: 10px;
+    line-height: 1.55;
+
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.public-announcement-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    margin-top: 9px;
+
+    color: #6f7889;
+    font-size: 8px;
+    font-weight: 650;
+}
+
+.public-announcement-empty {
+    padding: 30px 12px;
+
+    color: #808999;
+    font-size: 10px;
+    text-align: center;
+}

@@ -1130,347 +1130,624 @@ class="main-btn">
 
         <div class="news-admin-header">
 
-            <span>CSI HABER MERKEZİ</span>
+            <span>CSI İÇERİK MERKEZİ</span>
 
-            <h2>Haber Paneli</h2>
+            <h2>İçerik Yönetim Paneli</h2>
 
             <p>
-                Haber oluşturun, taslak kaydedin,
-                yayınlayın ve mevcut haberleri yönetin.
+                Haberleri ve ana sayfa duyurularını
+                tek panel üzerinden yönetin.
             </p>
+
+            <div class="content-panel-tabs">
+
+                <button
+                    type="button"
+                    id="newsContentTabBtn"
+                    class="content-panel-tab active">
+
+                    <i class="fa-solid fa-newspaper"></i>
+                    Haberler
+
+                </button>
+
+                <button
+                    type="button"
+                    id="announcementContentTabBtn"
+                    class="content-panel-tab">
+
+                    <i class="fa-solid fa-bullhorn"></i>
+                    Duyurular
+
+                </button>
+
+            </div>
 
         </div>
 
-        <div class="news-admin-layout">
+        <!-- ================= HABER YÖNETİMİ ================= -->
 
-            <!-- SOL: HABER LİSTESİ -->
+        <div
+            id="newsManagementSection"
+            class="content-management-section active">
 
-            <aside class="news-admin-sidebar">
+            <div class="news-admin-layout">
 
-                <div class="news-admin-sidebar-header">
+                <aside class="news-admin-sidebar">
 
-                    <div>
-                        <h3>Haberler</h3>
-                        <p>Oluşturulan haber kayıtları</p>
-                    </div>
+                    <div class="news-admin-sidebar-header">
 
-                    <button
-                        type="button"
-                        id="newsCreateNewBtn"
-                        class="news-create-new-btn">
+                        <div>
+                            <h3>Haberler</h3>
+                            <p>Oluşturulan haber kayıtları</p>
+                        </div>
 
-                        <i class="fa-solid fa-plus"></i>
-                        Yeni Haber
+                        <button
+                            type="button"
+                            id="newsCreateNewBtn"
+                            class="news-create-new-btn">
 
-                    </button>
+                            <i class="fa-solid fa-plus"></i>
+                            Yeni Haber
 
-                </div>
-
-                <div class="news-admin-filter-row">
-
-                    <select id="newsPanelStatusFilter">
-
-                        <option value="all">
-                            Tüm Durumlar
-                        </option>
-
-                        <option value="published">
-                            Yayınlananlar
-                        </option>
-
-                        <option value="draft">
-                            Taslaklar
-                        </option>
-
-                        <option value="archived">
-                            Arşivlenenler
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <div
-                    id="newsPanelLoading"
-                    class="news-admin-message">
-
-                    Haberler yükleniyor...
-
-                </div>
-
-                <div
-                    id="newsPanelEmpty"
-                    class="news-admin-message"
-                    style="display:none;">
-
-                    Henüz haber bulunmuyor.
-
-                </div>
-
-                <div
-                    id="newsPanelArticleList"
-                    class="news-admin-article-list">
-
-                </div>
-
-            </aside>
-
-            <!-- SAĞ: HABER EDİTÖRÜ -->
-
-            <section class="news-admin-editor">
-
-                <div class="news-admin-editor-title">
-
-                    <div>
-                        <span id="newsEditorModeLabel">
-                            YENİ HABER
-                        </span>
-
-                        <h3 id="newsEditorTitle">
-                            Haber Oluştur
-                        </h3>
-                    </div>
-
-                    <div
-                        id="newsEditorStatusBadge"
-                        class="news-editor-status draft">
-
-                        Taslak
+                        </button>
 
                     </div>
 
-                </div>
+                    <div class="news-admin-filter-row">
 
-                <input
-                    type="hidden"
-                    id="newsArticleId">
+                        <select id="newsPanelStatusFilter">
 
-                <div class="news-admin-form-grid">
-
-                    <div class="news-admin-field news-admin-field-full">
-
-                        <label for="newsTitleInput">
-                            Haber Başlığı
-                        </label>
-
-                        <input
-                            type="text"
-                            id="newsTitleInput"
-                            maxlength="150"
-                            placeholder="Haber başlığını yazın">
-
-                        <span
-                            id="newsTitleCounter"
-                            class="news-character-counter">
-
-                            0 / 150
-
-                        </span>
-
-                    </div>
-
-                    <div class="news-admin-field">
-
-                        <label for="newsCategorySelect">
-                            Kategori
-                        </label>
-
-                        <select id="newsCategorySelect">
-
-                            <option value="general">
-                                Genel
-                            </option>
-
-                            <option value="announcement">
-                                Duyuru
-                            </option>
-
-                            <option value="event">
-                                Etkinlik
-                            </option>
-
-                            <option value="interview">
-                                Röportaj
-                            </option>
-
-                            <option value="update">
-                                Güncelleme
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="news-admin-field">
-
-                        <label for="newsStatusSelect">
-                            Durum
-                        </label>
-
-                        <select id="newsStatusSelect">
-
-                            <option value="draft">
-                                Taslak
+                            <option value="all">
+                                Tüm Durumlar
                             </option>
 
                             <option value="published">
-                                Yayınla
+                                Yayınlananlar
+                            </option>
+
+                            <option value="draft">
+                                Taslaklar
                             </option>
 
                             <option value="archived">
-                                Arşivle
+                                Arşivlenenler
                             </option>
 
                         </select>
 
                     </div>
 
-                    <div class="news-admin-field news-admin-field-full">
+                    <div
+                        id="newsPanelLoading"
+                        class="news-admin-message">
 
-                        <label for="newsImageUrlInput">
-                            Kapak Görseli URL
-                        </label>
-
-                        <input
-                            type="url"
-                            id="newsImageUrlInput"
-                            maxlength="1000"
-                            placeholder="https://...">
+                        Haberler yükleniyor...
 
                     </div>
 
                     <div
-                        id="newsImagePreviewWrapper"
-                        class="news-image-preview-wrapper"
+                        id="newsPanelEmpty"
+                        class="news-admin-message"
                         style="display:none;">
 
-                        <img
-                            id="newsImagePreview"
-                            src=""
-                            alt="Haber kapak önizlemesi">
+                        Henüz haber bulunmuyor.
 
                     </div>
 
-                    <div class="news-admin-field news-admin-field-full">
-
-                        <label for="newsSummaryInput">
-                            Kısa Özet
-                        </label>
-
-                        <textarea
-                            id="newsSummaryInput"
-                            maxlength="300"
-                            rows="4"
-                            placeholder="Ana sayfadaki haber kartında görünecek kısa açıklama"></textarea>
-
-                        <span
-                            id="newsSummaryCounter"
-                            class="news-character-counter">
-
-                            0 / 300
-
-                        </span>
+                    <div
+                        id="newsPanelArticleList"
+                        class="news-admin-article-list">
 
                     </div>
 
-                    <div class="news-admin-field news-admin-field-full">
+                </aside>
 
-                        <label for="newsContentInput">
-                            Haber İçeriği
-                        </label>
+                <section class="news-admin-editor">
 
-                        <textarea
-                            id="newsContentInput"
-                            maxlength="20000"
-                            rows="12"
-                            placeholder="Haberin tam içeriğini yazın"></textarea>
+                    <div class="news-admin-editor-title">
 
-                        <span
-                            id="newsContentCounter"
-                            class="news-character-counter">
+                        <div>
 
-                            0 / 20000
+                            <span id="newsEditorModeLabel">
+                                YENİ HABER
+                            </span>
 
-                        </span>
+                            <h3 id="newsEditorTitle">
+                                Haber Oluştur
+                            </h3>
+
+                        </div>
+
+                        <div
+                            id="newsEditorStatusBadge"
+                            class="news-editor-status draft">
+
+                            Taslak
+
+                        </div>
 
                     </div>
 
-                </div>
+                    <input
+                        type="hidden"
+                        id="newsArticleId">
 
-                <div
-                    id="newsFeatureArea"
-                    class="news-feature-area"
-                    style="display:none;">
+                    <div class="news-admin-form-grid">
 
-                    <label>
+                        <div class="news-admin-field news-admin-field-full">
 
-                        <input
-                            type="checkbox"
-                            id="newsFeaturedCheckbox">
+                            <label for="newsTitleInput">
+                                Haber Başlığı
+                            </label>
 
-                        <span>
-                            Bu haberi öne çıkar
-                        </span>
+                            <input
+                                type="text"
+                                id="newsTitleInput"
+                                maxlength="150"
+                                placeholder="Haber başlığını yazın">
 
-                    </label>
+                            <span
+                                id="newsTitleCounter"
+                                class="news-character-counter">
 
-                    <p>
-                        Aynı anda yalnızca bir haber öne çıkarılabilir.
-                    </p>
+                                0 / 150
 
-                </div>
+                            </span>
 
-                <div
-                    id="newsPanelFeedback"
-                    class="news-panel-feedback">
+                        </div>
 
-                </div>
+                        <div class="news-admin-field">
 
-                <div class="news-admin-actions">
+                            <label for="newsCategorySelect">
+                                Kategori
+                            </label>
 
-                    <button
-                        type="button"
-                        id="newsResetBtn"
-                        class="news-admin-secondary-btn">
+                            <select id="newsCategorySelect">
 
-                        Temizle
+                                <option value="general">Genel</option>
+                                <option value="announcement">Duyuru</option>
+                                <option value="event">Etkinlik</option>
+                                <option value="interview">Röportaj</option>
+                                <option value="update">Güncelleme</option>
 
-                    </button>
+                            </select>
 
-                    <button
-                        type="button"
-                        id="newsDeleteBtn"
-                        class="news-admin-danger-btn"
+                        </div>
+
+                        <div class="news-admin-field">
+
+                            <label for="newsStatusSelect">
+                                Durum
+                            </label>
+
+                            <select id="newsStatusSelect">
+
+                                <option value="draft">Taslak</option>
+                                <option value="published">Yayınla</option>
+                                <option value="archived">Arşivle</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="news-admin-field news-admin-field-full">
+
+                            <label for="newsImageUrlInput">
+                                Kapak Görseli URL
+                            </label>
+
+                            <input
+                                type="url"
+                                id="newsImageUrlInput"
+                                maxlength="1000"
+                                placeholder="https://...">
+
+                        </div>
+
+                        <div
+                            id="newsImagePreviewWrapper"
+                            class="news-image-preview-wrapper"
+                            style="display:none;">
+
+                            <img
+                                id="newsImagePreview"
+                                src=""
+                                alt="Haber kapak önizlemesi">
+
+                        </div>
+
+                        <div class="news-admin-field news-admin-field-full">
+
+                            <label for="newsSummaryInput">
+                                Kısa Özet
+                            </label>
+
+                            <textarea
+                                id="newsSummaryInput"
+                                maxlength="300"
+                                rows="4"
+                                placeholder="Ana sayfadaki haber kartında görünecek kısa açıklama"></textarea>
+
+                            <span
+                                id="newsSummaryCounter"
+                                class="news-character-counter">
+
+                                0 / 300
+
+                            </span>
+
+                        </div>
+
+                        <div class="news-admin-field news-admin-field-full">
+
+                            <label for="newsContentInput">
+                                Haber İçeriği
+                            </label>
+
+                            <textarea
+                                id="newsContentInput"
+                                maxlength="20000"
+                                rows="12"
+                                placeholder="Haberin tam içeriğini yazın"></textarea>
+
+                            <span
+                                id="newsContentCounter"
+                                class="news-character-counter">
+
+                                0 / 20000
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="newsFeatureArea"
+                        class="news-feature-area"
                         style="display:none;">
 
-                        <i class="fa-solid fa-trash"></i>
-                        Sil
+                        <label>
 
-                    </button>
+                            <input
+                                type="checkbox"
+                                id="newsFeaturedCheckbox">
 
-                    <button
-                        type="button"
-                        id="newsPreviewBtn"
-                        class="news-admin-secondary-btn">
+                            <span>
+                                Bu haberi öne çıkar
+                            </span>
 
-                        <i class="fa-regular fa-eye"></i>
-                        Önizle
+                        </label>
 
-                    </button>
+                        <p>
+                            Aynı anda yalnızca bir haber öne çıkarılabilir.
+                        </p>
 
-                    <button
-                        type="button"
-                        id="newsSaveBtn"
-                        class="news-admin-primary-btn">
+                    </div>
 
-                        <i class="fa-solid fa-floppy-disk"></i>
-                        Kaydet
+                    <div
+                        id="newsPanelFeedback"
+                        class="news-panel-feedback">
 
-                    </button>
+                    </div>
 
-                </div>
+                    <div class="news-admin-actions">
 
-            </section>
+                        <button
+                            type="button"
+                            id="newsResetBtn"
+                            class="news-admin-secondary-btn">
+
+                            Temizle
+
+                        </button>
+
+                        <button
+                            type="button"
+                            id="newsDeleteBtn"
+                            class="news-admin-danger-btn"
+                            style="display:none;">
+
+                            <i class="fa-solid fa-trash"></i>
+                            Sil
+
+                        </button>
+
+                        <button
+                            type="button"
+                            id="newsPreviewBtn"
+                            class="news-admin-secondary-btn">
+
+                            <i class="fa-regular fa-eye"></i>
+                            Önizle
+
+                        </button>
+
+                        <button
+                            type="button"
+                            id="newsSaveBtn"
+                            class="news-admin-primary-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Kaydet
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+        <!-- ================= DUYURU YÖNETİMİ ================= -->
+
+        <div
+            id="announcementManagementSection"
+            class="content-management-section">
+
+            <div class="news-admin-layout">
+
+                <aside class="news-admin-sidebar">
+
+                    <div class="news-admin-sidebar-header">
+
+                        <div>
+                            <h3>Duyurular</h3>
+                            <p>Ana sayfa duyuru kayıtları</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="announcementCreateNewBtn"
+                            class="news-create-new-btn">
+
+                            <i class="fa-solid fa-plus"></i>
+                            Yeni Duyuru
+
+                        </button>
+
+                    </div>
+
+                    <div class="news-admin-filter-row">
+
+                        <select id="announcementStatusFilter">
+
+                            <option value="all">Tüm Durumlar</option>
+                            <option value="published">Yayındakiler</option>
+                            <option value="draft">Taslaklar</option>
+
+                        </select>
+
+                    </div>
+
+                    <div
+                        id="announcementPanelLoading"
+                        class="news-admin-message">
+
+                        Duyurular yükleniyor...
+
+                    </div>
+
+                    <div
+                        id="announcementPanelEmpty"
+                        class="news-admin-message"
+                        style="display:none;">
+
+                        Henüz duyuru bulunmuyor.
+
+                    </div>
+
+                    <div
+                        id="announcementPanelList"
+                        class="news-admin-article-list">
+
+                    </div>
+
+                </aside>
+
+                <section class="news-admin-editor">
+
+                    <div class="news-admin-editor-title">
+
+                        <div>
+
+                            <span id="announcementEditorModeLabel">
+                                YENİ DUYURU
+                            </span>
+
+                            <h3 id="announcementEditorTitle">
+                                Duyuru Oluştur
+                            </h3>
+
+                        </div>
+
+                        <div
+                            id="announcementEditorStatusBadge"
+                            class="news-editor-status draft">
+
+                            Taslak
+
+                        </div>
+
+                    </div>
+
+                    <input
+                        type="hidden"
+                        id="announcementId">
+
+                    <div class="news-admin-form-grid">
+
+                        <div class="news-admin-field news-admin-field-full">
+
+                            <label for="announcementTitleInput">
+                                Duyuru Başlığı
+                            </label>
+
+                            <input
+                                type="text"
+                                id="announcementTitleInput"
+                                maxlength="120"
+                                placeholder="Duyuru başlığını yazın">
+
+                            <span
+                                id="announcementTitleCounter"
+                                class="news-character-counter">
+
+                                0 / 120
+
+                            </span>
+
+                        </div>
+
+                        <div class="news-admin-field">
+
+                            <label for="announcementIconInput">
+                                İkon / Emoji
+                            </label>
+
+                            <input
+                                type="text"
+                                id="announcementIconInput"
+                                maxlength="10"
+                                value="📢"
+                                placeholder="📢">
+
+                        </div>
+
+                        <div class="news-admin-field">
+
+                            <label for="announcementStatusSelect">
+                                Durum
+                            </label>
+
+                            <select id="announcementStatusSelect">
+
+                                <option value="draft">Taslak</option>
+                                <option value="published">Yayınla</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="news-admin-field">
+
+                            <label for="announcementSortOrderInput">
+                                Sıra
+                            </label>
+
+                            <input
+                                type="number"
+                                id="announcementSortOrderInput"
+                                min="0"
+                                max="999"
+                                step="1"
+                                value="0"
+                                placeholder="0">
+
+                        </div>
+
+                        <div class="news-admin-field news-admin-field-full">
+
+                            <label for="announcementContentInput">
+                                Duyuru İçeriği
+                            </label>
+
+                            <textarea
+                                id="announcementContentInput"
+                                maxlength="1000"
+                                rows="10"
+                                placeholder="Ana sayfada gösterilecek duyuru metnini yazın"></textarea>
+
+                            <span
+                                id="announcementContentCounter"
+                                class="news-character-counter">
+
+                                0 / 1000
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="announcement-live-preview">
+
+                        <span class="announcement-preview-label">
+                            CANLI ÖNİZLEME
+                        </span>
+
+                        <div class="announcement-preview-card">
+
+                            <span
+                                id="announcementPreviewIcon"
+                                class="announcement-preview-icon">
+
+                                📢
+
+                            </span>
+
+                            <div>
+
+                                <strong id="announcementPreviewTitle">
+                                    Duyuru Başlığı
+                                </strong>
+
+                                <p id="announcementPreviewContent">
+                                    Duyuru içeriği burada görünecek.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="announcementPanelFeedback"
+                        class="news-panel-feedback">
+
+                    </div>
+
+                    <div class="news-admin-actions">
+
+                        <button
+                            type="button"
+                            id="announcementResetBtn"
+                            class="news-admin-secondary-btn">
+
+                            Temizle
+
+                        </button>
+
+                        <button
+                            type="button"
+                            id="announcementDeleteBtn"
+                            class="news-admin-danger-btn"
+                            style="display:none;">
+
+                            <i class="fa-solid fa-trash"></i>
+                            Sil
+
+                        </button>
+
+                        <button
+                            type="button"
+                            id="announcementSaveBtn"
+                            class="news-admin-primary-btn">
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Oluştur
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+            </div>
 
         </div>
 
@@ -2402,7 +2679,8 @@ Admin
 <script src="js/founderPanel.js"></script>
 <script src="js/organization.js?v=8"></script>
 <script src="js/news.js?v=1"></script>
-<script src="js/newsPanel.js?v=1"></script>
+<script src="js/announcements.js?v=1"></script>
+<script src="js/newsPanel.js?v=3"></script>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/chat.js?v=4"></script>

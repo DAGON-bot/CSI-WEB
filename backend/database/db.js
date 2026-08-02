@@ -171,6 +171,66 @@ await pool.query(`
 `);
 
 await pool.query(`
+    CREATE TABLE IF NOT EXISTS site_announcements (
+        id BIGSERIAL PRIMARY KEY,
+
+        "authorUserId" BIGINT NOT NULL,
+
+        title TEXT NOT NULL,
+
+        content TEXT NOT NULL,
+
+        icon TEXT NOT NULL
+            DEFAULT '📢',
+
+        status TEXT NOT NULL
+            DEFAULT 'draft',
+
+        "sortOrder" INTEGER NOT NULL
+            DEFAULT 0,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        "updatedAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT site_announcements_author_fk
+            FOREIGN KEY ("authorUserId")
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT site_announcements_status_check
+            CHECK (
+                status IN (
+                    'draft',
+                    'published'
+                )
+            )
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        site_announcements_status_sort_idx
+
+    ON site_announcements (
+        status,
+        "sortOrder" ASC,
+        "createdAt" DESC
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        site_announcements_author_idx
+
+    ON site_announcements (
+        "authorUserId"
+    )
+`);
+
+await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_logs (
         id BIGSERIAL PRIMARY KEY,
 
