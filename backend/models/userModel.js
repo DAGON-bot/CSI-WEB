@@ -1,6 +1,7 @@
 const { pool } = require("../database/db");
 
 async function getUser(username) {
+
     const result = await pool.query(
         `SELECT *
          FROM users
@@ -9,7 +10,33 @@ async function getUser(username) {
         [username]
     );
 
-    return result.rows[0];
+    const user = result.rows[0];
+
+    if (!user) {
+        return undefined;
+    }
+
+    const roles = await getUserRoles(user.username);
+
+    return {
+        ...user,
+        roles
+    };
+}
+
+async function getUserRoles(username) {
+
+    const result = await pool.query(
+        `SELECT ur.role
+         FROM user_roles ur
+         INNER JOIN users u
+             ON u.id = ur."userId"
+         WHERE LOWER(u.username) = LOWER($1)
+         ORDER BY ur.role ASC`,
+        [username]
+    );
+
+    return result.rows.map(row => row.role);
 }
 
 async function searchUsersByUsername(
@@ -195,6 +222,103 @@ async function updateRole(username, role) {
 
     return result.rows[0];
 
+}
+
+async function addUserRole(username, role) {
+
+    const result = await pool.query(
+        `INSERT INTO user_roles ("userId", role)
+         SELECT id, $2
+         FROM users
+         WHERE LOWER(username) = LOWER($1)
+         ON CONFLICT ("userId", role) DO NOTHING
+         RETURNING role`,
+        [username, role]
+    );
+
+    return result.rows[0] || null;
+}
+
+async function removeUserRole(username, role) {
+
+    const result = await pool.query(
+        `DELETE FROM user_roles
+         WHERE "userId" = (
+             SELECT id
+             FROM users
+             WHERE LOWER(username) = LOWER($1)
+             LIMIT 1
+         )
+         AND role = $2
+         RETURNING role`,
+        [username, role]
+    );
+
+    return result.rows[0] || null;
+}
+
+async function setUserRoles(username, roles) {
+
+    const client = await pool.connect();
+
+    try {
+
+        await client.query("BEGIN");
+
+        const userResult = await client.query(
+            `SELECT id
+             FROM users
+             WHERE LOWER(username) = LOWER($1)
+             LIMIT 1`,
+            [username]
+        );
+
+        const user = userResult.rows[0];
+
+        if (!user) {
+            await client.query("ROLLBACK");
+            return null;
+        }
+
+        const cleanRoles = [
+            ...new Set(
+                roles
+                    .map(role => String(role || "").trim())
+                    .filter(Boolean)
+            )
+        ];
+
+        await client.query(
+            `DELETE FROM user_roles
+             WHERE "userId" = $1`,
+            [user.id]
+        );
+
+        for (const role of cleanRoles) {
+
+            await client.query(
+                `INSERT INTO user_roles ("userId", role)
+                 VALUES ($1, $2)
+                 ON CONFLICT ("userId", role) DO NOTHING`,
+                [user.id, role]
+            );
+
+        }
+
+        await client.query("COMMIT");
+
+        return cleanRoles;
+
+    } catch (err) {
+
+        await client.query("ROLLBACK");
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
 }
 
 async function createAdminLog({
@@ -420,6 +544,10 @@ async function completePasswordReset(username, resetToken, passwordHash) {
 
 module.exports = {
     getUser,
+    getUserRoles,
+    addUserRole,
+    removeUserRole,
+    setUserRoles,
     searchUsersByUsername,
     createUser,
     verifyUser,

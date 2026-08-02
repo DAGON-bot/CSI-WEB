@@ -47,6 +47,33 @@ async function initDatabase() {
 `);
 
 await pool.query(`
+    CREATE TABLE IF NOT EXISTS user_roles (
+        id BIGSERIAL PRIMARY KEY,
+        "userId" BIGINT NOT NULL,
+        role TEXT NOT NULL,
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT user_roles_user_fk
+            FOREIGN KEY ("userId")
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT user_roles_unique
+            UNIQUE ("userId", role)
+    )
+`);
+
+await pool.query(`
+    INSERT INTO user_roles ("userId", role)
+    SELECT id, role
+    FROM users
+    WHERE role IS NOT NULL
+      AND TRIM(role) <> ''
+    ON CONFLICT ("userId", role) DO NOTHING
+`);
+
+await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_logs (
         id BIGSERIAL PRIMARY KEY,
 
