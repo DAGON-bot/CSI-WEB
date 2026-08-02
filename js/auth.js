@@ -21,6 +21,12 @@ const managementPanelNav = document.getElementById("managementPanelNav");
 const managementPanel = document.getElementById("panel");
 const API_URL = window.location.origin;
 
+const registerType =
+    document.getElementById("registerType");
+
+const staffRegisterFields =
+    document.getElementById("staffRegisterFields");
+
 const forgotPasswordBtn =
     document.getElementById("forgotPasswordBtn");
 
@@ -284,6 +290,25 @@ logoutBtn?.addEventListener("click", () => {
 
 document.addEventListener("DOMContentLoaded", checkCurrentSession);
 
+function updateRegisterType() {
+
+    if (!registerType || !staffRegisterFields) return;
+
+    if (registerType.value === "guest") {
+
+        staffRegisterFields.style.display = "none";
+
+        registerBadge.value = "";
+        registerRank.value = "";
+
+    } else {
+
+        staffRegisterFields.style.display = "block";
+
+    }
+
+}
+
 // Popup Aç
 function openAuthPopup(mode){
 
@@ -318,6 +343,9 @@ passwordResetToken = "";
 
         registerBadge.value = "";
         registerRank.value = "";
+
+        registerType.value = "staff";
+        updateRegisterType();
 
         title.textContent = "CSI Kayıt Sistemi";
         subtitle.textContent =
@@ -672,7 +700,8 @@ savePasswordBtn?.addEventListener("click", async (e) => {
     username,
     password,
     badge,
-    rank
+    rank,
+    registerType: registerType.value
 })
 
         });
@@ -978,3 +1007,5 @@ goLoginBtn?.addEventListener("click", () => {
     openAuthPopup("login");
 
 });
+
+registerType?.addEventListener("change", updateRegisterType);
