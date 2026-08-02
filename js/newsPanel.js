@@ -925,6 +925,11 @@ async function saveNewsArticle() {
         if (savedArticle) {
             fillNewsEditor(savedArticle);
         }
+        window.dispatchEvent(
+    new CustomEvent(
+        "news:updated"
+    )
+);
 
     } catch (err) {
 
@@ -1030,6 +1035,12 @@ async function deleteSelectedNewsArticle() {
 
         resetNewsEditor();
         await loadNewsPanelArticles();
+
+        window.dispatchEvent(
+    new CustomEvent(
+        "news:updated"
+    )
+);
 
     } catch (err) {
 
@@ -1140,6 +1151,12 @@ async function updateNewsFeaturedStatus() {
         );
 
         await loadNewsPanelArticles();
+
+        window.dispatchEvent(
+    new CustomEvent(
+        "news:updated"
+    )
+);
 
         const updatedArticle =
             newsPanelArticles.find(
