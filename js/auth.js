@@ -638,10 +638,18 @@ savePasswordBtn?.addEventListener("click", async (e) => {
 
     const password = registerPassword.value.trim();
     const passwordAgain = registerPassword2.value.trim();
-    const badge = registerBadge.value.trim();
-    const rank = registerRank.value.trim();
+    const selectedRegisterType = registerType.value;
+const isGuest = selectedRegisterType === "guest";
 
-    if (!badge || !rank) {
+const badge = isGuest
+    ? ""
+    : registerBadge.value.trim();
+
+const rank = isGuest
+    ? ""
+    : registerRank.value.trim();
+
+if (!isGuest && (!badge || !rank)) {
 
     showDialog(
         "Eksik Bilgi",
