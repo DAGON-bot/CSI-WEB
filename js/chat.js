@@ -34,6 +34,7 @@ const chatOnlineText =
 let chatSocket = null;
 let chatIsAuthenticated = false;
 let chatSending = false;
+let chatCurrentUserRoles = [];
 
 function getChatToken() {
 
@@ -182,6 +183,37 @@ function scrollChatToBottom() {
 
 }
 
+function canCurrentUserDeleteChatMessages() {
+
+    return [
+        "admin",
+        "founder",
+        "moderator"
+    ].some(
+        role =>
+            chatCurrentUserRoles.includes(role)
+    );
+}
+
+function refreshChatDeleteButtons() {
+
+    const allowed =
+        canCurrentUserDeleteChatMessages();
+
+    document
+        .querySelectorAll(
+            ".chat-message-delete"
+        )
+        .forEach(button => {
+
+            button.style.display =
+                allowed
+                    ? "flex"
+                    : "none";
+
+        });
+}
+
 function createChatMessageElement(message) {
 
     const roleInfo =
@@ -271,6 +303,45 @@ function createChatMessageElement(message) {
         header.appendChild(role);
 
     }
+
+    const deleteButton =
+    document.createElement("button");
+
+deleteButton.type =
+    "button";
+
+deleteButton.className =
+    "chat-message-delete";
+
+deleteButton.title =
+    "Mesajı sil";
+
+deleteButton.setAttribute(
+    "aria-label",
+    "Mesajı sil"
+);
+
+deleteButton.innerHTML =
+    '<i class="fa-solid fa-trash"></i>';
+
+deleteButton.style.display =
+    canCurrentUserDeleteChatMessages()
+        ? "flex"
+        : "none";
+
+deleteButton.addEventListener(
+    "click",
+    () => {
+
+        deleteChatMessage(
+            message.id,
+            deleteButton
+        );
+
+    }
+);
+
+header.appendChild(deleteButton);
 
     const text =
         document.createElement("div");
@@ -511,16 +582,23 @@ function connectChatSocket() {
         }
     );
 
-    chatSocket.on(
-        "chat:auth",
-        (data) => {
+   chatSocket.on(
+    "chat:auth",
+    (data) => {
 
-            updateChatComposer(
-                !!data?.authenticated
-            );
+        updateChatComposer(
+            !!data?.authenticated
+        );
 
-        }
-    );
+        chatCurrentUserRoles =
+            Array.isArray(data?.user?.roles)
+                ? data.user.roles
+                : [];
+
+        refreshChatDeleteButtons();
+
+    }
+);
 
     chatSocket.on(
         "chat:message",
@@ -540,6 +618,122 @@ function connectChatSocket() {
         }
     );
 
+}
+
+chatSocket.on(
+    "chat:deleted",
+    data => {
+
+        const messageId =
+            String(
+                data?.messageId || ""
+            );
+
+        if (!messageId) {
+            return;
+        }
+
+        const messageElement =
+            chatMessages?.querySelector(
+                `[data-message-id="${messageId}"]`
+            );
+
+        if (messageElement) {
+
+            messageElement.remove();
+
+        }
+
+        if (
+            chatMessages &&
+            !chatMessages.querySelector(
+                ".chat-message"
+            )
+        ) {
+
+            const empty =
+                document.createElement("div");
+
+            empty.className =
+                "chat-system-message";
+
+            empty.textContent =
+                "Henüz mesaj bulunmuyor.";
+
+            chatMessages.appendChild(empty);
+
+        }
+
+    }
+);
+
+function deleteChatMessage(
+    messageId,
+    button
+) {
+
+    if (
+        !chatSocket ||
+        !chatSocket.connected
+    ) {
+
+        showChatFeedback(
+            "Sohbet bağlantısı hazır değil."
+        );
+
+        return;
+    }
+
+    if (
+        !canCurrentUserDeleteChatMessages()
+    ) {
+
+        showChatFeedback(
+            "Mesaj silme yetkiniz bulunmuyor."
+        );
+
+        return;
+    }
+
+    const confirmed =
+        window.confirm(
+            "Bu mesajı silmek istediğinize emin misiniz?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+    }
+
+    chatSocket.emit(
+        "chat:delete",
+        {
+            messageId
+        },
+        response => {
+
+            if (button) {
+                button.disabled = false;
+            }
+
+            if (
+                !response ||
+                !response.success
+            ) {
+
+                showChatFeedback(
+                    response?.message ||
+                    "Mesaj silinemedi."
+                );
+
+                return;
+            }
+
+        }
+    );
 }
 
 function sendChatMessage() {

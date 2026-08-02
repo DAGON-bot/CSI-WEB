@@ -246,6 +246,22 @@ function formatChatMessage(row) {
     };
 }
 
+function canDeleteChatMessage(user) {
+
+    if (!user) {
+        return false;
+    }
+
+    return hasAnyRole(
+        user,
+        [
+            "admin",
+            "founder",
+            "moderator"
+        ]
+    );
+}
+
 io.on("connection", async (socket) => {
 
     const socketUser =
@@ -430,6 +446,113 @@ io.on("connection", async (socket) => {
 
         }
     );
+
+    socket.on(
+    "chat:delete",
+    async (payload, callback) => {
+
+        const respond =
+            typeof callback === "function"
+                ? callback
+                : () => {};
+
+        try {
+
+            const user =
+                socket.data.user;
+
+            if (!user) {
+
+                respond({
+                    success: false,
+                    message:
+                        "Bu işlem için giriş yapmalısınız."
+                });
+
+                return;
+            }
+
+            if (!canDeleteChatMessage(user)) {
+
+                respond({
+                    success: false,
+                    message:
+                        "Mesaj silme yetkiniz bulunmuyor."
+                });
+
+                return;
+            }
+
+            const messageId =
+                Number(payload?.messageId);
+
+            if (
+                !Number.isInteger(messageId) ||
+                messageId <= 0
+            ) {
+
+                respond({
+                    success: false,
+                    message:
+                        "Geçersiz mesaj bilgisi."
+                });
+
+                return;
+            }
+
+            const deletedResult =
+                await pool.query(
+                    `DELETE FROM chat_messages
+                     WHERE id = $1
+                     RETURNING id`,
+                    [messageId]
+                );
+
+            const deletedMessage =
+                deletedResult.rows[0];
+
+            if (!deletedMessage) {
+
+                respond({
+                    success: false,
+                    message:
+                        "Mesaj bulunamadı veya daha önce silindi."
+                });
+
+                return;
+            }
+
+            io.emit(
+                "chat:deleted",
+                {
+                    messageId:
+                        deletedMessage.id
+                }
+            );
+
+            respond({
+                success: true,
+                message:
+                    "Mesaj silindi."
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Chat mesaj silme hatası:",
+                err
+            );
+
+            respond({
+                success: false,
+                message:
+                    "Mesaj silinemedi."
+            });
+
+        }
+
+    }
+);
 
     // ===============================
 // CANLI SOHBET - SON MESAJLAR
