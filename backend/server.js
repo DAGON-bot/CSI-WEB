@@ -49,6 +49,16 @@ const {
 } = require("./models/newsModel");
 
 const {
+    getNewsInteractionSummary,
+    toggleNewsLike,
+    setNewsReaction,
+    getNewsComments,
+    createNewsComment,
+    getNewsCommentById,
+    deleteNewsComment
+} = require("./models/newsInteractionModel");
+
+const {
     createAnnouncement,
     getPublishedAnnouncements,
     getAnnouncementById,
@@ -453,6 +463,565 @@ async function getSocketUser(socket) {
 
     }
 }
+
+async function getOptionalRequestUser(req) {
+
+    const authorization =
+        String(
+            req.headers.authorization || ""
+        ).trim();
+
+    if (
+        !authorization.startsWith(
+            "Bearer "
+        )
+    ) {
+        return null;
+    }
+
+    const token =
+        authorization
+            .replace("Bearer ", "")
+            .trim();
+
+    if (!token) {
+        return null;
+    }
+
+    try {
+
+        const tokenUser =
+            verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+            return null;
+        }
+
+        const user =
+            await getUser(username);
+
+        if (
+            !user ||
+            !user.verified ||
+            !user.password ||
+            user.approvalStatus !==
+                "approved"
+        ) {
+            return null;
+        }
+
+        return user;
+
+    } catch (err) {
+
+        return null;
+    }
+}
+
+async function requireRequestUser(
+    req,
+    res
+) {
+
+    const user =
+        await getOptionalRequestUser(
+            req
+        );
+
+    if (!user) {
+
+        res.status(401).json({
+            success: false,
+            message:
+                "Bu işlem için giriş yapmalısınız."
+        });
+
+        return null;
+    }
+
+    return user;
+}
+
+app.get(
+    "/api/news/:articleId/interactions",
+    async (req, res) => {
+
+        try {
+
+            const articleId =
+                Number(
+                    req.params.articleId
+                );
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber numarası."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (
+                !article ||
+                article.status !==
+                    "published"
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Yayınlanmış haber bulunamadı."
+                });
+            }
+
+            const user =
+                await getOptionalRequestUser(
+                    req
+                );
+
+            const interaction =
+                await getNewsInteractionSummary(
+                    articleId,
+                    user?.id || null
+                );
+
+            const comments =
+                await getNewsComments(
+                    articleId
+                );
+
+            return res.json({
+                success: true,
+                interaction,
+                comments,
+                currentUser: user
+                    ? {
+                        id: user.id,
+                        username:
+                            user.username,
+                        role:
+                            user.role ||
+                            "member",
+                        roles:
+                            getUserRoleList(
+                                user
+                            )
+                    }
+                    : null
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber etkileşimleri alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Haber etkileşimleri alınamadı."
+            });
+        }
+    }
+);
+
+app.post(
+    "/api/news/:articleId/like",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const articleId =
+                Number(
+                    req.params.articleId
+                );
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber numarası."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (
+                !article ||
+                article.status !==
+                    "published"
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Yayınlanmış haber bulunamadı."
+                });
+            }
+
+            const result =
+                await toggleNewsLike(
+                    articleId,
+                    user.id
+                );
+
+            return res.json({
+                success: true,
+                ...result
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber beğeni işlemi hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Beğeni işlemi gerçekleştirilemedi."
+            });
+        }
+    }
+);
+
+app.put(
+    "/api/news/:articleId/reaction",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const articleId =
+                Number(
+                    req.params.articleId
+                );
+
+            const emoji =
+                String(
+                    req.body?.emoji || ""
+                ).trim();
+
+            const allowedEmojis = [
+                "😀",
+                "😍",
+                "😂",
+                "😮",
+                "😢",
+                "😡",
+                "❤️",
+                "🔥",
+                "👏"
+            ];
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber numarası."
+                });
+            }
+
+            if (
+                emoji &&
+                !allowedEmojis.includes(
+                    emoji
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz emoji."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (
+                !article ||
+                article.status !==
+                    "published"
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Yayınlanmış haber bulunamadı."
+                });
+            }
+
+            const result =
+                await setNewsReaction(
+                    articleId,
+                    user.id,
+                    emoji
+                );
+
+            return res.json({
+                success: true,
+                ...result
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber emoji işlemi hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Emoji işlemi gerçekleştirilemedi."
+            });
+        }
+    }
+);
+
+app.post(
+    "/api/news/:articleId/comments",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const articleId =
+                Number(
+                    req.params.articleId
+                );
+
+            const comment =
+                String(
+                    req.body?.comment || ""
+                ).trim();
+
+            if (
+                !Number.isInteger(articleId) ||
+                articleId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz haber numarası."
+                });
+            }
+
+            if (
+                comment.length < 1 ||
+                comment.length > 500
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Yorum 1 ile 500 karakter arasında olmalı."
+                });
+            }
+
+            const article =
+                await getNewsArticleById(
+                    articleId
+                );
+
+            if (
+                !article ||
+                article.status !==
+                    "published"
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Yayınlanmış haber bulunamadı."
+                });
+            }
+
+            await createNewsComment({
+                articleId,
+                userId: user.id,
+                comment
+            });
+
+            const comments =
+                await getNewsComments(
+                    articleId
+                );
+
+            return res.status(201).json({
+                success: true,
+                comments
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber yorumu eklenemedi:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Yorum eklenemedi."
+            });
+        }
+    }
+);
+
+app.delete(
+    "/api/news/comments/:commentId",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const commentId =
+                Number(
+                    req.params.commentId
+                );
+
+            if (
+                !Number.isInteger(commentId) ||
+                commentId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz yorum numarası."
+                });
+            }
+
+            const comment =
+                await getNewsCommentById(
+                    commentId
+                );
+
+            if (!comment) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Yorum bulunamadı."
+                });
+            }
+
+            const canDelete =
+                Number(comment.userId) ===
+                    Number(user.id) ||
+                hasAnyRole(
+                    user,
+                    [
+                        "admin",
+                        "founder",
+                        "moderator"
+                    ]
+                );
+
+            if (!canDelete) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Bu yorumu silme yetkiniz yok."
+                });
+            }
+
+            await deleteNewsComment(
+                commentId
+            );
+
+            return res.json({
+                success: true,
+                message:
+                    "Yorum silindi."
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Haber yorumu silinemedi:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Yorum silinemedi."
+            });
+        }
+    }
+);
 
 function getLocalNewsImagePath(
     imageUrl

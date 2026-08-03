@@ -4260,3 +4260,592 @@ img {
     }
 
 }
+
+/* =========================================
+   HABER SOSYAL ETKİLEŞİM ALANI
+========================================= */
+
+.public-news-social-section {
+    margin-top: 32px;
+    padding-top: 24px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+.public-news-interaction-loading,
+.public-news-interaction-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    min-height: 100px;
+    padding: 24px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: #939cac;
+    text-align: center;
+}
+
+.public-news-interaction-error {
+    flex-direction: column;
+
+    color: #ff8797;
+}
+
+.public-news-interaction-retry {
+    min-height: 38px;
+    padding: 0 15px;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.3);
+
+    border-radius: 9px;
+
+    background:
+        rgba(246, 201, 76, 0.09);
+
+    color: #f2cb59;
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+/* =========================================
+   BEĞENİ VE YORUM SAYISI
+========================================= */
+
+.public-news-social-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    margin-bottom: 18px;
+}
+
+.public-news-like-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 0 15px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: #aab2c1;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        color 0.18s ease;
+}
+
+.public-news-like-btn:hover {
+    transform: translateY(-1px);
+
+    border-color:
+        rgba(84, 148, 255, 0.4);
+
+    background:
+        rgba(84, 148, 255, 0.08);
+
+    color: #7eb0ff;
+}
+
+.public-news-like-btn.active {
+    border-color:
+        rgba(84, 148, 255, 0.5);
+
+    background:
+        rgba(84, 148, 255, 0.14);
+
+    color: #83b5ff;
+}
+
+.public-news-like-btn strong {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 22px;
+    height: 22px;
+
+    padding: 0 6px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color: inherit;
+    font-size: 11px;
+}
+
+.public-news-comment-total {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #949dad;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* =========================================
+   EMOJİ TEPKİLERİ
+========================================= */
+
+.public-news-reaction-area {
+    padding: 16px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.public-news-reaction-title {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color: #7f8899;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+}
+
+.public-news-reaction-buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.public-news-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    min-width: 55px;
+    min-height: 38px;
+
+    padding: 0 10px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: #a9b1bf;
+    font-family: inherit;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.16s ease,
+        border-color 0.16s ease,
+        background 0.16s ease;
+}
+
+.public-news-reaction-btn:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(246, 201, 76, 0.36);
+
+    background:
+        rgba(246, 201, 76, 0.07);
+}
+
+.public-news-reaction-btn.active {
+    border-color:
+        rgba(246, 201, 76, 0.55);
+
+    background:
+        rgba(246, 201, 76, 0.13);
+
+    box-shadow:
+        0 0 18px
+        rgba(246, 201, 76, 0.08);
+}
+
+.public-news-reaction-btn span {
+    font-size: 18px;
+}
+
+.public-news-reaction-btn strong {
+    color: #8f98a8;
+    font-size: 11px;
+}
+
+.public-news-reaction-btn.active strong {
+    color: #f1c950;
+}
+
+/* =========================================
+   YORUMLAR
+========================================= */
+
+.public-news-comments-section {
+    margin-top: 22px;
+}
+
+.public-news-comments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    margin-bottom: 14px;
+}
+
+.public-news-comments-header > div > span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #e4b93d;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+
+.public-news-comments-header h3 {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.public-news-comment-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 34px;
+    height: 34px;
+
+    padding: 0 9px;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.22);
+
+    border-radius: 999px;
+
+    background:
+        rgba(246, 201, 76, 0.08);
+
+    color: #f0c84e;
+    font-size: 12px;
+}
+
+.public-news-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.public-news-comments-empty {
+    padding: 30px 20px;
+
+    border:
+        1px dashed rgba(255, 255, 255, 0.1);
+
+    border-radius: 13px;
+
+    color: #7f8898;
+    text-align: center;
+    font-size: 12px;
+}
+
+.public-news-comment {
+    position: relative;
+
+    padding: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.public-news-comment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin-bottom: 9px;
+}
+
+.public-news-comment-header strong {
+    color: #f0c64c;
+    font-size: 13px;
+}
+
+.public-news-comment-header span {
+    color: #697284;
+    font-size: 9px;
+}
+
+.public-news-comment-text {
+    color: #c8ced8;
+    font-size: 13px;
+    line-height: 1.65;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.public-news-comment-delete {
+    margin-top: 10px;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #ff7184;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.public-news-comment-delete:hover {
+    text-decoration: underline;
+}
+
+.public-news-comment-delete:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+/* =========================================
+   YORUM YAZMA ALANI
+========================================= */
+
+.public-news-comment-form {
+    margin-top: 15px;
+    padding: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.public-news-comment-input {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+
+    padding: 13px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background:
+        #0d1118;
+
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.55;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.public-news-comment-input:focus {
+    border-color:
+        rgba(246, 201, 76, 0.45);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(246, 201, 76, 0.06);
+}
+
+.public-news-comment-input::placeholder {
+    color: #697181;
+}
+
+.public-news-comment-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin-top: 10px;
+}
+
+.public-news-comment-counter {
+    color: #70798a;
+    font-size: 10px;
+}
+
+.public-news-comment-send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 39px;
+    padding: 0 15px;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.34);
+
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #e7b92f,
+            #c88d16
+        );
+
+    color: #171208;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        filter 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.public-news-comment-send:hover {
+    transform: translateY(-1px);
+
+    filter: brightness(1.06);
+
+    box-shadow:
+        0 8px 20px
+        rgba(215, 158, 31, 0.18);
+}
+
+.public-news-comment-send:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+}
+
+/* =========================================
+   GİRİŞ UYARISI
+========================================= */
+
+.public-news-login-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    margin-top: 15px;
+    padding: 15px;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.15);
+
+    border-radius: 12px;
+
+    background:
+        rgba(246, 201, 76, 0.05);
+
+    color: #c0a85f;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* =========================================
+   MOBİL
+========================================= */
+
+@media (max-width: 640px) {
+
+    .public-news-social-top {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .public-news-like-btn {
+        width: 100%;
+    }
+
+    .public-news-comment-total {
+        justify-content: center;
+    }
+
+    .public-news-reaction-buttons {
+        display: grid;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .public-news-reaction-btn {
+        width: 100%;
+    }
+
+    .public-news-comment-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .public-news-comment-form-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .public-news-comment-send {
+        width: 100%;
+    }
+}

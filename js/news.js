@@ -462,6 +462,1061 @@ async function loadPublicNews() {
     }
 }
 
+function getPublicNewsToken() {
+
+    return localStorage.getItem(
+        "token"
+    ) || "";
+}
+
+function escapePublicNewsHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function formatPublicNewsCommentDate(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return date.toLocaleString(
+        "tr-TR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
+function getPublicNewsUserRoles(user) {
+
+    if (!user) {
+        return [];
+    }
+
+    if (
+        Array.isArray(user.roles) &&
+        user.roles.length > 0
+    ) {
+        return user.roles;
+    }
+
+    if (user.role) {
+        return [user.role];
+    }
+
+    return [];
+}
+
+function canDeletePublicNewsComment(
+    comment,
+    currentUser
+) {
+
+    if (
+        !comment ||
+        !currentUser
+    ) {
+        return false;
+    }
+
+    const isOwner =
+        Number(comment.userId) ===
+        Number(currentUser.id);
+
+    const roles =
+        getPublicNewsUserRoles(
+            currentUser
+        );
+
+    const isModerator =
+        roles.some(
+            role =>
+                [
+                    "admin",
+                    "founder",
+                    "moderator"
+                ].includes(role)
+        );
+
+    return isOwner || isModerator;
+}
+
+function renderPublicNewsComments(
+    comments,
+    currentUser,
+    commentsList,
+    articleId
+) {
+
+    commentsList.innerHTML =
+        "";
+
+    const safeComments =
+        Array.isArray(comments)
+            ? comments
+            : [];
+
+    if (safeComments.length === 0) {
+
+        commentsList.innerHTML = `
+            <div class="public-news-comments-empty">
+                Henüz yorum yapılmamış.
+            </div>
+        `;
+
+        return;
+    }
+
+    safeComments.forEach(comment => {
+
+        const commentCard =
+            document.createElement("div");
+
+        commentCard.className =
+            "public-news-comment";
+
+        const canDelete =
+            canDeletePublicNewsComment(
+                comment,
+                currentUser
+            );
+
+        commentCard.innerHTML = `
+            <div class="public-news-comment-header">
+
+                <strong>
+                    ${escapePublicNewsHtml(
+                        comment.username ||
+                        "Kullanıcı"
+                    )}
+                </strong>
+
+                <span>
+                    ${escapePublicNewsHtml(
+                        formatPublicNewsCommentDate(
+                            comment.createdAt
+                        )
+                    )}
+                </span>
+
+            </div>
+
+            <div class="public-news-comment-text">
+                ${escapePublicNewsHtml(
+                    comment.comment || ""
+                )}
+            </div>
+
+            ${
+                canDelete
+                    ? `
+                        <button
+                            type="button"
+                            class="public-news-comment-delete">
+
+                            Yorumu Sil
+
+                        </button>
+                    `
+                    : ""
+            }
+        `;
+
+        const deleteButton =
+            commentCard.querySelector(
+                ".public-news-comment-delete"
+            );
+
+        deleteButton?.addEventListener(
+            "click",
+            async () => {
+
+                const confirmed =
+                    window.confirm(
+                        "Bu yorumu silmek istediğinize emin misiniz?"
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const token =
+                    getPublicNewsToken();
+
+                if (!token) {
+                    return;
+                }
+
+                deleteButton.disabled =
+                    true;
+
+                deleteButton.textContent =
+                    "Siliniyor...";
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${window.location.origin}/api/news/comments/${comment.id}`,
+                            {
+                                method: "DELETE",
+
+                                headers: {
+                                    Authorization:
+                                        `Bearer ${token}`
+                                }
+                            }
+                        );
+
+                    const data =
+                        await response.json();
+
+                    if (
+                        !response.ok ||
+                        !data.success
+                    ) {
+
+                        throw new Error(
+                            data.message ||
+                            "Yorum silinemedi."
+                        );
+                    }
+
+                    commentCard.remove();
+
+                    if (
+                        !commentsList.children.length
+                    ) {
+
+                        commentsList.innerHTML = `
+                            <div class="public-news-comments-empty">
+                                Henüz yorum yapılmamış.
+                            </div>
+                        `;
+                    }
+
+                } catch (err) {
+
+                    console.error(
+                        "Yorum silme hatası:",
+                        err
+                    );
+
+                    deleteButton.disabled =
+                        false;
+
+                    deleteButton.textContent =
+                        "Yorumu Sil";
+                }
+            }
+        );
+
+        commentsList.appendChild(
+            commentCard
+        );
+    });
+}
+
+async function loadPublicNewsInteractions(
+    article,
+    socialSection
+) {
+
+    if (
+        !article?.id ||
+        !socialSection
+    ) {
+        return;
+    }
+
+    const articleId =
+        Number(article.id);
+
+    const token =
+        getPublicNewsToken();
+
+    try {
+
+        const response =
+            await fetch(
+                `${window.location.origin}/api/news/${articleId}/interactions`,
+                {
+                    method: "GET",
+
+                    headers: token
+                        ? {
+                            Authorization:
+                                `Bearer ${token}`
+                        }
+                        : {},
+
+                    cache: "no-store"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Haber etkileşimleri yüklenemedi."
+            );
+        }
+
+        const interaction =
+            data.interaction || {};
+
+        const currentUser =
+            data.currentUser || null;
+
+        const reactions =
+            Array.isArray(
+                interaction.reactions
+            )
+                ? interaction.reactions
+                : [];
+
+        const comments =
+            Array.isArray(data.comments)
+                ? data.comments
+                : [];
+
+        const allowedEmojis = [
+            "😀",
+            "😍",
+            "😂",
+            "😮",
+            "😢",
+            "😡",
+            "❤️",
+            "🔥",
+            "👏"
+        ];
+
+        const reactionCountMap =
+            new Map();
+
+        reactions.forEach(reaction => {
+
+            reactionCountMap.set(
+                reaction.emoji,
+                Number(reaction.count) || 0
+            );
+        });
+
+        socialSection.innerHTML = `
+            <div class="public-news-social-top">
+
+                <button
+                    type="button"
+                    class="
+                        public-news-like-btn
+                        ${
+                            interaction.userLiked
+                                ? "active"
+                                : ""
+                        }
+                    ">
+
+                    <i class="fa-solid fa-thumbs-up"></i>
+
+                    <span>
+                        Beğen
+                    </span>
+
+                    <strong
+                        class="public-news-like-count">
+
+                        ${
+                            Number(
+                                interaction.likeCount
+                            ) || 0
+                        }
+
+                    </strong>
+
+                </button>
+
+                <div class="public-news-comment-total">
+
+                    <i class="fa-regular fa-comment"></i>
+
+                    <span>
+                        ${
+                            Number(
+                                interaction.commentCount
+                            ) || 0
+                        } yorum
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="public-news-reaction-area">
+
+                <span class="public-news-reaction-title">
+                    Tepkini seç
+                </span>
+
+                <div class="public-news-reaction-buttons">
+
+                    ${allowedEmojis
+                        .map(emoji => {
+
+                            const count =
+                                reactionCountMap.get(
+                                    emoji
+                                ) || 0;
+
+                            const active =
+                                interaction.userReaction ===
+                                emoji;
+
+                            return `
+                                <button
+                                    type="button"
+                                    class="
+                                        public-news-reaction-btn
+                                        ${
+                                            active
+                                                ? "active"
+                                                : ""
+                                        }
+                                    "
+                                    data-emoji="${emoji}">
+
+                                    <span>
+                                        ${emoji}
+                                    </span>
+
+                                    <strong>
+                                        ${count}
+                                    </strong>
+
+                                </button>
+                            `;
+                        })
+                        .join("")}
+
+                </div>
+
+            </div>
+
+            <div class="public-news-comments-section">
+
+                <div class="public-news-comments-header">
+
+                    <div>
+
+                        <span>
+                            YORUMLAR
+                        </span>
+
+                        <h3>
+                            Topluluk görüşleri
+                        </h3>
+
+                    </div>
+
+                    <strong
+                        class="public-news-comment-count">
+
+                        ${
+                            Number(
+                                interaction.commentCount
+                            ) || 0
+                        }
+
+                    </strong>
+
+                </div>
+
+                <div
+                    class="public-news-comments-list">
+
+                </div>
+
+                ${
+                    currentUser
+                        ? `
+                            <div class="public-news-comment-form">
+
+                                <textarea
+                                    class="public-news-comment-input"
+                                    maxlength="500"
+                                    rows="3"
+                                    placeholder="Yorumunuzu yazın..."></textarea>
+
+                                <div class="public-news-comment-form-footer">
+
+                                    <span
+                                        class="public-news-comment-counter">
+
+                                        0 / 500
+
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        class="public-news-comment-send">
+
+                                        <i class="fa-solid fa-paper-plane"></i>
+
+                                        Yorumu Gönder
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        `
+                        : `
+                            <div class="public-news-login-warning">
+
+                                <i class="fa-solid fa-lock"></i>
+
+                                <span>
+                                    Beğeni, emoji ve yorum için giriş yapmalısınız.
+                                </span>
+
+                            </div>
+                        `
+                }
+
+            </div>
+        `;
+
+        const commentsList =
+            socialSection.querySelector(
+                ".public-news-comments-list"
+            );
+
+        renderPublicNewsComments(
+            comments,
+            currentUser,
+            commentsList,
+            articleId
+        );
+
+        const likeButton =
+            socialSection.querySelector(
+                ".public-news-like-btn"
+            );
+
+        const likeCount =
+            socialSection.querySelector(
+                ".public-news-like-count"
+            );
+
+        likeButton?.addEventListener(
+            "click",
+            async () => {
+
+                if (!currentUser) {
+
+                    showToast?.(
+                        "Beğenmek için giriş yapmalısınız.",
+                        "warning"
+                    );
+
+                    return;
+                }
+
+                likeButton.disabled =
+                    true;
+
+                try {
+
+                    const likeResponse =
+                        await fetch(
+                            `${window.location.origin}/api/news/${articleId}/like`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    Authorization:
+                                        `Bearer ${token}`
+                                }
+                            }
+                        );
+
+                    const likeData =
+                        await likeResponse.json();
+
+                    if (
+                        !likeResponse.ok ||
+                        !likeData.success
+                    ) {
+
+                        throw new Error(
+                            likeData.message ||
+                            "Beğeni işlemi başarısız."
+                        );
+                    }
+
+                    likeButton.classList.toggle(
+                        "active",
+                        Boolean(likeData.liked)
+                    );
+
+                    if (likeCount) {
+
+                        likeCount.textContent =
+                            String(
+                                Number(
+                                    likeData.likeCount
+                                ) || 0
+                            );
+                    }
+
+                } catch (err) {
+
+                    console.error(
+                        "Haber beğeni hatası:",
+                        err
+                    );
+
+                    showToast?.(
+                        err.message ||
+                        "Beğeni işlemi yapılamadı.",
+                        "error"
+                    );
+
+                } finally {
+
+                    likeButton.disabled =
+                        false;
+                }
+            }
+        );
+
+        const reactionButtons =
+            socialSection.querySelectorAll(
+                ".public-news-reaction-btn"
+            );
+
+        reactionButtons.forEach(
+            reactionButton => {
+
+                reactionButton.addEventListener(
+                    "click",
+                    async () => {
+
+                        if (!currentUser) {
+
+                            showToast?.(
+                                "Emoji bırakmak için giriş yapmalısınız.",
+                                "warning"
+                            );
+
+                            return;
+                        }
+
+                        const selectedEmoji =
+                            reactionButton.dataset
+                                .emoji || "";
+
+                        const currentActive =
+                            reactionButton.classList
+                                .contains("active");
+
+                        const emojiToSend =
+                            currentActive
+                                ? ""
+                                : selectedEmoji;
+
+                        reactionButtons.forEach(
+                            button => {
+
+                                button.disabled =
+                                    true;
+                            }
+                        );
+
+                        try {
+
+                            const reactionResponse =
+                                await fetch(
+                                    `${window.location.origin}/api/news/${articleId}/reaction`,
+                                    {
+                                        method: "PUT",
+
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json",
+
+                                            Authorization:
+                                                `Bearer ${token}`
+                                        },
+
+                                        body:
+                                            JSON.stringify({
+                                                emoji:
+                                                    emojiToSend
+                                            })
+                                    }
+                                );
+
+                            const reactionData =
+                                await reactionResponse
+                                    .json();
+
+                            if (
+                                !reactionResponse.ok ||
+                                !reactionData.success
+                            ) {
+
+                                throw new Error(
+                                    reactionData.message ||
+                                    "Emoji işlemi başarısız."
+                                );
+                            }
+
+                            const updatedCountMap =
+                                new Map();
+
+                            (
+                                reactionData.reactions ||
+                                []
+                            ).forEach(item => {
+
+                                updatedCountMap.set(
+                                    item.emoji,
+                                    Number(item.count) ||
+                                    0
+                                );
+                            });
+
+                            reactionButtons.forEach(
+                                button => {
+
+                                    const buttonEmoji =
+                                        button.dataset
+                                            .emoji;
+
+                                    button.classList.toggle(
+                                        "active",
+                                        reactionData
+                                            .userReaction ===
+                                            buttonEmoji
+                                    );
+
+                                    const countElement =
+                                        button.querySelector(
+                                            "strong"
+                                        );
+
+                                    if (countElement) {
+
+                                        countElement
+                                            .textContent =
+                                            String(
+                                                updatedCountMap
+                                                    .get(
+                                                        buttonEmoji
+                                                    ) || 0
+                                            );
+                                    }
+                                }
+                            );
+
+                        } catch (err) {
+
+                            console.error(
+                                "Haber emoji hatası:",
+                                err
+                            );
+
+                            showToast?.(
+                                err.message ||
+                                "Emoji işlemi yapılamadı.",
+                                "error"
+                            );
+
+                        } finally {
+
+                            reactionButtons.forEach(
+                                button => {
+
+                                    button.disabled =
+                                        false;
+                                }
+                            );
+                        }
+                    }
+                );
+            }
+        );
+
+        const commentInput =
+            socialSection.querySelector(
+                ".public-news-comment-input"
+            );
+
+        const commentCounter =
+            socialSection.querySelector(
+                ".public-news-comment-counter"
+            );
+
+        const commentSendButton =
+            socialSection.querySelector(
+                ".public-news-comment-send"
+            );
+
+        commentInput?.addEventListener(
+            "input",
+            () => {
+
+                if (commentCounter) {
+
+                    commentCounter.textContent =
+                        `${commentInput.value.length} / 500`;
+                }
+            }
+        );
+
+        commentSendButton?.addEventListener(
+            "click",
+            async () => {
+
+                const comment =
+                    commentInput?.value
+                        .trim() || "";
+
+                if (!comment) {
+
+                    showToast?.(
+                        "Yorum alanı boş bırakılamaz.",
+                        "warning"
+                    );
+
+                    return;
+                }
+
+                if (comment.length > 500) {
+
+                    showToast?.(
+                        "Yorum en fazla 500 karakter olabilir.",
+                        "warning"
+                    );
+
+                    return;
+                }
+
+                commentSendButton.disabled =
+                    true;
+
+                commentInput.disabled =
+                    true;
+
+                commentSendButton.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Gönderiliyor...
+                `;
+
+                try {
+
+                    const commentResponse =
+                        await fetch(
+                            `${window.location.origin}/api/news/${articleId}/comments`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+
+                                    Authorization:
+                                        `Bearer ${token}`
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        comment
+                                    })
+                            }
+                        );
+
+                    const commentData =
+                        await commentResponse
+                            .json();
+
+                    if (
+                        !commentResponse.ok ||
+                        !commentData.success
+                    ) {
+
+                        throw new Error(
+                            commentData.message ||
+                            "Yorum gönderilemedi."
+                        );
+                    }
+
+                    commentInput.value =
+                        "";
+
+                    if (commentCounter) {
+
+                        commentCounter.textContent =
+                            "0 / 500";
+                    }
+
+                    const updatedComments =
+                        Array.isArray(
+                            commentData.comments
+                        )
+                            ? commentData.comments
+                            : [];
+
+                    renderPublicNewsComments(
+                        updatedComments,
+                        currentUser,
+                        commentsList,
+                        articleId
+                    );
+
+                    const commentTotal =
+                        updatedComments.length;
+
+                    const commentTotalText =
+                        socialSection.querySelector(
+                            ".public-news-comment-total span"
+                        );
+
+                    const commentCountBadge =
+                        socialSection.querySelector(
+                            ".public-news-comment-count"
+                        );
+
+                    if (commentTotalText) {
+
+                        commentTotalText.textContent =
+                            `${commentTotal} yorum`;
+                    }
+
+                    if (commentCountBadge) {
+
+                        commentCountBadge.textContent =
+                            String(commentTotal);
+                    }
+
+                    showToast?.(
+                        "Yorumunuz yayınlandı.",
+                        "success"
+                    );
+
+                } catch (err) {
+
+                    console.error(
+                        "Haber yorumu gönderme hatası:",
+                        err
+                    );
+
+                    showToast?.(
+                        err.message ||
+                        "Yorum gönderilemedi.",
+                        "error"
+                    );
+
+                } finally {
+
+                    commentSendButton.disabled =
+                        false;
+
+                    commentInput.disabled =
+                        false;
+
+                    commentSendButton.innerHTML = `
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Yorumu Gönder
+                    `;
+                }
+            }
+        );
+
+    } catch (err) {
+
+        console.error(
+            "Haber sosyal alan yükleme hatası:",
+            err
+        );
+
+        socialSection.innerHTML = `
+            <div class="public-news-interaction-error">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <span>
+                    ${
+                        escapePublicNewsHtml(
+                            err.message ||
+                            "Etkileşimler yüklenemedi."
+                        )
+                    }
+                </span>
+
+                <button
+                    type="button"
+                    class="public-news-interaction-retry">
+
+                    Tekrar Dene
+
+                </button>
+
+            </div>
+        `;
+
+        const retryButton =
+            socialSection.querySelector(
+                ".public-news-interaction-retry"
+            );
+
+        retryButton?.addEventListener(
+            "click",
+            () => {
+
+                socialSection.innerHTML = `
+                    <div class="public-news-interaction-loading">
+                        Haber etkileşimleri yükleniyor...
+                    </div>
+                `;
+
+                loadPublicNewsInteractions(
+                    article,
+                    socialSection
+                );
+            }
+        );
+    }
+}
+
 function openPublicNewsDetail(article) {
 
     if (!article) {
@@ -595,6 +1650,20 @@ function openPublicNewsDetail(article) {
     body.appendChild(summary);
     body.appendChild(content);
 
+    const socialSection =
+    document.createElement("section");
+
+socialSection.className =
+    "public-news-social-section";
+
+socialSection.innerHTML = `
+    <div class="public-news-interaction-loading">
+        Haber etkileşimleri yükleniyor...
+    </div>
+`;
+
+body.appendChild(socialSection);
+
     popup.appendChild(closeButton);
     popup.appendChild(cover);
     popup.appendChild(body);
@@ -630,6 +1699,11 @@ function openPublicNewsDetail(article) {
 
     document.body.style.overflow =
         "hidden";
+
+        loadPublicNewsInteractions(
+    article,
+    socialSection
+);
 }
 
 publicAllNewsLink?.addEventListener(
