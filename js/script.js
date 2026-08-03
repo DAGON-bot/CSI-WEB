@@ -175,6 +175,101 @@ function sureBul(rozet){
 
 }
 
+function getPromotedRank(
+    currentBadge,
+    currentRank,
+    promotionAmount
+) {
+
+    let badgeIndex =
+        promotionBadgeGroups.indexOf(
+            currentBadge
+        );
+
+    if (badgeIndex === -1) {
+        return null;
+    }
+
+    let rankList =
+        rankData[currentBadge];
+
+    let rankIndex =
+        rankList.indexOf(
+            currentRank
+        );
+
+    if (rankIndex === -1) {
+        return null;
+    }
+
+    let remainingPromotion =
+        Number(promotionAmount) || 0;
+
+    while (remainingPromotion > 0) {
+
+        if (
+            rankIndex <
+            rankList.length - 1
+        ) {
+
+            rankIndex++;
+            remainingPromotion--;
+
+            continue;
+        }
+
+        const nextBadgeIndex =
+            badgeIndex + 1;
+
+        if (
+            nextBadgeIndex >=
+            promotionBadgeGroups.length
+        ) {
+
+            return {
+                badge:
+                    promotionBadgeGroups[
+                        badgeIndex
+                    ],
+
+                rank:
+                    rankList[
+                        rankList.length - 1
+                    ]
+            };
+        }
+
+        badgeIndex =
+    nextBadgeIndex;
+
+const nextBadge =
+    promotionBadgeGroups[
+        badgeIndex
+    ];
+
+rankList =
+    rankData[nextBadge];
+
+/*
+ Yeni rozete geçildiği anda
+ ilk rütbe zaten kazanılmış olur.
+*/
+rankIndex = 0;
+
+remainingPromotion--;
+    }
+
+    return {
+        badge:
+            promotionBadgeGroups[
+                badgeIndex
+            ],
+
+        rank:
+            rankList[rankIndex]
+    };
+}
+
 if(terfiKontrolBtn){
 
 terfiKontrolBtn.addEventListener("click",()=>{
@@ -232,23 +327,34 @@ terfiKontrolBtn.addEventListener("click",()=>{
 
 }
 
-    const liste=rankData[rozet];
+    const promotionResult =
+    getPromotedRank(
+        rozet,
+        rutbe,
+        1
+    );
 
-    const index=liste.indexOf(rutbe);
+if (!promotionResult) {
 
-    if(index===-1){
+    showToast(
+        "Rütbe bulunamadı.",
+        "error"
+    );
 
-        showToast("Rütbe bulunamadı.","error");
+    return;
+}
 
-        return;
+const sonrakiRozet =
+    promotionResult.badge;
 
-    }
-
-    const sonrakiRutbe=liste[index+1]||"SON RÜTBE";
+const sonrakiRutbe =
+    promotionResult.rank;
         if (gecenSure >= gerekenSure) {
 
         const discordMesaji =
 `Çalışan: ${personel}
+Eski Rozet: ${rozet}
+Yeni Rozet: ${sonrakiRozet}
 Eski Rütbe: ${rutbe}
 Yeni Rütbe: ${sonrakiRutbe}
 Oda Süresi: ${dakikaYazi(yeniToplam)}
@@ -269,7 +375,7 @@ const popupMesaji = `
 
 <tr>
 <td>🏷 Rozet</td>
-<td>${rozet}</td>
+<td>${rozet} → ${sonrakiRozet}</td>
 </tr>
 
 <tr>
@@ -293,7 +399,8 @@ const popupMesaji = `
        window.discordMesaji = discordMesaji;
        window.terfiBilgisi = {
     username: personel,
-    badge: rozet,
+    badge: sonrakiRozet,
+    oldBadge: rozet,
     oldRank: rutbe,
     newRank: sonrakiRutbe,
     authorizedBy: yetkili
@@ -467,39 +574,37 @@ if(!dagitan || !kod || !saat){
 
             if(!rozet || !rutbe) return;
 
-            const liste = rankData[rozet];
+            const promotionResult =
+    getPromotedRank(
+        rozet,
+        rutbe,
+        deger
+    );
 
-            const mevcutIndex =
-                liste.indexOf(rutbe);
-
-            if(mevcutIndex === -1) return;
-
-            let yeniIndex =
-    mevcutIndex + deger;
-
-if (yeniIndex >= liste.length) {
-
-    yeniIndex =
-        liste.length - 1;
-
+if (!promotionResult) {
+    return;
 }
 
+const yeniRozet =
+    promotionResult.badge;
+
 const yeniRutbe =
-    liste[yeniIndex];
+    promotionResult.rank;
 
     if (ad && yeniRutbe) {
 
     topluTerfiListesi.push({
-        username: ad.trim(),
-        badge: rozet,
-        oldRank: rutbe,
-        newRank: yeniRutbe
-    });
+    username: ad.trim(),
+    badge: yeniRozet,
+    oldBadge: rozet,
+    oldRank: rutbe,
+    newRank: yeniRutbe
+});
 
 }
 
 discordCiktisi +=
-`${ad.padEnd(18)} │ ${rutbe} → ${yeniRutbe}\n`;
+`${ad.padEnd(18)} │ ${rozet} / ${rutbe} → ${yeniRozet} / ${yeniRutbe}\n`;
 
 oyunCiktisi +=
 `${ad} --> ${yeniRutbe} rütbesine terfi etti.\n\n`;
@@ -518,7 +623,7 @@ margin-top:10px;
 margin-bottom:10px;
 ">
 
-🏷️ Mevcut Rozeti : ${rozet}
+🏷️ Rozet : ${rozet} → ${yeniRozet}
 
 </p>
 
