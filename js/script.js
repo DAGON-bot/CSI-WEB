@@ -425,25 +425,25 @@ showPopup(
 
     window.terfiBilgisi = null;
 
-    const kalan = gerekenSure - gecenSure;
+    const kalan =
+        gerekenSure - gecenSure;
 
-    const copyDiscordBtn =
-    document.getElementById(
-        "copyDiscordBtn"
+    showPopup(
+        "Terfi Reddedildi",
+        `Terfi için ${dakikaYazi(kalan)} daha çalışması gerekiyor.`,
+        "warning"
     );
 
-if (copyDiscordBtn) {
-    copyDiscordBtn.style.display =
-        "none";
-}
-
-        showPopup(
-            "Terfi Reddedildi",
-            `Terfi için ${dakikaYazi(kalan)} daha çalışması gerekiyor.`,
-            "warning"
+    const copyDiscordBtn =
+        document.getElementById(
+            "copyDiscordBtn"
         );
 
+    if (copyDiscordBtn) {
+        copyDiscordBtn.style.display =
+            "none";
     }
+}
 
 });
 
