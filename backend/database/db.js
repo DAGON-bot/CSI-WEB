@@ -194,6 +194,109 @@ await pool.query(`
 `);
 
 await pool.query(`
+    CREATE TABLE IF NOT EXISTS news_likes (
+        id BIGSERIAL PRIMARY KEY,
+
+        "articleId" BIGINT NOT NULL,
+        "userId" BIGINT NOT NULL,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT news_likes_article_fk
+            FOREIGN KEY ("articleId")
+            REFERENCES news_articles(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT news_likes_user_fk
+            FOREIGN KEY ("userId")
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT news_likes_unique
+            UNIQUE ("articleId", "userId")
+    )
+`);
+
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS news_reactions (
+        id BIGSERIAL PRIMARY KEY,
+
+        "articleId" BIGINT NOT NULL,
+        "userId" BIGINT NOT NULL,
+
+        emoji TEXT NOT NULL,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        "updatedAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT news_reactions_article_fk
+            FOREIGN KEY ("articleId")
+            REFERENCES news_articles(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT news_reactions_user_fk
+            FOREIGN KEY ("userId")
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT news_reactions_unique
+            UNIQUE ("articleId", "userId")
+    )
+`);
+
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS news_comments (
+        id BIGSERIAL PRIMARY KEY,
+
+        "articleId" BIGINT NOT NULL,
+        "userId" BIGINT NOT NULL,
+
+        comment TEXT NOT NULL,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        "updatedAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT news_comments_article_fk
+            FOREIGN KEY ("articleId")
+            REFERENCES news_articles(id)
+            ON DELETE CASCADE,
+
+        CONSTRAINT news_comments_user_fk
+            FOREIGN KEY ("userId")
+            REFERENCES users(id)
+            ON DELETE CASCADE
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        news_likes_article_id_idx
+    ON news_likes ("articleId")
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        news_reactions_article_id_idx
+    ON news_reactions ("articleId")
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        news_comments_article_id_created_at_idx
+    ON news_comments (
+        "articleId",
+        "createdAt" DESC
+    )
+`);
+
+await pool.query(`
     CREATE TABLE IF NOT EXISTS site_announcements (
         id BIGSERIAL PRIMARY KEY,
 

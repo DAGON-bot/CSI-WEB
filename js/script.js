@@ -406,6 +406,16 @@ const popupMesaji = `
     authorizedBy: yetkili
 };
 
+const copyDiscordBtn =
+    document.getElementById(
+        "copyDiscordBtn"
+    );
+
+if (copyDiscordBtn) {
+    copyDiscordBtn.style.display =
+        "inline-flex";
+}
+
 showPopup(
     "Terfi Onaylandı",
     popupMesaji,
@@ -416,6 +426,16 @@ showPopup(
     window.terfiBilgisi = null;
 
     const kalan = gerekenSure - gecenSure;
+
+    const copyDiscordBtn =
+    document.getElementById(
+        "copyDiscordBtn"
+    );
+
+if (copyDiscordBtn) {
+    copyDiscordBtn.style.display =
+        "none";
+}
 
         showPopup(
             "Terfi Reddedildi",
