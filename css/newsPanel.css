@@ -2103,3 +2103,367 @@
     font-size: 10px;
     text-align: center;
 }
+
+/* =========================================
+   İÇERİK SİLME ONAY POPUP
+========================================= */
+
+.content-delete-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100500;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.78);
+
+    backdrop-filter:
+        blur(7px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+}
+
+.content-delete-confirm-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.content-delete-confirm-popup {
+    width: min(420px, 94vw);
+
+    padding: 27px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.11);
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #171b24,
+            #0e1117
+        );
+
+    box-shadow:
+        0 28px 80px
+        rgba(0, 0, 0, 0.62);
+
+    text-align: center;
+
+    transform:
+        translateY(10px)
+        scale(0.97);
+
+    transition:
+        transform 0.2s ease;
+}
+
+.content-delete-confirm-overlay.active
+.content-delete-confirm-popup {
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+.content-delete-confirm-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 16px;
+
+    border:
+        1px solid rgba(255, 83, 105, 0.28);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 83, 105, 0.1);
+
+    color: #ff7185;
+    font-size: 22px;
+}
+
+.content-delete-confirm-popup h3 {
+    margin: 0 0 10px;
+
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.content-delete-confirm-popup p {
+    margin: 0;
+
+    color: #9da5b4;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.content-delete-confirm-actions {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 23px;
+}
+
+.content-delete-confirm-actions button {
+    min-height: 42px;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.content-delete-confirm-actions button:hover {
+    transform:
+        translateY(-1px);
+}
+
+.content-delete-confirm-cancel {
+    border:
+        1px solid rgba(255, 255, 255, 0.12);
+
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    color: #d7dbe3;
+}
+
+.content-delete-confirm-cancel:hover {
+    background:
+        rgba(255, 255, 255, 0.08);
+}
+
+.content-delete-confirm-approve {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border:
+        1px solid rgba(255, 74, 98, 0.38);
+
+    background:
+        linear-gradient(
+            135deg,
+            #d74359,
+            #a9283b
+        );
+
+    color: #ffffff;
+}
+
+.content-delete-confirm-approve:hover {
+    border-color:
+        rgba(255, 98, 119, 0.65);
+
+    background:
+        linear-gradient(
+            135deg,
+            #e34b62,
+            #b42d42
+        );
+}
+
+@media (max-width: 460px) {
+
+    .content-delete-confirm-popup {
+        padding: 23px 18px;
+    }
+
+}
+
+/* =========================================
+   HABER KAPAK GÖRSELİ YÜKLEME
+========================================= */
+
+.news-image-upload-area {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    padding: 14px;
+
+    border:
+        1px dashed rgba(246, 201, 76, 0.3);
+
+    border-radius: 11px;
+
+    background:
+        rgba(246, 201, 76, 0.035);
+}
+
+.news-image-select-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 42px;
+    padding: 0 15px;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid rgba(246, 201, 76, 0.36);
+
+    border-radius: 9px;
+
+    background:
+        rgba(246, 201, 76, 0.1);
+
+    color: #edc64b;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.news-image-select-btn:hover {
+    transform:
+        translateY(-1px);
+
+    border-color:
+        rgba(246, 201, 76, 0.6);
+
+    background:
+        rgba(246, 201, 76, 0.16);
+}
+
+.news-image-select-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.news-image-upload-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    min-width: 0;
+}
+
+.news-image-upload-info strong {
+    overflow: hidden;
+
+    color: #e5e8ee;
+    font-size: 11px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.news-image-upload-info span {
+    color: #747d8e;
+    font-size: 9px;
+}
+
+.news-image-preview-wrapper {
+    position: relative;
+}
+
+.news-image-preview-actions {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 10px;
+
+    background:
+        rgba(7, 9, 14, 0.84);
+
+    backdrop-filter:
+        blur(6px);
+}
+
+.news-image-preview-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    min-height: 34px;
+    padding: 0 10px;
+
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+@media (max-width: 560px) {
+
+    .news-image-upload-area {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .news-image-select-btn {
+        width: 100%;
+    }
+
+    .news-image-preview-actions {
+        position: static;
+
+        justify-content: stretch;
+
+        border: 0;
+        border-radius: 0;
+
+        background:
+            rgba(8, 10, 15, 0.95);
+    }
+
+    .news-image-preview-actions button {
+        flex: 1;
+    }
+
+}

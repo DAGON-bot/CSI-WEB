@@ -202,25 +202,21 @@
 ========================================= */
 
 .chat-message {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    position: relative;
 
     width: 100%;
-    padding: 10px;
 
-    border:
-        1px solid rgba(255, 255, 255, 0.075);
+    padding: 12px 42px 12px 14px;
 
+    border: 1px solid rgba(255,255,255,.075);
     border-radius: 11px;
 
-    background:
-        rgba(255, 255, 255, 0.035);
+    background: rgba(255,255,255,.035);
 
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
 }
 
 .chat-message:hover {
@@ -234,38 +230,9 @@
         translateY(-1px);
 }
 
-.chat-message-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 42px;
-    height: 48px;
-
-    flex: 0 0 42px;
-
-    overflow: hidden;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.1);
-
-    border-radius: 9px;
-
-    background:
-        rgba(0, 0, 0, 0.2);
-}
-
-.chat-message-avatar img {
-    width: 50px;
-    height: 58px;
-
-    object-fit: contain;
-    object-position: center bottom;
-}
-
-.chat-message-body {
-    flex: 1;
-    min-width: 0;
+.chat-message-body{
+    width:100%;
+    min-width:0;
 }
 
 .chat-message-header {
@@ -760,17 +727,6 @@
         padding: 9px;
     }
 
-    .chat-message-avatar {
-        width: 38px;
-        height: 44px;
-        flex-basis: 38px;
-    }
-
-    .chat-message-avatar img {
-        width: 46px;
-        height: 54px;
-    }
-
     .chat-emoji-panel {
         grid-template-columns:
             repeat(4, 34px);
@@ -800,41 +756,40 @@
     position: relative;
 }
 
-.chat-message-delete {
-    display: none;
-    align-items: center;
-    justify-content: center;
+.chat-message-delete{
 
-    width: 25px;
-    height: 25px;
+    position:absolute;
+    top:10px;
+    right:10px;
 
-    margin-left: auto;
-    padding: 0;
+    display:none;
 
-    flex: 0 0 25px;
+    align-items:center;
+    justify-content:center;
 
-    border: 1px solid
-        rgba(255, 92, 112, 0.22);
+    width:25px;
+    height:25px;
 
-    border-radius: 7px;
+    padding:0;
 
-    background:
-        rgba(255, 72, 96, 0.07);
+    border:1px solid rgba(255,92,112,.22);
+    border-radius:7px;
 
-    color: #ff8294;
-    font-size: 10px;
+    background:rgba(255,72,96,.07);
 
-    cursor: pointer;
+    color:#ff8294;
+    font-size:10px;
 
-    opacity: 0.65;
+    cursor:pointer;
+
+    opacity:.65;
 
     transition:
-        opacity 0.2s ease,
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+        opacity .2s ease,
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
 }
-
 .chat-message:hover
 .chat-message-delete {
     opacity: 1;
