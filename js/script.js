@@ -1,5 +1,16 @@
-const buttons = document.querySelectorAll(".tab-btn");
-const tabs = document.querySelectorAll(".tab-content");
+const buttons =
+    document.querySelectorAll(".tab-btn");
+
+const tabs =
+    document.querySelectorAll(".tab-content");
+
+const promotionBadgeGroups =
+    Object.keys(rankData).slice(
+        0,
+        Object.keys(rankData).indexOf(
+            "Cumhurbaşkanları"
+        ) + 1
+    );
 
 buttons.forEach(button => {
 
@@ -38,7 +49,7 @@ if(terfiRozet){
             Rozet seçiniz
         </option>`;
 
-    Object.keys(rankData).forEach(rozet => {
+    promotionBadgeGroups.forEach(rozet => {
 
         options += `
             <option value="${rozet}">
@@ -337,7 +348,7 @@ function personelKartOlustur() {
 
     let rozetOptions = `<option value="">Rozet Seçiniz</option>`;
 
-    Object.keys(rankData).forEach(rozet => {
+    promotionBadgeGroups.forEach(rozet => {
         rozetOptions += `<option value="${rozet}">${rozet}</option>`;
     });
 
