@@ -5,11 +5,6 @@ const registerPassword = document.getElementById("registerPassword");
 const registerPassword2 = document.getElementById("registerPassword2");
 const savePasswordBtn = document.getElementById("savePasswordBtn");
 
-const registerBadge =
-    document.getElementById("registerBadge");
-
-const registerRank =
-    document.getElementById("registerRank");
 
 const profileBtn = document.getElementById("profileBtn");
 const profileMenuWrapper = document.getElementById("profileMenuWrapper");
@@ -298,8 +293,6 @@ function updateRegisterType() {
 
         staffRegisterFields.style.display = "none";
 
-        registerBadge.value = "";
-        registerRank.value = "";
 
     } else {
 
@@ -341,8 +334,6 @@ passwordResetToken = "";
         registerPassword.value = "";
         registerPassword2.value = "";
 
-        registerBadge.value = "";
-        registerRank.value = "";
 
         registerType.value = "staff";
         updateRegisterType();
@@ -364,8 +355,6 @@ passwordResetToken = "";
         registerPassword.value = "";
         registerPassword2.value = "";  
 
-        registerBadge.value = "";
-        registerRank.value = "";
 
         title.textContent = "CSI Giriş Sistemi";
         subtitle.textContent =
@@ -641,26 +630,6 @@ savePasswordBtn?.addEventListener("click", async (e) => {
     const selectedRegisterType = registerType.value;
 const isGuest = selectedRegisterType === "guest";
 
-const badge = isGuest
-    ? ""
-    : registerBadge.value.trim();
-
-const rank = isGuest
-    ? ""
-    : registerRank.value.trim();
-
-if (!isGuest && (!badge || !rank)) {
-
-    showDialog(
-        "Eksik Bilgi",
-        "Rozetinizi seçin ve rütbenizi yazın.",
-        "warning"
-    );
-
-    return;
-}
-
-
     if (!password || !passwordAgain) {
 
         showDialog(
@@ -707,8 +676,6 @@ if (!isGuest && (!badge || !rank)) {
             body: JSON.stringify({
     username,
     password,
-    badge,
-    rank,
     registerType: registerType.value
 })
 
@@ -727,17 +694,38 @@ if (!isGuest && (!badge || !rank)) {
             return;
         }
 
-        localStorage.setItem("token", data.token);
+        if (data.pendingApproval) {
 
-        showDialog(
-            "Kayıt Başarılı",
-            "Hesabınız başarıyla oluşturuldu.",
-            "success",
-            () => {
-                closeAuthPopup();
-                location.reload();
-            }
-        );
+    showDialog(
+        "Onay Bekleniyor",
+        data.message ||
+        "Kaydınız oluşturuldu. Hesabınızın yönetim tarafından onaylanması bekleniyor.",
+        "success",
+        () => {
+            closeAuthPopup();
+        }
+    );
+
+    return;
+}
+
+if (data.token) {
+    localStorage.setItem(
+        "token",
+        data.token
+    );
+}
+
+showDialog(
+    "Kayıt Başarılı",
+    data.message ||
+    "Hesabınız başarıyla oluşturuldu.",
+    "success",
+    () => {
+        closeAuthPopup();
+        location.reload();
+    }
+);
 
     } catch (err) {
 

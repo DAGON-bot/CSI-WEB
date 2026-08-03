@@ -32,7 +32,10 @@ const {
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
-    completePasswordReset
+    completePasswordReset,
+    getPendingApprovals,
+    approveUserAccount,
+    rejectUserAccount
 } = require("./models/userModel");
 
 const {
@@ -143,6 +146,18 @@ function hasAnyRole(user, allowedRoles) {
 
     return allowedRoles.some(
         role => roles.includes(role)
+    );
+}
+
+function canManageAccountApprovals(user) {
+
+    return hasAnyRole(
+        user,
+        [
+            "admin",
+            "founder",
+            "moderator"
+        ]
     );
 }
 
@@ -1108,6 +1123,284 @@ async function getAuthorizedNewsUser(req) {
         };
     }
 }
+
+async function getAuthorizedApprovalUser(req) {
+
+    const auth =
+        req.headers.authorization;
+
+    if (
+        !auth ||
+        !auth.startsWith("Bearer ")
+    ) {
+
+        return {
+            error: {
+                status: 401,
+                message:
+                    "Oturum açmanız gerekiyor."
+            }
+        };
+    }
+
+    const token =
+        auth.replace(
+            "Bearer ",
+            ""
+        ).trim();
+
+    try {
+
+        const tokenUser =
+            verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+
+            return {
+                error: {
+                    status: 401,
+                    message:
+                        "Geçersiz oturum bilgisi."
+                }
+            };
+        }
+
+        const user =
+            await getUser(username);
+
+        if (!user) {
+
+            return {
+                error: {
+                    status: 404,
+                    message:
+                        "Kullanıcı bulunamadı."
+                }
+            };
+        }
+
+        if (
+            !canManageAccountApprovals(
+                user
+            )
+        ) {
+
+            return {
+                error: {
+                    status: 403,
+                    message:
+                        "Hesap onaylarını yönetme yetkiniz yok."
+                }
+            };
+        }
+
+        return {
+            user
+        };
+
+    } catch (err) {
+
+        return {
+            error: {
+                status: 401,
+                message:
+                    "Oturum geçersiz veya süresi dolmuş."
+            }
+        };
+    }
+}
+
+// ===============================
+// HESAP ONAYLARI - BEKLEYENLER
+// ===============================
+
+app.get(
+    "/api/account-approvals",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedApprovalUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            const approvals =
+                await getPendingApprovals();
+
+            return res.json({
+                success: true,
+                count: approvals.length,
+                approvals
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bekleyen hesapları yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bekleyen hesaplar yüklenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
+// HESAP ONAYLARI - ONAYLA
+// ===============================
+
+app.patch(
+    "/api/account-approvals/:userId/approve",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedApprovalUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            const userId =
+                Number(req.params.userId);
+
+            const badge =
+                String(
+                    req.body.badge || ""
+                ).trim();
+
+            const rank =
+                String(
+                    req.body.rank || ""
+                ).trim();
+
+            if (
+                !Number.isInteger(userId) ||
+                userId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz kullanıcı bilgisi."
+                });
+            }
+
+            if (!badge || !rank) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Rozet ve rütbe seçmelisiniz."
+                });
+            }
+
+            if (
+                badge.length > 80 ||
+                rank.length > 80
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Rozet veya rütbe adı çok uzun."
+                });
+            }
+
+            const approvedUser =
+                await approveUserAccount({
+                    userId,
+                    badge,
+                    rank,
+                    approvedByUserId:
+                        authorization.user.id
+                });
+
+            if (!approvedUser) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Bu hesap daha önce işleme alınmış veya bulunamadı."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    authorization.user.username,
+
+                targetUsername:
+                    approvedUser.username,
+
+                actionType:
+                    "account_approved",
+
+                oldValue:
+                    "pending",
+
+                newValue:
+                    `${badge} / ${rank}`
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    "Hesap başarıyla onaylandı.",
+                user:
+                    approvedUser
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Hesap onaylama hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Hesap onaylanamadı."
+            });
+        }
+    }
+);
 
 function validateNewsPayload(body) {
 
@@ -2885,121 +3178,118 @@ app.post("/api/register/password", async (req, res) => {
     try {
 
         const {
-    username,
-    password,
-    badge,
-    rank,
-    registerType
-} = req.body;
+            username,
+            password,
+            registerType
+        } = req.body;
 
-        const isGuest = registerType === "guest";
+        if (!username || !password) {
 
-if (!username || !password) {
-
-    return res.status(400).json({
-        success: false,
-        message: "Kullanıcı adı ve şifre gerekli."
-    });
-
-}
-
-if (!isGuest && (!badge || !rank)) {
-
-    return res.status(400).json({
-        success: false,
-        message: "Rozet ve rütbe seçmelisiniz."
-    });
-
-}
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Kullanıcı adı ve şifre gerekli."
+            });
+        }
 
         if (password.length < 6) {
 
             return res.status(400).json({
                 success: false,
-                message: "Şifre en az 6 karakter olmalı."
+                message:
+                    "Şifre en az 6 karakter olmalı."
             });
-
         }
 
-        const cleanBadge = isGuest
-    ? "Misafir"
-    : String(badge || "").trim();
-
-const cleanRank = isGuest
-    ? "Misafir"
-    : String(rank || "").trim();
-
-if (cleanBadge.length > 80) {
-    return res.status(400).json({
-        success: false,
-        message: "Rozet adı çok uzun."
-    });
-}
-
-if (cleanRank.length < 2 || cleanRank.length > 80) {
-    return res.status(400).json({
-        success: false,
-        message: "Rütbe adı 2 ile 80 karakter arasında olmalı."
-    });
-}
-
-        const user = await getUser(username);
+        const user =
+            await getUser(username);
 
         if (!user) {
 
             return res.status(404).json({
                 success: false,
-                message: "Kullanıcı bulunamadı."
+                message:
+                    "Kullanıcı bulunamadı."
             });
-
         }
 
         if (!user.verified) {
 
             return res.status(403).json({
                 success: false,
-                message: "Hesap doğrulanmamış."
+                message:
+                    "Hesap doğrulanmamış."
             });
-
         }
 
         if (user.password) {
 
-    return res.status(409).json({
-        success: false,
-        message: "Bu hesap için daha önce şifre oluşturulmuş."
-    });
+            return res.status(409).json({
+                success: false,
+                message:
+                    "Bu hesap için daha önce şifre oluşturulmuş."
+            });
+        }
 
-}
+        const passwordHash =
+            await bcrypt.hash(
+                password,
+                12
+            );
 
-        const passwordHash = await bcrypt.hash(password, 12);
+        const registeredUser =
+            await completeRegistration(
+                username,
+                passwordHash,
+                registerType
+            );
 
-        await completeRegistration(
-    username,
-    passwordHash,
-    cleanBadge,
-    cleanRank
-);
+        if (!registeredUser) {
 
-        const token = generateToken(username);
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Kayıt tamamlanamadı."
+            });
+        }
 
-        res.json({
+        if (
+            registeredUser.approvalStatus ===
+            "pending"
+        ) {
+
+            return res.json({
+                success: true,
+                pendingApproval: true,
+                message:
+                    "Kaydınız oluşturuldu. Hesabınızın yönetim tarafından onaylanması bekleniyor."
+            });
+        }
+
+        const token =
+            generateToken(username);
+
+        return res.json({
             success: true,
-            message: "Hesap başarıyla oluşturuldu.",
+            pendingApproval: false,
+            message:
+                "Hesap başarıyla oluşturuldu.",
             token
         });
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Kayıt tamamlama hatası:",
+            err
+        );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Sunucu hatası."
+            message:
+                "Sunucu hatası."
         });
-
     }
-
 });
 
 app.post("/api/login", async (req, res) => {
@@ -3037,14 +3327,31 @@ app.post("/api/login", async (req, res) => {
 
         }
 
-        if (!user.password) {
+        if (
+    user.approvalStatus ===
+    "pending"
+) {
 
-            return res.status(401).json({
-                success: false,
-                message: "Bu hesap için henüz şifre oluşturulmamış."
-            });
+    return res.status(403).json({
+        success: false,
+        pendingApproval: true,
+        message:
+            "Hesabınız henüz yönetim tarafından onaylanmadı."
+    });
+}
 
-        }
+if (
+    user.approvalStatus ===
+    "rejected"
+) {
+
+    return res.status(403).json({
+        success: false,
+        rejected: true,
+        message:
+            "Hesap başvurunuz yönetim tarafından reddedildi."
+    });
+}
 
         let passwordCorrect = false;
 

@@ -47,6 +47,29 @@ async function initDatabase() {
 `);
 
 await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS "approvalStatus" TEXT
+        NOT NULL DEFAULT 'approved',
+
+    ADD COLUMN IF NOT EXISTS "approvedByUserId" BIGINT,
+
+    ADD COLUMN IF NOT EXISTS "approvedAt" TIMESTAMPTZ,
+
+    ADD COLUMN IF NOT EXISTS "rejectedAt" TIMESTAMPTZ
+`);
+
+await pool.query(`
+    UPDATE users
+    SET "approvalStatus" = 'approved',
+        "approvedAt" = COALESCE(
+            "approvedAt",
+            "createdAt"
+        )
+    WHERE "approvalStatus" IS NULL
+       OR "approvalStatus" = ''
+`);
+
+await pool.query(`
     CREATE TABLE IF NOT EXISTS user_roles (
         id BIGSERIAL PRIMARY KEY,
         "userId" BIGINT NOT NULL,
