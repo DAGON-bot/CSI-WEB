@@ -98,20 +98,40 @@ async function verifyUser(username) {
 async function completeRegistration(
     username,
     password,
-    badge,
-    rank
+    registerType
 ) {
+
+    const isGuest =
+        registerType === "guest";
+
+    const approvalStatus =
+        isGuest
+            ? "approved"
+            : "pending";
+
+    const approvedAt =
+        isGuest
+            ? new Date()
+            : null;
+
     const result = await pool.query(
         `UPDATE users
          SET password = $1,
-             badge = $2,
-             rank = $3
+             badge = NULL,
+             rank = NULL,
+             "approvalStatus" = $2,
+             "approvedAt" = $3,
+             "approvedByUserId" = NULL,
+             "rejectedAt" = NULL
          WHERE LOWER(username) = LOWER($4)
-         RETURNING id`,
+         RETURNING
+             id,
+             username,
+             "approvalStatus"`,
         [
             password,
-            badge,
-            rank,
+            approvalStatus,
+            approvedAt,
             username
         ]
     );
@@ -542,6 +562,86 @@ async function completePasswordReset(username, resetToken, passwordHash) {
     return result.rows[0];
 }
 
+async function getPendingApprovals() {
+
+    const result = await pool.query(
+        `SELECT
+            id,
+            username,
+            "figureString",
+            motto,
+            "createdAt",
+            "approvalStatus"
+         FROM users
+         WHERE "approvalStatus" = 'pending'
+         ORDER BY "createdAt" ASC`
+    );
+
+    return result.rows;
+}
+
+async function approveUserAccount({
+    userId,
+    badge,
+    rank,
+    approvedByUserId
+}) {
+
+    const result = await pool.query(
+        `UPDATE users
+         SET badge = $1,
+             rank = $2,
+             "approvalStatus" = 'approved',
+             "approvedByUserId" = $3,
+             "approvedAt" = CURRENT_TIMESTAMP,
+             "rejectedAt" = NULL
+         WHERE id = $4
+           AND "approvalStatus" = 'pending'
+         RETURNING
+             id,
+             username,
+             badge,
+             rank,
+             "approvalStatus",
+             "approvedAt"`,
+        [
+            badge,
+            rank,
+            approvedByUserId,
+            userId
+        ]
+    );
+
+    return result.rows[0] || null;
+}
+
+async function rejectUserAccount({
+    userId,
+    approvedByUserId
+}) {
+
+    const result = await pool.query(
+        `UPDATE users
+         SET "approvalStatus" = 'rejected',
+             "approvedByUserId" = $1,
+             "approvedAt" = NULL,
+             "rejectedAt" = CURRENT_TIMESTAMP
+         WHERE id = $2
+           AND "approvalStatus" = 'pending'
+         RETURNING
+             id,
+             username,
+             "approvalStatus",
+             "rejectedAt"`,
+        [
+            approvedByUserId,
+            userId
+        ]
+    );
+
+    return result.rows[0] || null;
+}
+
 module.exports = {
     getUser,
     getUserRoles,
@@ -565,5 +665,8 @@ module.exports = {
     createPasswordReset,
     getPasswordReset,
     verifyPasswordReset,
-    completePasswordReset
+    completePasswordReset,
+    getPendingApprovals,
+    approveUserAccount,
+    rejectUserAccount
 };

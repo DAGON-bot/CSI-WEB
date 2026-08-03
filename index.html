@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="css/founderPanel.css">
+    <link
+    rel="stylesheet"
+    href="css/notificationPanel.css">
     <link rel="stylesheet" href="css/dialog.css">
     <link rel="stylesheet" href="css/chat.css">
     <link rel="stylesheet" href="css/newsPanel.css">
@@ -85,9 +88,7 @@
     <i class="fa-solid fa-newspaper"></i>
     HABER PANELİ
 
-    </button>
-
-    <button
+<button
     type="button"
     id="founderPanelNav"
     class="nav-btn founder-panel-nav"
@@ -95,37 +96,78 @@
 
     👑 KURUCU PANELİ
 
-    </button>
+</button>
 
-    <div id="profileMenuWrapper" class="profile-menu-wrapper" style="display:none;">
+<button
+    type="button"
+    id="notificationPanelNav"
+    class="notification-panel-nav"
+    aria-label="Bildirimler"
+    title="Bildirimler"
+    style="display:none;">
 
-        <a
-            href="#"
-            id="profileBtn"
-            class="register-btn profile-btn">
-            Profil
-        </a>
+    <i class="fa-solid fa-bell"></i>
 
-        <div id="profileDropdown" class="profile-dropdown">
+    <span
+        id="notificationCount"
+        class="notification-count"
+        style="display:none;">
 
-            <button type="button" id="visitProfileBtn" class="profile-dropdown-item">
-                <span>👤</span>
-                Profili Ziyaret Et
-            </button>
+        0
 
-            <button type="button" id="profileSettingsBtn" class="profile-dropdown-item">
-                <span>⚙️</span>
-                Ayarlar
-            </button>
+    </span>
 
-            <div class="profile-dropdown-divider"></div>
+</button>
 
-            <button type="button" id="logoutBtn" class="profile-dropdown-item logout-item">
-                <span>🚪</span>
-                Çıkış Yap
-            </button>
+<div
+    id="profileMenuWrapper"
+    class="profile-menu-wrapper"
+    style="display:none;">
 
-        </div>
+    <a
+        href="#"
+        id="profileBtn"
+        class="register-btn profile-btn">
+
+        Profil
+
+    </a>
+
+    <div
+        id="profileDropdown"
+        class="profile-dropdown">
+
+        <button
+            type="button"
+            id="visitProfileBtn"
+            class="profile-dropdown-item">
+
+            <span>👤</span>
+            Profili Ziyaret Et
+
+        </button>
+
+        <button
+            type="button"
+            id="profileSettingsBtn"
+            class="profile-dropdown-item">
+
+            <span>⚙️</span>
+            Ayarlar
+
+        </button>
+
+        <div class="profile-dropdown-divider"></div>
+
+        <button
+            type="button"
+            id="logoutBtn"
+            class="profile-dropdown-item logout-item">
+
+            <span>🚪</span>
+            Çıkış Yap
+
+        </button>
 
     </div>
 
@@ -1961,6 +2003,44 @@ class="main-btn">
 
         </div>
 
+        <div
+    id="notificationPanel"
+    class="notification-panel"
+    style="display:none;">
+
+    <div class="notification-panel-box">
+
+        <div class="notification-panel-header">
+
+            <h2>
+                <i class="fa-solid fa-bell"></i>
+                Bildirimler
+            </h2>
+
+            <button
+                type="button"
+                id="closeNotificationPanel">
+
+                ✕
+
+            </button>
+
+        </div>
+
+        <div
+            id="notificationPanelBody"
+            class="notification-panel-body">
+
+            <div class="notification-empty">
+                Bekleyen bildirim bulunmuyor.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
         <!-- ================= İŞLEM GEÇMİŞİ ================= -->
 
 <div class="founder-department-section founder-log-section">
@@ -2540,50 +2620,18 @@ Admin
 </div>
 
 <div id="staffRegisterFields">
-    <select id="registerBadge">
 
-    <option value="">Rozetinizi Seçin</option>
-    <option value="Standart Rütbeler">Standart Rütbeler</option>
-    <option value="Güvenlik Ekibi">Güvenlik Ekibi</option>
-    <option value="Eğitim Ekibi">Eğitim Ekibi</option>
-    <option value="Yasal İşler Bakanlığı">Yasal İşler Bakanlığı</option>
-    <option value="Yüksek Rütbe">Yüksek Rütbe</option>
-    <option value="Diplomatlar">Diplomatlar</option>
-    <option value="Operasyon Yetkilileri">Operasyon Yetkilileri</option>
-    <option value="Dış İşler Bakanlığı">Dış İşler Bakanlığı</option>
-    <option value="Yönetim Bürosu">Yönetim Bürosu</option>
-    <option value="Müdürler">Müdürler</option>
-    <option value="Halk ve İlişkiler Bölümü">Halk ve İlişkiler Bölümü</option>
-    <option value="Üst Düzey Yönetim">Üst Düzey Yönetim</option>
-    <option value="Leadership">Leadership</option>
-    <option value="Soruşturma Bürosu">Soruşturma Bürosu</option>
-    <option value="Kriminal İnceleme Birimi">Kriminal İnceleme Birimi</option>
-    <option value="Görevliler">Görevliler</option>
-    <option value="Bakanlar">Bakanlar</option>
-    <option value="İstihbarat Bölümü">İstihbarat Bölümü</option>
-    <option value="Cumhurbaşkanları">Cumhurbaşkanları</option>
-    <option value="Eş Sahip">Eş Sahip</option>
-    <option value="Direktör">Direktör</option>
-    <option value="Oda Moderatörü">Oda Moderatörü</option>
-    <option value="Oda Denetleyicisi">Oda Denetleyicisi</option>
-    <option value="Oda Temsilcisi">Oda Temsilcisi</option>
-    <option value="Üst Düzey Liderler">Üst Düzey Liderler</option>
-    <option value="Oda Yöneticisi">Oda Yöneticisi</option>
-    <option value="Black Room">Black Room</option>
-    <option value="White Room">White Room</option>
-    <option value="Founders">Founders</option>
-    <option value="AS Kurucu">AS Kurucu</option>
-    <option value="Üst Kurucu">Üst Kurucu</option>
-    <option value="Co-Owner">Co-Owner</option>
-    <option value="Owner">Owner</option>
+    <div class="auth-approval-info">
 
-</select>
+        <i class="fa-solid fa-shield-halved"></i>
 
-<input
-    type="text"
-    id="registerRank"
-    maxlength="80"
-    placeholder="Rütbenizi Yazın">
+        <p>
+            Personel hesabınız oluşturulduktan sonra
+            rozet ve rütbeniz yönetim tarafından atanacaktır.
+        </p>
+
+    </div>
+
 </div>
     <input
         type="password"
@@ -2775,6 +2823,7 @@ Admin
 <script src="js/news.js?v=1"></script>
 <script src="js/announcements.js?v=1"></script>
 <script src="js/newsPanel.js?v=3"></script>
+<script src="js/notificationPanel.js"></script>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/chat.js?v=4"></script>
