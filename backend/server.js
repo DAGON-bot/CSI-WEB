@@ -3,6 +3,10 @@ const path = require("path");
 require("dotenv").config({
     path: path.join(__dirname, ".env")
 });
+
+const fs = require("fs");
+const crypto = require("crypto");
+const multer = require("multer");
 const {
     generateToken,
     verifyToken
@@ -63,7 +67,6 @@ const axios = require("axios");
 const http = require("http");
 const { Server } = require("socket.io");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
 const ADMIN_USERNAME = "canart0";
 const PANEL_PERMISSIONS = {
 
@@ -195,6 +198,125 @@ function canManageNewsArticle(
 
 const app = express();
 
+// ===============================
+// HABER GÖRSELİ YÜKLEME AYARLARI
+// ===============================
+
+const newsUploadDirectory =
+    path.join(
+        __dirname,
+        "..",
+        "uploads",
+        "news"
+    );
+
+fs.mkdirSync(
+    newsUploadDirectory,
+    {
+        recursive: true
+    }
+);
+
+const allowedNewsImageMimeTypes =
+    new Set([
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ]);
+
+const newsImageExtensionByMimeType = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp"
+};
+
+const newsImageStorage =
+    multer.diskStorage({
+
+        destination: (
+            req,
+            file,
+            callback
+        ) => {
+
+            callback(
+                null,
+                newsUploadDirectory
+            );
+        },
+
+        filename: (
+            req,
+            file,
+            callback
+        ) => {
+
+            const extension =
+                newsImageExtensionByMimeType[
+                    file.mimetype
+                ];
+
+            const uniqueName =
+                [
+                    Date.now(),
+                    crypto
+                        .randomBytes(12)
+                        .toString("hex")
+                ].join("-");
+
+            callback(
+                null,
+                `${uniqueName}${extension}`
+            );
+        }
+    });
+
+const newsImageUpload =
+    multer({
+
+        storage:
+            newsImageStorage,
+
+        limits: {
+            fileSize:
+                5 * 1024 * 1024,
+
+            files:
+                1,
+
+            fields:
+                0,
+
+            parts:
+                1
+        },
+
+        fileFilter: (
+            req,
+            file,
+            callback
+        ) => {
+
+            if (
+                !allowedNewsImageMimeTypes.has(
+                    file.mimetype
+                )
+            ) {
+
+                return callback(
+                    new Error(
+                        "Yalnızca JPG, PNG veya WebP görseller yüklenebilir."
+                    )
+                );
+            }
+
+            return callback(
+                null,
+                true
+            );
+        }
+    });
+
 const httpServer =
     http.createServer(app);
 
@@ -208,6 +330,17 @@ const io =
             ]
         }
     });
+
+    app.use(
+    "/uploads",
+    express.static(
+        path.join(
+            __dirname,
+            "..",
+            "uploads"
+        )
+    )
+);
 
 app.use(cors());
 app.use(express.json());
@@ -303,6 +436,78 @@ async function getSocketUser(socket) {
 
         return null;
 
+    }
+}
+
+function getLocalNewsImagePath(
+    imageUrl
+) {
+
+    const cleanImageUrl =
+        String(
+            imageUrl || ""
+        ).trim();
+
+    if (
+        !cleanImageUrl.startsWith(
+            "/uploads/news/"
+        )
+    ) {
+
+        return null;
+    }
+
+    const filename =
+        path.basename(
+            cleanImageUrl
+        );
+
+    if (!filename) {
+        return null;
+    }
+
+    return path.join(
+        newsUploadDirectory,
+        filename
+    );
+}
+
+async function deleteLocalNewsImage(
+    imageUrl
+) {
+
+    const imagePath =
+        getLocalNewsImagePath(
+            imageUrl
+        );
+
+    if (!imagePath) {
+        return false;
+    }
+
+    try {
+
+        await fs.promises.unlink(
+            imagePath
+        );
+
+        return true;
+
+    } catch (err) {
+
+        if (
+            err.code === "ENOENT"
+        ) {
+
+            return false;
+        }
+
+        console.error(
+            "Haber görseli silme hatası:",
+            err
+        );
+
+        return false;
     }
 }
 
@@ -1008,17 +1213,18 @@ function validateNewsPayload(body) {
     }
 
     if (
-        imageUrl &&
-        !/^https?:\/\/.+/i.test(
-            imageUrl
-        )
-    ) {
+    imageUrl &&
+    !(
+        /^https?:\/\/.+/i.test(imageUrl) ||
+        imageUrl.startsWith("/uploads/news/")
+    )
+) {
 
-        return {
-            error:
-                "Kapak görseli geçerli bir http veya https adresi olmalı."
-        };
-    }
+    return {
+        error:
+            "Geçersiz kapak görseli adresi."
+    };
+}
 
     return {
         data: {
@@ -1031,6 +1237,206 @@ function validateNewsPayload(body) {
         }
     };
 }
+
+// ===============================
+// HABER PANELİ - KAPAK GÖRSELİ YÜKLE
+// ===============================
+
+app.post(
+    "/api/news-panel/upload-image",
+    async (req, res) => {
+
+        const authorization =
+            await getAuthorizedNewsUser(
+                req
+            );
+
+        if (authorization.error) {
+
+            return res
+                .status(
+                    authorization
+                        .error
+                        .status
+                )
+                .json({
+                    success: false,
+                    message:
+                        authorization
+                            .error
+                            .message
+                });
+        }
+
+        newsImageUpload.single(
+            "image"
+        )(
+            req,
+            res,
+            err => {
+
+                if (err) {
+
+                    if (
+                        err instanceof
+                        multer.MulterError
+                    ) {
+
+                        if (
+                            err.code ===
+                            "LIMIT_FILE_SIZE"
+                        ) {
+
+                            return res
+                                .status(400)
+                                .json({
+                                    success:
+                                        false,
+
+                                    message:
+                                        "Kapak görseli en fazla 5 MB olabilir."
+                                });
+                        }
+
+                        if (
+                            err.code ===
+                            "LIMIT_UNEXPECTED_FILE"
+                        ) {
+
+                            return res
+                                .status(400)
+                                .json({
+                                    success:
+                                        false,
+
+                                    message:
+                                        "Yalnızca tek bir kapak görseli yükleyebilirsiniz."
+                                });
+                        }
+
+                        return res
+                            .status(400)
+                            .json({
+                                success:
+                                    false,
+
+                                message:
+                                    "Görsel yüklenemedi."
+                            });
+                    }
+
+                    return res
+                        .status(400)
+                        .json({
+                            success:
+                                false,
+
+                            message:
+                                err.message ||
+                                "Görsel yüklenemedi."
+                        });
+                }
+
+                if (!req.file) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            success: false,
+                            message:
+                                "Yüklenecek görsel bulunamadı."
+                        });
+                }
+
+                const imageUrl =
+                    `/uploads/news/${req.file.filename}`;
+
+                return res.status(201).json({
+                    success: true,
+                    message:
+                        "Kapak görseli yüklendi.",
+                    imageUrl
+                });
+            }
+        );
+    }
+);
+
+// ===============================
+// HABER PANELİ - YÜKLENEN GÖRSELİ SİL
+// ===============================
+
+app.delete(
+    "/api/news-panel/upload-image",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedNewsUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization
+                            .error
+                            .status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization
+                                .error
+                                .message
+                    });
+            }
+
+            const imageUrl =
+                String(
+                    req.body?.imageUrl || ""
+                ).trim();
+
+            if (
+                !imageUrl.startsWith(
+                    "/uploads/news/"
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz görsel adresi."
+                });
+            }
+
+            await deleteLocalNewsImage(
+                imageUrl
+            );
+
+            return res.json({
+                success: true,
+                message:
+                    "Görsel kaldırıldı."
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Yüklenen görseli silme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Görsel kaldırılamadı."
+            });
+        }
+    }
+);
 
 function validateAnnouncementPayload(body) {
 

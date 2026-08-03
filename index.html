@@ -1333,29 +1333,83 @@ class="main-btn">
 
                         <div class="news-admin-field news-admin-field-full">
 
-                            <label for="newsImageUrlInput">
-                                Kapak Görseli URL
-                            </label>
+    <label for="newsImageFileInput">
+        Kapak Görseli
+    </label>
 
-                            <input
-                                type="url"
-                                id="newsImageUrlInput"
-                                maxlength="1000"
-                                placeholder="https://...">
+    <div class="news-image-upload-area">
 
-                        </div>
+        <input
+            type="file"
+            id="newsImageFileInput"
+            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            hidden>
+
+        <button
+            type="button"
+            id="newsImageSelectBtn"
+            class="news-image-select-btn">
+
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            Görsel Seç
+
+        </button>
+
+        <div class="news-image-upload-info">
+
+            <strong id="newsImageFileName">
+                Görsel seçilmedi
+            </strong>
+
+            <span>
+                JPG, PNG veya WebP — En fazla 5 MB
+            </span>
+
+        </div>
+
+    </div>
+
+    <input
+        type="hidden"
+        id="newsImageUrlInput">
+
+</div>
 
                         <div
-                            id="newsImagePreviewWrapper"
-                            class="news-image-preview-wrapper"
-                            style="display:none;">
+    id="newsImagePreviewWrapper"
+    class="news-image-preview-wrapper"
+    style="display:none;">
 
-                            <img
-                                id="newsImagePreview"
-                                src=""
-                                alt="Haber kapak önizlemesi">
+    <img
+        id="newsImagePreview"
+        src=""
+        alt="Haber kapak önizlemesi">
 
-                        </div>
+    <div class="news-image-preview-actions">
+
+        <button
+            type="button"
+            id="newsImageChangeBtn"
+            class="news-admin-secondary-btn">
+
+            <i class="fa-solid fa-rotate"></i>
+            Değiştir
+
+        </button>
+
+        <button
+            type="button"
+            id="newsImageRemoveBtn"
+            class="news-admin-danger-btn">
+
+            <i class="fa-solid fa-trash"></i>
+            Görseli Kaldır
+
+        </button>
+
+    </div>
+
+</div>
 
                         <div class="news-admin-field news-admin-field-full">
 
@@ -1808,6 +1862,53 @@ class="main-btn">
                 class="news-preview-content">
 
             </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= İÇERİK SİLME ONAYI ================= -->
+
+<div
+    id="contentDeleteConfirmOverlay"
+    class="content-delete-confirm-overlay">
+
+    <div class="content-delete-confirm-popup">
+
+        <div class="content-delete-confirm-icon">
+            <i class="fa-solid fa-trash"></i>
+        </div>
+
+        <h3 id="contentDeleteConfirmTitle">
+            İçeriği Sil
+        </h3>
+
+        <p id="contentDeleteConfirmMessage">
+            Bu içeriği kalıcı olarak silmek istediğinize emin misiniz?
+        </p>
+
+        <div class="content-delete-confirm-actions">
+
+            <button
+                type="button"
+                id="contentDeleteConfirmCancel"
+                class="content-delete-confirm-cancel">
+
+                İptal
+
+            </button>
+
+            <button
+                type="button"
+                id="contentDeleteConfirmApprove"
+                class="content-delete-confirm-approve">
+
+                <i class="fa-solid fa-trash"></i>
+                Sil
+
+            </button>
 
         </div>
 

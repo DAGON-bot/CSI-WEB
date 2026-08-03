@@ -42,20 +42,6 @@ function getChatToken() {
 
 }
 
-function getChatAvatarUrl(figureString) {
-
-    if (!figureString) {
-        return "assets/logo.png";
-    }
-
-    return (
-        "https://www.habbo.com.tr/habbo-imaging/avatarimage" +
-        `?figure=${encodeURIComponent(figureString)}` +
-        "&size=s&direction=2&head_direction=2&gesture=sml&headonly=0"
-    );
-
-}
-
 function getChatRoleInfo(roles, fallbackRole) {
 
     const userRoles =
@@ -228,41 +214,6 @@ function createChatMessageElement(message) {
     item.className =
         `chat-message ${roleInfo.className}`;
 
-    const avatarBox =
-        document.createElement("div");
-
-    avatarBox.className =
-        "chat-message-avatar";
-
-    const avatar =
-        document.createElement("img");
-
-    avatar.src =
-        getChatAvatarUrl(
-            message.figureString
-        );
-
-    avatar.alt =
-        message.username || "Kullanıcı";
-
-    avatar.loading =
-        "lazy";
-
-    avatar.addEventListener(
-        "error",
-        () => {
-
-            avatar.src =
-                "assets/logo.png";
-
-        },
-        {
-            once: true
-        }
-    );
-
-    avatarBox.appendChild(avatar);
-
     const body =
         document.createElement("div");
 
@@ -371,7 +322,6 @@ header.appendChild(deleteButton);
     body.appendChild(text);
     body.appendChild(time);
 
-    item.appendChild(avatarBox);
     item.appendChild(body);
 
     return item;

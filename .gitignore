@@ -4,3 +4,4 @@ backend/node_modules/
 backend/.env
 backend/database/csi.db
 backend/database/csi_backup.db
+uploads/

@@ -43,6 +43,31 @@ const newsStatusSelect =
 const newsImageUrlInput =
     document.getElementById("newsImageUrlInput");
 
+const newsImageFileInput =
+    document.getElementById(
+        "newsImageFileInput"
+    );
+
+const newsImageSelectBtn =
+    document.getElementById(
+        "newsImageSelectBtn"
+    );
+
+const newsImageChangeBtn =
+    document.getElementById(
+        "newsImageChangeBtn"
+    );
+
+const newsImageRemoveBtn =
+    document.getElementById(
+        "newsImageRemoveBtn"
+    );
+
+const newsImageFileName =
+    document.getElementById(
+        "newsImageFileName"
+    );
+
 const newsImagePreviewWrapper =
     document.getElementById(
         "newsImagePreviewWrapper"
@@ -137,11 +162,178 @@ const newsPreviewContent =
         "newsPreviewContent"
     );
 
+    const contentDeleteConfirmOverlay =
+    document.getElementById(
+        "contentDeleteConfirmOverlay"
+    );
+
+const contentDeleteConfirmTitle =
+    document.getElementById(
+        "contentDeleteConfirmTitle"
+    );
+
+const contentDeleteConfirmMessage =
+    document.getElementById(
+        "contentDeleteConfirmMessage"
+    );
+
+const contentDeleteConfirmCancel =
+    document.getElementById(
+        "contentDeleteConfirmCancel"
+    );
+
+const contentDeleteConfirmApprove =
+    document.getElementById(
+        "contentDeleteConfirmApprove"
+    );
+
+const newsContentTabBtn =
+    document.getElementById(
+        "newsContentTabBtn"
+    );
+
+const announcementContentTabBtn =
+    document.getElementById(
+        "announcementContentTabBtn"
+    );
+
+const newsManagementSection =
+    document.getElementById(
+        "newsManagementSection"
+    );
+
+const announcementManagementSection =
+    document.getElementById(
+        "announcementManagementSection"
+    );
+
+const announcementCreateNewBtn =
+    document.getElementById(
+        "announcementCreateNewBtn"
+    );
+
+const announcementStatusFilter =
+    document.getElementById(
+        "announcementStatusFilter"
+    );
+
+const announcementPanelLoading =
+    document.getElementById(
+        "announcementPanelLoading"
+    );
+
+const announcementPanelEmpty =
+    document.getElementById(
+        "announcementPanelEmpty"
+    );
+
+const announcementPanelList =
+    document.getElementById(
+        "announcementPanelList"
+    );
+
+const announcementId =
+    document.getElementById(
+        "announcementId"
+    );
+
+const announcementTitleInput =
+    document.getElementById(
+        "announcementTitleInput"
+    );
+
+const announcementIconInput =
+    document.getElementById(
+        "announcementIconInput"
+    );
+
+const announcementStatusSelect =
+    document.getElementById(
+        "announcementStatusSelect"
+    );
+
+const announcementSortOrderInput =
+    document.getElementById(
+        "announcementSortOrderInput"
+    );
+
+const announcementContentInput =
+    document.getElementById(
+        "announcementContentInput"
+    );
+
+const announcementTitleCounter =
+    document.getElementById(
+        "announcementTitleCounter"
+    );
+
+const announcementContentCounter =
+    document.getElementById(
+        "announcementContentCounter"
+    );
+
+const announcementEditorModeLabel =
+    document.getElementById(
+        "announcementEditorModeLabel"
+    );
+
+const announcementEditorTitle =
+    document.getElementById(
+        "announcementEditorTitle"
+    );
+
+const announcementEditorStatusBadge =
+    document.getElementById(
+        "announcementEditorStatusBadge"
+    );
+
+const announcementPreviewIcon =
+    document.getElementById(
+        "announcementPreviewIcon"
+    );
+
+const announcementPreviewTitle =
+    document.getElementById(
+        "announcementPreviewTitle"
+    );
+
+const announcementPreviewContent =
+    document.getElementById(
+        "announcementPreviewContent"
+    );
+
+const announcementPanelFeedback =
+    document.getElementById(
+        "announcementPanelFeedback"
+    );
+
+const announcementResetBtn =
+    document.getElementById(
+        "announcementResetBtn"
+    );
+
+const announcementDeleteBtn =
+    document.getElementById(
+        "announcementDeleteBtn"
+    );
+
+const announcementSaveBtn =
+    document.getElementById(
+        "announcementSaveBtn"
+    );
+
+let announcementPanelItems = [];
+
 let newsPanelArticles = [];
 let newsPanelPermissions = {
     canManageAll: false,
     canFeature: false
 };
+
+let newsSelectedImageFile = null;
+let newsTemporaryUploadedImageUrl = "";
+let newsOriginalImageUrl = "";
+let newsImageIsUploading = false;
 
 let newsPanelCurrentRoles = [];
 
@@ -241,6 +433,97 @@ function updateNewsCounters() {
     }
 }
 
+function isLocalNewsUploadUrl(imageUrl) {
+
+    return String(
+        imageUrl || ""
+    ).startsWith(
+        "/uploads/news/"
+    );
+}
+
+function validateSelectedNewsImage(file) {
+
+    if (!file) {
+
+        return {
+            valid: false,
+            message:
+                "Görsel dosyası bulunamadı."
+        };
+    }
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (
+        !allowedTypes.includes(
+            file.type
+        )
+    ) {
+
+        return {
+            valid: false,
+            message:
+                "Yalnızca JPG, PNG veya WebP görsel seçebilirsiniz."
+        };
+    }
+
+    const maximumSize =
+        5 * 1024 * 1024;
+
+    if (
+        file.size >
+        maximumSize
+    ) {
+
+        return {
+            valid: false,
+            message:
+                "Kapak görseli en fazla 5 MB olabilir."
+        };
+    }
+
+    return {
+        valid: true
+    };
+}
+
+function setNewsImageFileName(
+    value
+) {
+
+    if (!newsImageFileName) {
+        return;
+    }
+
+    newsImageFileName.textContent =
+        value ||
+        "Görsel seçilmedi";
+}
+
+function revokeNewsLocalPreview() {
+
+    const currentSource =
+        String(
+            newsImagePreview?.src || ""
+        );
+
+    if (
+        currentSource.startsWith(
+            "blob:"
+        )
+    ) {
+
+        URL.revokeObjectURL(
+            currentSource
+        );
+    }
+}
+
 function updateNewsImagePreview() {
 
     if (
@@ -255,19 +538,328 @@ function updateNewsImagePreview() {
             newsImageUrlInput?.value || ""
         ).trim();
 
+    if (
+        newsSelectedImageFile
+    ) {
+
+        revokeNewsLocalPreview();
+
+        newsImagePreview.src =
+            URL.createObjectURL(
+                newsSelectedImageFile
+            );
+
+        newsImagePreviewWrapper.style.display =
+            "block";
+
+        setNewsImageFileName(
+            newsSelectedImageFile.name
+        );
+
+        return;
+    }
+
     if (!imageUrl) {
+
+        revokeNewsLocalPreview();
 
         newsImagePreviewWrapper.style.display =
             "none";
 
         newsImagePreview.src = "";
+
+        setNewsImageFileName(
+            "Görsel seçilmedi"
+        );
+
         return;
     }
 
-    newsImagePreview.src = imageUrl;
+    newsImagePreview.src =
+        imageUrl;
 
     newsImagePreviewWrapper.style.display =
         "block";
+
+    const fileName =
+        imageUrl.split("/").pop();
+
+    setNewsImageFileName(
+        fileName ||
+        "Yüklü kapak görseli"
+    );
+}
+
+function handleNewsImageSelection(
+    event
+) {
+
+    const file =
+        event.target.files?.[0];
+
+    if (!file) {
+        return;
+    }
+
+    const validation =
+        validateSelectedNewsImage(
+            file
+        );
+
+    if (!validation.valid) {
+
+        showNewsPanelFeedback(
+            validation.message
+        );
+
+        event.target.value = "";
+
+        return;
+    }
+
+    newsSelectedImageFile =
+        file;
+
+    updateNewsImagePreview();
+
+    showNewsPanelFeedback(
+        "Görsel seçildi. Haber kaydedilirken yüklenecek.",
+        "success"
+    );
+}
+
+async function uploadSelectedNewsImage() {
+
+    if (!newsSelectedImageFile) {
+
+        return String(
+            newsImageUrlInput?.value || ""
+        ).trim();
+    }
+
+    const token =
+        getNewsPanelToken();
+
+    if (!token) {
+
+        throw new Error(
+            "Oturum bilgisi bulunamadı."
+        );
+    }
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "image",
+        newsSelectedImageFile
+    );
+
+    newsImageIsUploading =
+        true;
+
+    if (newsImageSelectBtn) {
+
+        newsImageSelectBtn.disabled =
+            true;
+
+        newsImageSelectBtn.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor';
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${window.location.origin}/api/news-panel/upload-image`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    },
+
+                    body:
+                        formData
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Görsel yüklenemedi."
+            );
+        }
+
+        newsTemporaryUploadedImageUrl =
+            data.imageUrl;
+
+        if (newsImageUrlInput) {
+
+            newsImageUrlInput.value =
+                data.imageUrl;
+        }
+
+        newsSelectedImageFile =
+            null;
+
+        if (newsImageFileInput) {
+
+            newsImageFileInput.value =
+                "";
+        }
+
+        updateNewsImagePreview();
+
+        return data.imageUrl;
+
+    } finally {
+
+        newsImageIsUploading =
+            false;
+
+        if (newsImageSelectBtn) {
+
+            newsImageSelectBtn.disabled =
+                false;
+
+            newsImageSelectBtn.innerHTML =
+                '<i class="fa-solid fa-cloud-arrow-up"></i> Görsel Seç';
+        }
+    }
+}
+
+async function deleteUploadedNewsImage(
+    imageUrl
+) {
+
+    const cleanImageUrl =
+        String(
+            imageUrl || ""
+        ).trim();
+
+    if (
+        !isLocalNewsUploadUrl(
+            cleanImageUrl
+        )
+    ) {
+        return false;
+    }
+
+    const token =
+        getNewsPanelToken();
+
+    if (!token) {
+        return false;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${window.location.origin}/api/news-panel/upload-image`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            imageUrl:
+                                cleanImageUrl
+                        })
+                }
+            );
+
+        return response.ok;
+
+    } catch (err) {
+
+        console.error(
+            "Yüklenen görseli silme hatası:",
+            err
+        );
+
+        return false;
+    }
+}
+
+async function removeNewsImage() {
+
+    if (
+        newsImageIsUploading
+    ) {
+        return;
+    }
+
+    const currentImageUrl =
+        String(
+            newsImageUrlInput?.value || ""
+        ).trim();
+
+    if (
+        newsSelectedImageFile
+    ) {
+
+        newsSelectedImageFile =
+            null;
+
+        if (newsImageFileInput) {
+
+            newsImageFileInput.value =
+                "";
+        }
+
+        updateNewsImagePreview();
+
+        showNewsPanelFeedback(
+            "Seçilen görsel kaldırıldı.",
+            "success"
+        );
+
+        return;
+    }
+
+    if (
+        newsTemporaryUploadedImageUrl &&
+        currentImageUrl ===
+        newsTemporaryUploadedImageUrl
+    ) {
+
+        await deleteUploadedNewsImage(
+            currentImageUrl
+        );
+
+        newsTemporaryUploadedImageUrl =
+            "";
+    }
+
+    if (newsImageUrlInput) {
+
+        newsImageUrlInput.value =
+            "";
+    }
+
+    updateNewsImagePreview();
+
+    showNewsPanelFeedback(
+        "Kapak görseli kaldırıldı.",
+        "success"
+    );
 }
 
 function updateNewsEditorStatus(status) {
@@ -315,6 +907,21 @@ function resetNewsEditor() {
     if (newsImageUrlInput) {
         newsImageUrlInput.value = "";
     }
+
+    newsSelectedImageFile =
+    null;
+
+newsTemporaryUploadedImageUrl =
+    "";
+
+newsOriginalImageUrl =
+    "";
+
+if (newsImageFileInput) {
+
+    newsImageFileInput.value =
+        "";
+}
 
     if (newsFeaturedCheckbox) {
         newsFeaturedCheckbox.checked = false;
@@ -399,6 +1006,21 @@ function fillNewsEditor(article) {
         newsImageUrlInput.value =
             article.imageUrl || "";
     }
+
+    newsSelectedImageFile =
+    null;
+
+newsTemporaryUploadedImageUrl =
+    "";
+
+newsOriginalImageUrl =
+    article.imageUrl || "";
+
+if (newsImageFileInput) {
+
+    newsImageFileInput.value =
+        "";
+}
 
     if (newsFeaturedCheckbox) {
         newsFeaturedCheckbox.checked =
@@ -860,8 +1482,8 @@ async function saveNewsArticle() {
         return;
     }
 
-    const payload =
-        getNewsEditorPayload();
+    let payload =
+    getNewsEditorPayload();
 
     const articleId =
         Number(
@@ -877,6 +1499,18 @@ async function saveNewsArticle() {
     }
 
     try {
+
+    if (newsSelectedImageFile) {
+
+        const uploadedImageUrl =
+            await uploadSelectedNewsImage();
+
+        payload = {
+            ...payload,
+            imageUrl:
+                uploadedImageUrl
+        };
+    }
 
         const response =
             await fetch(
@@ -939,9 +1573,18 @@ async function saveNewsArticle() {
             );
 
         if (savedArticle) {
-            fillNewsEditor(savedArticle);
-        }
-        window.dispatchEvent(
+    fillNewsEditor(savedArticle);
+}
+
+newsTemporaryUploadedImageUrl =
+    "";
+
+newsOriginalImageUrl =
+    data.article?.imageUrl ||
+    payload.imageUrl ||
+    "";
+
+window.dispatchEvent(
     new CustomEvent(
         "news:updated"
     )
@@ -949,14 +1592,35 @@ async function saveNewsArticle() {
 
     } catch (err) {
 
-        console.error(
-            "Haber kaydetme hatası:",
-            err
+    console.error(
+        "Haber kaydetme hatası:",
+        err
+    );
+
+    if (
+        newsTemporaryUploadedImageUrl
+    ) {
+
+        await deleteUploadedNewsImage(
+            newsTemporaryUploadedImageUrl
         );
 
-        showNewsPanelFeedback(
-            "Sunucuya bağlanılamadı."
-        );
+        newsTemporaryUploadedImageUrl =
+            "";
+
+        if (newsImageUrlInput) {
+
+            newsImageUrlInput.value =
+                newsOriginalImageUrl || "";
+        }
+
+        updateNewsImagePreview();
+    }
+
+    showNewsPanelFeedback(
+        err.message ||
+        "Sunucuya bağlanılamadı."
+    );
 
     } finally {
 
@@ -966,11 +1630,52 @@ async function saveNewsArticle() {
     }
 }
 
-function confirmNewsDelete() {
+let contentDeleteConfirmResolver = null;
 
-    return window.confirm(
-        "Bu haberi kalıcı olarak silmek istediğinize emin misiniz?"
-    );
+function openContentDeleteConfirm({
+    title,
+    message
+}) {
+
+    return new Promise(resolve => {
+
+        contentDeleteConfirmResolver =
+            resolve;
+
+        if (contentDeleteConfirmTitle) {
+            contentDeleteConfirmTitle.textContent =
+                title;
+        }
+
+        if (contentDeleteConfirmMessage) {
+            contentDeleteConfirmMessage.textContent =
+                message;
+        }
+
+        contentDeleteConfirmOverlay
+            ?.classList
+            .add("active");
+
+    });
+}
+
+function closeContentDeleteConfirm(
+    result = false
+) {
+
+    contentDeleteConfirmOverlay
+        ?.classList
+        .remove("active");
+
+    if (contentDeleteConfirmResolver) {
+
+        contentDeleteConfirmResolver(
+            result
+        );
+
+        contentDeleteConfirmResolver =
+            null;
+    }
 }
 
 async function deleteSelectedNewsArticle() {
@@ -992,12 +1697,18 @@ async function deleteSelectedNewsArticle() {
         return;
     }
 
-    const confirmed =
-        confirmNewsDelete();
+   const confirmed =
+    await openContentDeleteConfirm({
+        title:
+            "Haberi Sil",
 
-    if (!confirmed) {
-        return;
-    }
+        message:
+            "Bu haberi kalıcı olarak silmek istediğinize emin misiniz?"
+    });
+
+if (!confirmed) {
+    return;
+}
 
     const token =
         getNewsPanelToken();
@@ -1344,11 +2055,6 @@ newsContentInput?.addEventListener(
     updateNewsCounters
 );
 
-newsImageUrlInput?.addEventListener(
-    "input",
-    updateNewsImagePreview
-);
-
 newsImagePreview?.addEventListener(
     "error",
     () => {
@@ -1443,142 +2149,7 @@ document.addEventListener(
    DUYURU YÖNETİMİ
 ========================================= */
 
-const newsContentTabBtn =
-    document.getElementById(
-        "newsContentTabBtn"
-    );
 
-const announcementContentTabBtn =
-    document.getElementById(
-        "announcementContentTabBtn"
-    );
-
-const newsManagementSection =
-    document.getElementById(
-        "newsManagementSection"
-    );
-
-const announcementManagementSection =
-    document.getElementById(
-        "announcementManagementSection"
-    );
-
-const announcementCreateNewBtn =
-    document.getElementById(
-        "announcementCreateNewBtn"
-    );
-
-const announcementStatusFilter =
-    document.getElementById(
-        "announcementStatusFilter"
-    );
-
-const announcementPanelLoading =
-    document.getElementById(
-        "announcementPanelLoading"
-    );
-
-const announcementPanelEmpty =
-    document.getElementById(
-        "announcementPanelEmpty"
-    );
-
-const announcementPanelList =
-    document.getElementById(
-        "announcementPanelList"
-    );
-
-const announcementId =
-    document.getElementById(
-        "announcementId"
-    );
-
-const announcementTitleInput =
-    document.getElementById(
-        "announcementTitleInput"
-    );
-
-const announcementIconInput =
-    document.getElementById(
-        "announcementIconInput"
-    );
-
-const announcementStatusSelect =
-    document.getElementById(
-        "announcementStatusSelect"
-    );
-
-const announcementSortOrderInput =
-    document.getElementById(
-        "announcementSortOrderInput"
-    );
-
-const announcementContentInput =
-    document.getElementById(
-        "announcementContentInput"
-    );
-
-const announcementTitleCounter =
-    document.getElementById(
-        "announcementTitleCounter"
-    );
-
-const announcementContentCounter =
-    document.getElementById(
-        "announcementContentCounter"
-    );
-
-const announcementEditorModeLabel =
-    document.getElementById(
-        "announcementEditorModeLabel"
-    );
-
-const announcementEditorTitle =
-    document.getElementById(
-        "announcementEditorTitle"
-    );
-
-const announcementEditorStatusBadge =
-    document.getElementById(
-        "announcementEditorStatusBadge"
-    );
-
-const announcementPreviewIcon =
-    document.getElementById(
-        "announcementPreviewIcon"
-    );
-
-const announcementPreviewTitle =
-    document.getElementById(
-        "announcementPreviewTitle"
-    );
-
-const announcementPreviewContent =
-    document.getElementById(
-        "announcementPreviewContent"
-    );
-
-const announcementPanelFeedback =
-    document.getElementById(
-        "announcementPanelFeedback"
-    );
-
-const announcementResetBtn =
-    document.getElementById(
-        "announcementResetBtn"
-    );
-
-const announcementDeleteBtn =
-    document.getElementById(
-        "announcementDeleteBtn"
-    );
-
-const announcementSaveBtn =
-    document.getElementById(
-        "announcementSaveBtn"
-    );
-
-let announcementPanelItems = [];
 
 function getAnnouncementStatusText(status) {
 
@@ -2308,13 +2879,17 @@ async function deleteSelectedAnnouncement() {
     }
 
     const confirmed =
-        window.confirm(
-            "Bu duyuruyu kalıcı olarak silmek istediğinize emin misiniz?"
-        );
+    await openContentDeleteConfirm({
+        title:
+            "Duyuruyu Sil",
 
-    if (!confirmed) {
-        return;
-    }
+        message:
+            "Bu duyuruyu kalıcı olarak silmek istediğinize emin misiniz?"
+    });
+
+if (!confirmed) {
+    return;
+}
 
     const token =
         getNewsPanelToken();
@@ -2564,3 +3139,72 @@ document.addEventListener(
         resetAnnouncementEditor();
     }
 );
+
+contentDeleteConfirmCancel
+    ?.addEventListener(
+        "click",
+        () => {
+
+            closeContentDeleteConfirm(
+                false
+            );
+        }
+    );
+
+contentDeleteConfirmApprove
+    ?.addEventListener(
+        "click",
+        () => {
+
+            closeContentDeleteConfirm(
+                true
+            );
+        }
+    );
+
+contentDeleteConfirmOverlay
+    ?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                contentDeleteConfirmOverlay
+            ) {
+
+                closeContentDeleteConfirm(
+                    false
+                );
+            }
+        }
+    );
+
+    newsImageSelectBtn
+    ?.addEventListener(
+        "click",
+        () => {
+
+            newsImageFileInput?.click();
+        }
+    );
+
+newsImageChangeBtn
+    ?.addEventListener(
+        "click",
+        () => {
+
+            newsImageFileInput?.click();
+        }
+    );
+
+newsImageFileInput
+    ?.addEventListener(
+        "change",
+        handleNewsImageSelection
+    );
+
+newsImageRemoveBtn
+    ?.addEventListener(
+        "click",
+        removeNewsImage
+    );
