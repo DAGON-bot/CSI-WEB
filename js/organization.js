@@ -104,7 +104,7 @@ const organizationMembers = [
     // FOUNDERS
 
 {
-    name: "Berymiy",
+    name: "berymiy",
     role: "Founder",
     avatar: "assets/logo.png",
     position: "eliteFounder"
