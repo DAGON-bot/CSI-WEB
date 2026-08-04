@@ -1,6 +1,8 @@
 node_modules/
 backend/node_modules/
 .env
+.env.*
+!.env.example
 backend/.env
 backend/database/csi.db
 backend/database/csi_backup.db

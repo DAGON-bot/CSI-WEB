@@ -67,7 +67,9 @@ const {
     deleteAnnouncement
 } = require("./models/announcementModel");
 
-
+const {
+    startDiscordClient
+} = require("./discord/discordClient");
 
 const {
     pool,
@@ -5685,10 +5687,14 @@ async function startServer() {
         httpServer.listen(
     PORT,
     "0.0.0.0",
-    () => {
+    async () => {
+
         console.log(
             `Server ${PORT} portunda çalışıyor.`
         );
+
+        await startDiscordClient();
+
     }
 );
     } catch (err) {
