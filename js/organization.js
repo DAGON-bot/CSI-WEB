@@ -106,7 +106,7 @@ const organizationMembers = [
 {
     name: "berymiy",
     role: "Founder",
-    avatar: "assets/logo.png",
+    avatar: "assets/founders/berymiy.png",
     position: "eliteFounder"
 },
 
@@ -120,30 +120,30 @@ const organizationMembers = [
 // HAK SAHİPLERİ
 
 {
-    name: "Nada",
+    name: "NADA",
     role: "Hak Sahibi",
-    avatar: "assets/logo.png",
+    avatar: "assets/founders/NADA.png",
     position: "rightsOwner"
 },
 
 {
-    name: "!Eyrie",
+    name: "!Eyrie.",
     role: "Hak Sahibi",
-    avatar: "assets/logo.png",
+    avatar: "assets/founders/!Eyrie..png",
     position: "rightsOwner"
 },
 
 {
     name: "Softie",
     role: "Hak Sahibi",
-    avatar: "assets/logo.png",
+    avatar: "assets/founders/softie.png",
     position: "rightsOwner"
 },
 
 {
     name: "ahmetrucha88",
     role: "Hak Sahibi",
-    avatar: "assets/logo.png",
+    avatar: "assets/founders/ahmetrucha88.png",
     position: "rightsOwner"
 }
 
