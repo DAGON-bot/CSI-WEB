@@ -4849,3 +4849,18 @@ img {
         width: 100%;
     }
 }
+
+.tree-group-title{
+
+    margin:32px 0 18px;
+
+    text-align:center;
+
+    color:#f1c64d;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+}

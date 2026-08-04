@@ -99,7 +99,53 @@ const organizationMembers = [
         role: "8. Kurucu",
         avatar: "assets/logo.png",
         position: "manager"
-    }
+    },
+
+    // FOUNDERS
+
+{
+    name: "Berymiy",
+    role: "Founder",
+    avatar: "assets/logo.png",
+    position: "eliteFounder"
+},
+
+{
+    name: "Hertabe",
+    role: "Founder",
+    avatar: "assets/logo.png",
+    position: "eliteFounder"
+},
+
+// HAK SAHİPLERİ
+
+{
+    name: "Nada",
+    role: "Hak Sahibi",
+    avatar: "assets/logo.png",
+    position: "rightsOwner"
+},
+
+{
+    name: "!Eyrie",
+    role: "Hak Sahibi",
+    avatar: "assets/logo.png",
+    position: "rightsOwner"
+},
+
+{
+    name: "Softie",
+    role: "Hak Sahibi",
+    avatar: "assets/logo.png",
+    position: "rightsOwner"
+},
+
+{
+    name: "ahmetrucha88",
+    role: "Hak Sahibi",
+    avatar: "assets/logo.png",
+    position: "rightsOwner"
+}
 
 ];
 
@@ -302,6 +348,16 @@ function renderOrganizationTree() {
     const managers =
         getMembersByPosition("manager");
 
+    const eliteFounders =
+    getMembersByPosition(
+        "eliteFounder"
+    );
+
+const rightsOwners =
+    getMembersByPosition(
+        "rightsOwner"
+    );
+
     box.innerHTML = `
 
         <h2 class="tree-title">
@@ -353,6 +409,34 @@ function renderOrganizationTree() {
                 .join("")}
 
         </div>
+
+        <div class="tree-line"></div>
+
+<h3 class="tree-group-title">
+    Founders
+</h3>
+
+<div class="tree-level tree-two">
+
+    ${eliteFounders
+        .map(member => memberCard(member))
+        .join("")}
+
+</div>
+
+<div class="tree-line"></div>
+
+<h3 class="tree-group-title">
+    Hak Sahipleri
+</h3>
+
+<div class="tree-grid">
+
+    ${rightsOwners
+        .map(member => smallMemberCard(member))
+        .join("")}
+
+</div>
 
     `;
 
