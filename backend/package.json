@@ -4,11 +4,15 @@
   "description": "CSI Yönetim Paneli",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "bot": "node discord/botRunner.js",
+    "bot:test-message": "node discord/testMessage.js",
+      "bot:test-promotion": "node discord/testPromotion.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DAGON-bot/CSI-WEB.git"
+  
   },
   "keywords": [],
   "author": "",

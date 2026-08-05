@@ -3,6 +3,8 @@ const popupClose = document.getElementById("popupClose");
 const popupTitle = document.getElementById("popupTitle");
 const popupContent = document.getElementById("popupContent");
 const popupIcon = document.getElementById("popupIcon");
+const sendDiscordBtn =
+    document.getElementById("sendDiscordBtn");
 const popupButtons =
     document.querySelector(".popup-buttons");
 
@@ -47,6 +49,19 @@ function showPopup(
     popupButtons.style.flexDirection = "column";
 
     copyBtn.style.display = "inline-block";
+
+    if (sendDiscordBtn) {
+
+    const canSend =
+        title === "Terfi Onaylandı" &&
+        window.terfiBilgisi;
+
+    sendDiscordBtn.style.display =
+        canSend ? "inline-block" : "none";
+
+    sendDiscordBtn.disabled = false;
+    sendDiscordBtn.textContent = "Discord'a İşle";
+    }
 
     if (updateSiteRankBtn) {
 
@@ -609,6 +624,90 @@ updateSiteRanksBtn?.addEventListener(
 
             }
 
+        }
+
+    }
+);
+
+sendDiscordBtn?.addEventListener(
+    "click",
+    async () => {
+
+        const token =
+            localStorage.getItem("token");
+
+        if (!token) {
+
+            showToast(
+                "Giriş yapmanız gerekiyor.",
+                "warning"
+            );
+
+            return;
+        }
+
+        if (!window.terfiBilgisi) {
+
+            showToast(
+                "Gönderilecek terfi bulunamadı.",
+                "warning"
+            );
+
+            return;
+        }
+
+        sendDiscordBtn.disabled = true;
+        sendDiscordBtn.textContent =
+            "Discord'a Gönderiliyor...";
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/discord/promotion",
+                    {
+                        method:"POST",
+                        headers:{
+                            "Content-Type":"application/json",
+                            "Authorization":
+                                `Bearer ${token}`
+                        },
+                        body:JSON.stringify(
+                            window.terfiBilgisi
+                        )
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if(!response.ok){
+
+                throw new Error(
+                    data.message
+                );
+
+            }
+
+            showToast(
+                "Discord'a gönderildi.",
+                "success"
+            );
+
+            sendDiscordBtn.textContent =
+                "✓ Discord'a Gönderildi";
+
+        }catch(err){
+
+            showToast(
+                err.message,
+                "error"
+            );
+
+            sendDiscordBtn.disabled=false;
+
+            sendDiscordBtn.textContent =
+                "Discord'a İşle";
         }
 
     }
