@@ -55,48 +55,44 @@ note:
 }
 
 async function createPromotionHistory({
-
     username,
-
     oldBadge,
-
     oldRank,
-
     newBadge,
-
     newRank,
-
     promotedBy,
-
     workedHours = 0,
-
     workedMinutes = 0,
-
     note = null
 }) {
 
     const result =
         await pool.query(
-            `INSERT INTO promotion_history (
+            `
+            INSERT INTO promotion_history (
                 username,
                 "oldBadge",
                 "oldRank",
                 "newBadge",
                 "newRank",
                 "promotedBy",
+                "workedHours",
+                "workedMinutes",
                 note,
                 "discordSent"
             )
-            $1,
-$2,
-$3,
-$4,
-$5,
-$6,
-$7,
-$8,
-$9,
-FALSE
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                $9,
+                FALSE
+            )
             RETURNING
                 id,
                 username,
@@ -105,21 +101,24 @@ FALSE
                 "newBadge",
                 "newRank",
                 "promotedBy",
+                "workedHours",
+                "workedMinutes",
                 note,
                 "discordSent",
                 "discordMessageId",
-                "createdAt"`,
+                "createdAt"
+            `,
             [
-    username,
-    oldBadge,
-    oldRank,
-    newBadge,
-    newRank,
-    promotedBy,
-    workedHours,
-    workedMinutes,
-    note
-]
+                username,
+                oldBadge,
+                oldRank,
+                newBadge,
+                newRank,
+                promotedBy,
+                Number(workedHours) || 0,
+                Number(workedMinutes) || 0,
+                note
+            ]
         );
 
     return formatPromotionHistoryRow(
