@@ -12,6 +12,7 @@ const discordClient =
     });
 
 let discordReady = false;
+let discordStartPromise = null;
 
 discordClient.once(
     Events.ClientReady,
@@ -36,6 +37,89 @@ discordClient.on(
     }
 );
 
+discordClient.on(
+    Events.ShardDisconnect,
+    () => {
+
+        discordReady = false;
+
+        console.warn(
+            "Discord botunun bağlantısı kesildi."
+        );
+    }
+);
+
+function waitForDiscordReady(
+    timeoutMs = 15000
+) {
+
+    if (
+        discordReady &&
+        discordClient.isReady()
+    ) {
+        return Promise.resolve(true);
+    }
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const timeout =
+                setTimeout(
+                    () => {
+
+                        cleanup();
+
+                        reject(
+                            new Error(
+                                "Discord botunun hazır olması zaman aşımına uğradı."
+                            )
+                        );
+                    },
+                    timeoutMs
+                );
+
+            const handleReady =
+                () => {
+
+                    cleanup();
+                    resolve(true);
+                };
+
+            const handleError =
+                error => {
+
+                    cleanup();
+                    reject(error);
+                };
+
+            function cleanup() {
+
+                clearTimeout(timeout);
+
+                discordClient.off(
+                    Events.ClientReady,
+                    handleReady
+                );
+
+                discordClient.off(
+                    Events.Error,
+                    handleError
+                );
+            }
+
+            discordClient.once(
+                Events.ClientReady,
+                handleReady
+            );
+
+            discordClient.once(
+                Events.Error,
+                handleError
+            );
+        }
+    );
+}
+
 async function startDiscordClient() {
 
     const token =
@@ -52,25 +136,50 @@ async function startDiscordClient() {
         return false;
     }
 
-    if (discordReady) {
+    if (
+        discordReady &&
+        discordClient.isReady()
+    ) {
         return true;
     }
 
-    try {
-
-        await discordClient.login(token);
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Discord botu başlatılamadı:",
-            error
-        );
-
-        return false;
+    if (discordStartPromise) {
+        return discordStartPromise;
     }
+
+    discordStartPromise =
+        (async () => {
+
+            try {
+
+                if (!discordClient.token) {
+
+                    await discordClient.login(
+                        token
+                    );
+                }
+
+                await waitForDiscordReady();
+
+                return true;
+
+            } catch (error) {
+
+                console.error(
+                    "Discord botu başlatılamadı:",
+                    error
+                );
+
+                return false;
+
+            } finally {
+
+                discordStartPromise =
+                    null;
+            }
+        })();
+
+    return discordStartPromise;
 }
 
 function isDiscordClientReady() {
@@ -86,8 +195,23 @@ function getDiscordClient() {
     return discordClient;
 }
 
+async function stopDiscordClient() {
+
+    if (
+        discordClient &&
+        discordClient.isReady()
+    ) {
+
+        discordClient.destroy();
+    }
+
+    discordReady = false;
+    discordStartPromise = null;
+}
+
 module.exports = {
     startDiscordClient,
+    stopDiscordClient,
     isDiscordClientReady,
     getDiscordClient
 };

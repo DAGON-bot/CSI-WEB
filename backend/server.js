@@ -68,6 +68,15 @@ const {
 } = require("./models/announcementModel");
 
 const {
+    createPromotionHistory,
+    getPendingDiscordPromotions,
+    markPromotionAsDiscordSent,
+    getPromotionHistoryById
+} = require(
+    "./models/promotionHistoryModel"
+);
+
+const {
     startDiscordClient
 } = require("./discord/discordClient");
 
@@ -549,6 +558,372 @@ async function requireRequestUser(
 
     return user;
 }
+
+function requireDiscordWorkerKey(
+    req,
+    res
+) {
+
+    const configuredKey =
+        String(
+            process.env.DISCORD_WORKER_API_KEY ||
+            ""
+        ).trim();
+
+    const requestKey =
+        String(
+            req.headers[
+                "x-discord-worker-key"
+            ] || ""
+        ).trim();
+
+    if (!configuredKey) {
+
+        res.status(503).json({
+            success: false,
+            message:
+                "Discord worker anahtarı sunucuda tanımlı değil."
+        });
+
+        return false;
+    }
+
+    if (
+        !requestKey ||
+        requestKey !== configuredKey
+    ) {
+
+        res.status(401).json({
+            success: false,
+            message:
+                "Geçersiz Discord worker anahtarı."
+        });
+
+        return false;
+    }
+
+    return true;
+}
+
+// ========================================
+// DISCORD - TERFİ KAYDI OLUŞTUR
+// ========================================
+
+app.post(
+    "/api/discord/promotion",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !hasPanelPermission(
+                    user,
+                    "promotion"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Discord terfi işlemi için yetkiniz bulunmuyor."
+                });
+            }
+
+            const username =
+                String(
+                    req.body?.username || ""
+                ).trim();
+
+            const oldBadge =
+                String(
+                    req.body?.oldBadge || ""
+                ).trim();
+
+            const oldRank =
+                String(
+                    req.body?.oldRank || ""
+                ).trim();
+
+            const newBadge =
+                String(
+                    req.body?.newBadge || ""
+                ).trim();
+
+            const newRank =
+                String(
+                    req.body?.newRank || ""
+                ).trim();
+
+            if (
+                !username ||
+                !oldBadge ||
+                !oldRank ||
+                !newBadge ||
+                !newRank
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Terfi bilgilerinin tamamı gereklidir."
+                });
+            }
+
+            const values = [
+                username,
+                oldBadge,
+                oldRank,
+                newBadge,
+                newRank
+            ];
+
+            if (
+                values.some(
+                    value => value.length > 80
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Terfi bilgilerinden biri çok uzun."
+                });
+            }
+
+            const promotion =
+                await createPromotionHistory({
+                    username,
+                    oldBadge,
+                    oldRank,
+                    newBadge,
+                    newRank,
+
+                    promotedBy:
+                        user.username
+                });
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    username,
+
+                actionType:
+                    "discord_promotion_queued",
+
+                oldValue:
+                    `${oldBadge} / ${oldRank}`,
+
+                newValue:
+                    `${newBadge} / ${newRank}`
+            });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    "Terfi Discord kuyruğuna eklendi.",
+                promotion
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Discord terfi kayıt hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Terfi Discord kuyruğuna eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - BEKLEYEN TERFİLERİ GETİR
+// ========================================
+
+app.get(
+    "/api/discord/pending-promotions",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const requestedLimit =
+                Number(
+                    req.query.limit || 10
+                );
+
+            const promotions =
+                await getPendingDiscordPromotions(
+                    requestedLimit
+                );
+
+            return res.json({
+                success: true,
+                count:
+                    promotions.length,
+                promotions
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bekleyen Discord terfileri alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bekleyen Discord terfileri alınamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - TERFİYİ TAMAMLANDI İŞARETLE
+// ========================================
+
+app.patch(
+    "/api/discord/promotions/:promotionId/sent",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const promotionId =
+                Number(
+                    req.params.promotionId
+                );
+
+            const discordMessageId =
+                String(
+                    req.body?.discordMessageId ||
+                    ""
+                ).trim();
+
+            if (
+                !Number.isInteger(promotionId) ||
+                promotionId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz terfi kayıt numarası."
+                });
+            }
+
+            if (
+                !discordMessageId ||
+                discordMessageId.length > 100
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçerli Discord mesaj numarası gereklidir."
+                });
+            }
+
+            const existingPromotion =
+                await getPromotionHistoryById(
+                    promotionId
+                );
+
+            if (!existingPromotion) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Terfi kaydı bulunamadı."
+                });
+            }
+
+            if (
+                existingPromotion.discordSent
+            ) {
+
+                return res.json({
+                    success: true,
+                    message:
+                        "Terfi daha önce Discord'a gönderilmiş.",
+                    promotion:
+                        existingPromotion
+                });
+            }
+
+            const promotion =
+                await markPromotionAsDiscordSent({
+                    promotionId,
+                    discordMessageId
+                });
+
+            if (!promotion) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Terfi kaydı tamamlanamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                message:
+                    "Terfi Discord'a gönderildi olarak işaretlendi.",
+                promotion
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Discord terfi tamamlama hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Discord terfi kaydı tamamlanamadı."
+            });
+        }
+    }
+);
 
 app.get(
     "/api/news/:articleId/interactions",

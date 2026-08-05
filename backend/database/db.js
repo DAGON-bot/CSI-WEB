@@ -372,6 +372,40 @@ await pool.query(`
     )
 `);
 
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS promotion_history (
+
+        id BIGSERIAL PRIMARY KEY,
+
+        "username" TEXT NOT NULL,
+
+        "oldBadge" TEXT NOT NULL,
+
+        "oldRank" TEXT NOT NULL,
+
+        "newBadge" TEXT NOT NULL,
+
+        "newRank" TEXT NOT NULL,
+
+        "promotedBy" TEXT NOT NULL,
+
+        "discordSent" BOOLEAN NOT NULL
+            DEFAULT FALSE,
+
+        "discordMessageId" TEXT,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP
+
+        "note" TEXT
+    )
+`);
+
+await pool.query(`
+    ALTER TABLE promotion_history
+    ADD COLUMN IF NOT EXISTS note TEXT
+`);
+
     console.log("PostgreSQL bağlandı.");
 }
 
