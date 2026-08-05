@@ -765,6 +765,16 @@ app.post(
                     req.body?.newRank || ""
                 ).trim();
 
+                const workedHours =
+    Number(
+        req.body?.workedHours
+    );
+
+const workedMinutes =
+    Number(
+        req.body?.workedMinutes
+    );
+
             if (
                 !username ||
                 !oldBadge ||
@@ -779,6 +789,32 @@ app.post(
                         "Terfi bilgilerinin tamamı gereklidir."
                 });
             }
+
+            if (
+    !Number.isInteger(workedHours) ||
+    workedHours < 0 ||
+    workedHours > 100000
+) {
+
+    return res.status(400).json({
+        success: false,
+        message:
+            "Toplam çalışma saati geçersiz."
+    });
+}
+
+if (
+    !Number.isInteger(workedMinutes) ||
+    workedMinutes < 0 ||
+    workedMinutes > 59
+) {
+
+    return res.status(400).json({
+        success: false,
+        message:
+            "Toplam çalışma dakikası 0 ile 59 arasında olmalı."
+    });
+}
 
             const values = [
                 username,
@@ -802,16 +838,19 @@ app.post(
             }
 
             const promotion =
-                await createPromotionHistory({
-                    username,
-                    oldBadge,
-                    oldRank,
-                    newBadge,
-                    newRank,
+    await createPromotionHistory({
+        username,
+        oldBadge,
+        oldRank,
+        newBadge,
+        newRank,
 
-                    promotedBy:
-                        user.username
-                });
+        promotedBy:
+            user.username,
+
+        workedHours,
+        workedMinutes
+    });
 
             await createAdminLog({
                 performedBy:

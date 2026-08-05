@@ -386,10 +386,13 @@ await pool.query(`
 
         "promotedBy" TEXT NOT NULL,
 
+        "workedHours" INTEGER NOT NULL DEFAULT 0,
+
+        "workedMinutes" INTEGER NOT NULL DEFAULT 0,
+
         note TEXT,
 
         "discordSent" BOOLEAN NOT NULL
-            DEFAULT FALSE,
 
         "discordMessageId" TEXT,
 
@@ -400,7 +403,13 @@ await pool.query(`
 
 await pool.query(`
     ALTER TABLE promotion_history
-    ADD COLUMN IF NOT EXISTS note TEXT
+ADD COLUMN IF NOT EXISTS note TEXT,
+
+ADD COLUMN IF NOT EXISTS "workedHours"
+INTEGER NOT NULL DEFAULT 0,
+
+ADD COLUMN IF NOT EXISTS "workedMinutes"
+INTEGER NOT NULL DEFAULT 0;
 `);
 
 await pool.query(`

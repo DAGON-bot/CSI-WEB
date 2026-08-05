@@ -28,10 +28,20 @@ function formatPromotionHistoryRow(row) {
             row.newRank,
 
         promotedBy:
-            row.promotedBy,
+    row.promotedBy,
 
-        note:
-            row.note || null,
+workedHours:
+    Number(
+        row.workedHours || 0
+    ),
+
+workedMinutes:
+    Number(
+        row.workedMinutes || 0
+    ),
+
+note:
+    row.note || null,
 
         discordSent:
             Boolean(row.discordSent),
@@ -45,12 +55,23 @@ function formatPromotionHistoryRow(row) {
 }
 
 async function createPromotionHistory({
+
     username,
+
     oldBadge,
+
     oldRank,
+
     newBadge,
+
     newRank,
+
     promotedBy,
+
+    workedHours = 0,
+
+    workedMinutes = 0,
+
     note = null
 }) {
 
@@ -66,16 +87,16 @@ async function createPromotionHistory({
                 note,
                 "discordSent"
             )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7,
-                FALSE
-            )
+            $1,
+$2,
+$3,
+$4,
+$5,
+$6,
+$7,
+$8,
+$9,
+FALSE
             RETURNING
                 id,
                 username,
@@ -89,14 +110,16 @@ async function createPromotionHistory({
                 "discordMessageId",
                 "createdAt"`,
             [
-                username,
-                oldBadge,
-                oldRank,
-                newBadge,
-                newRank,
-                promotedBy,
-                note
-            ]
+    username,
+    oldBadge,
+    oldRank,
+    newBadge,
+    newRank,
+    promotedBy,
+    workedHours,
+    workedMinutes,
+    note
+]
         );
 
     return formatPromotionHistoryRow(

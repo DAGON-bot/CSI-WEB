@@ -419,18 +419,31 @@ const popupMesaji = `
 
        window.discordMesaji = discordMesaji;
        window.terfiBilgisi = {
+    username:
+        personel,
 
-    username: personel,
+    oldBadge:
+        rozet,
 
-    oldBadge: rozet,
+    oldRank:
+        rutbe,
 
-    oldRank: rutbe,
+    newBadge:
+        sonrakiRozet,
 
-    newBadge: sonrakiRozet,
+    newRank:
+        sonrakiRutbe,
 
-    newRank: sonrakiRutbe
+    workedHours:
+        Number(
+            yeniSaatInput.value
+        ) || 0,
+
+    workedMinutes:
+        Number(
+            yeniDakikaInput.value
+        ) || 0
 };
-
 const copyDiscordBtn =
     document.getElementById(
         "copyDiscordBtn"
@@ -581,6 +594,22 @@ function renderPromotionHistory(
                         record.oldBadge
                     );
 
+                const workedHours =
+    Number(
+        record.workedHours || 0
+    );
+
+const workedMinutes =
+    Number(
+        record.workedMinutes || 0
+    );
+
+const workedTimeText =
+    workedHours === 0 &&
+    workedMinutes === 0
+        ? "Eski kayıtta süre bulunmuyor"
+        : `${workedHours} Saat ${workedMinutes} Dakika`;
+
                 const newBadge =
                     escapePromotionHistoryHtml(
                         record.newBadge
@@ -627,28 +656,39 @@ function renderPromotionHistory(
 
                         <div class="promotion-history-row">
 
-                            <span class="promotion-history-label">
-                                Rütbe
-                            </span>
+    <span class="promotion-history-label">
+        Rütbe
+    </span>
 
-                            <span class="promotion-history-value">
-                                ${oldRank} → ${newRank}
-                            </span>
+    <span class="promotion-history-value">
+        ${oldRank} → ${newRank}
+    </span>
 
-                        </div>
+</div>
 
-                        <div class="promotion-history-row">
+<div class="promotion-history-row">
 
-                            <span class="promotion-history-label">
-                                Terfiyi Veren
-                            </span>
+    <span class="promotion-history-label">
+        Toplam Çalışma Süresi
+    </span>
 
-                            <span class="promotion-history-value">
-                                ${promotedBy}
-                            </span>
+    <span class="promotion-history-value">
+        ${workedTimeText}
+    </span>
 
-                        </div>
+</div>
 
+<div class="promotion-history-row">
+
+    <span class="promotion-history-label">
+        Terfiyi Veren
+    </span>
+
+    <span class="promotion-history-value">
+        ${promotedBy}
+    </span>
+
+</div>
                     </div>
                 `;
             })
