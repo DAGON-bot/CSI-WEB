@@ -377,7 +377,7 @@ await pool.query(`
 
         id BIGSERIAL PRIMARY KEY,
 
-        "username" TEXT NOT NULL,
+        username TEXT NOT NULL,
 
         "oldBadge" TEXT NOT NULL,
 
@@ -389,6 +389,8 @@ await pool.query(`
 
         "promotedBy" TEXT NOT NULL,
 
+        note TEXT,
+
         "discordSent" BOOLEAN NOT NULL
             DEFAULT FALSE,
 
@@ -396,8 +398,6 @@ await pool.query(`
 
         "createdAt" TIMESTAMPTZ NOT NULL
             DEFAULT CURRENT_TIMESTAMP
-
-        "note" TEXT
     )
 `);
 
