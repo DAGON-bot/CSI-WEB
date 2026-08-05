@@ -86,10 +86,6 @@ const {
 );
 
 const {
-    startDiscordClient
-} = require("./discord/discordClient");
-
-const {
     pool,
     initDatabase
 } = require("./database/db");
@@ -6452,24 +6448,32 @@ app.get(
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
+
     try {
+
         await initDatabase();
 
         httpServer.listen(
-    PORT,
-    "0.0.0.0",
-    async () => {
+            PORT,
+            "0.0.0.0",
+            () => {
 
-        console.log(
-            `Server ${PORT} portunda çalışıyor.`
+                console.log(
+                    `Server ${PORT} portunda çalışıyor.`
+                );
+
+                // Discord botu VPS üzerinde başlatılmıyor.
+                // Bot local bilgisayarda botRunner.js ile çalışıyor.
+            }
         );
 
-        await startDiscordClient();
-
-    }
-);
     } catch (err) {
-        console.error("Sunucu başlatılamadı:", err);
+
+        console.error(
+            "Sunucu başlatılamadı:",
+            err
+        );
+
         process.exit(1);
     }
 }
