@@ -15,6 +15,12 @@ const {
 } = require("./discordClient");
 
 const {
+    createBulkPromotionEmbed
+} = require(
+    "./modules/bulkPromotionModule"
+);
+
+const {
     sendDiscordEmbed
 } = require("./discordService");
 
@@ -122,6 +128,45 @@ async function fetchPendingPromotions(
         : [];
 }
 
+async function fetchPendingBulkPromotions(
+    config
+) {
+
+    const response =
+        await axios.get(
+            `${config.apiBaseUrl}/api/discord/pending-bulk-promotions`,
+            {
+                params: {
+                    limit: 10
+                },
+
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "Bekleyen toplu terfiler alınamadı."
+        );
+    }
+
+    return Array.isArray(
+        response.data.bulkPromotions
+    )
+        ? response.data.bulkPromotions
+        : [];
+}
+
 async function markPromotionAsSent(
     config,
     promotionId,
@@ -156,6 +201,102 @@ async function markPromotionAsSent(
     }
 
     return response.data.promotion;
+}
+
+async function markBulkPromotionAsSent(
+    config,
+    bulkPromotionId,
+    discordMessageId
+) {
+
+    const response =
+        await axios.patch(
+            `${config.apiBaseUrl}/api/discord/bulk-promotions/${bulkPromotionId}/sent`,
+            {
+                discordMessageId
+            },
+            {
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "Toplu terfi tamamlandı olarak işaretlenemedi."
+        );
+    }
+
+    return response.data.bulkPromotion;
+}
+
+async function processBulkPromotion(
+    config,
+    bulkPromotion
+) {
+
+    const bulkPromotionId =
+        Number(
+            bulkPromotion?.id
+        );
+
+    if (
+        !Number.isInteger(
+            bulkPromotionId
+        ) ||
+        bulkPromotionId <= 0
+    ) {
+
+        throw new Error(
+            "Geçersiz toplu terfi kaydı alındı."
+        );
+    }
+
+    const embed =
+        createBulkPromotionEmbed({
+            distributorName:
+                bulkPromotion.distributorName,
+
+            distributorCode:
+                bulkPromotion.distributorCode,
+
+            startTime:
+                bulkPromotion.startTime,
+
+            endTime:
+                bulkPromotion.endTime,
+
+            multiplier:
+                bulkPromotion.multiplier,
+
+            promotions:
+                bulkPromotion.promotions
+        });
+
+    const message =
+        await sendDiscordEmbed(
+            config.promotionChannelId,
+            embed
+        );
+
+    await markBulkPromotionAsSent(
+        config,
+        bulkPromotionId,
+        message.id
+    );
+
+    console.log(
+        `Toplu terfi Discord'a işlendi: #${bulkPromotionId} - ${bulkPromotion.promotions.length} personel`
+    );
 }
 
 async function processPromotion(
@@ -256,6 +397,33 @@ async function pollPendingPromotions() {
                 );
             }
         }
+
+    const bulkPromotions =
+    await fetchPendingBulkPromotions(
+        config
+    );
+
+for (
+    const bulkPromotion of bulkPromotions
+) {
+
+    try {
+
+        await processBulkPromotion(
+            config,
+            bulkPromotion
+        );
+
+    } catch (error) {
+
+        console.error(
+            `Toplu terfi işlenemedi (#${bulkPromotion?.id || "?"}):`,
+            error.response?.data ||
+            error.message ||
+            error
+        );
+    }
+}
 
     } catch (error) {
 
