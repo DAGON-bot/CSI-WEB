@@ -77,6 +77,15 @@ const {
 );
 
 const {
+    createBulkPromotionHistory,
+    getPendingBulkPromotions,
+    getBulkPromotionById,
+    markBulkPromotionAsDiscordSent
+} = require(
+    "./models/bulkPromotionHistoryModel"
+);
+
+const {
     startDiscordClient
 } = require("./discord/discordClient");
 
@@ -920,6 +929,393 @@ app.patch(
                 success: false,
                 message:
                     "Discord terfi kaydı tamamlanamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD - TOPLU TERFİ KAYDI OLUŞTUR
+// ========================================
+
+app.post(
+    "/api/discord/bulk-promotions",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !hasPanelPermission(
+                    user,
+                    "bulkPromotion"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Toplu terfi Discord işlemi için yetkiniz bulunmuyor."
+                });
+            }
+
+            const distributorName =
+                String(
+                    req.body?.distributorName || ""
+                ).trim();
+
+            const distributorCode =
+                String(
+                    req.body?.distributorCode || ""
+                ).trim();
+
+            const startTime =
+                String(
+                    req.body?.startTime || ""
+                ).trim();
+
+            const endTime =
+                String(
+                    req.body?.endTime || ""
+                ).trim();
+
+            const multiplier =
+                Number(
+                    req.body?.multiplier
+                );
+
+            const promotions =
+                Array.isArray(
+                    req.body?.promotions
+                )
+                    ? req.body.promotions
+                    : [];
+
+            if (
+                !distributorName ||
+                !distributorCode ||
+                !startTime ||
+                !endTime
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Toplu terfi bilgileri eksik."
+                });
+            }
+
+            if (
+                !Number.isInteger(multiplier) ||
+                multiplier < 1 ||
+                multiplier > 100
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Dağıtım çarpanı geçersiz."
+                });
+            }
+
+            if (
+                promotions.length === 0 ||
+                promotions.length > 50
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Toplu terfi listesi 1 ile 50 kişi arasında olmalı."
+                });
+            }
+
+            const cleanedPromotions =
+                promotions.map(
+                    (
+                        promotion,
+                        index
+                    ) => {
+
+                        const username =
+                            String(
+                                promotion?.username || ""
+                            ).trim();
+
+                        const oldRank =
+                            String(
+                                promotion?.oldRank || ""
+                            ).trim();
+
+                        const newRank =
+                            String(
+                                promotion?.newRank || ""
+                            ).trim();
+
+                        if (
+                            !username ||
+                            !oldRank ||
+                            !newRank
+                        ) {
+
+                            throw new Error(
+                                `${index + 1}. personelin bilgileri eksik.`
+                            );
+                        }
+
+                        if (
+                            username.length > 80 ||
+                            oldRank.length > 80 ||
+                            newRank.length > 80
+                        ) {
+
+                            throw new Error(
+                                `${index + 1}. personelin bilgileri çok uzun.`
+                            );
+                        }
+
+                        return {
+                            username,
+                            oldRank,
+                            newRank
+                        };
+                    }
+                );
+
+            const bulkPromotion =
+                await createBulkPromotionHistory({
+                    distributorName,
+                    distributorCode,
+                    startTime,
+                    endTime,
+                    multiplier,
+                    promotions:
+                        cleanedPromotions,
+                    createdBy:
+                        user.username
+                });
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    distributorName,
+
+                actionType:
+                    "discord_bulk_promotion_queued",
+
+                oldValue:
+                    null,
+
+                newValue:
+                    `${cleanedPromotions.length} personel`
+            });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    "Toplu terfi Discord kuyruğuna eklendi.",
+                bulkPromotion
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Toplu terfi Discord kayıt hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    err.message ||
+                    "Toplu terfi Discord kuyruğuna eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - BEKLEYEN TOPLU TERFİLER
+// ========================================
+
+app.get(
+    "/api/discord/pending-bulk-promotions",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const requestedLimit =
+                Number(
+                    req.query.limit || 10
+                );
+
+            const bulkPromotions =
+                await getPendingBulkPromotions(
+                    requestedLimit
+                );
+
+            return res.json({
+                success: true,
+                count:
+                    bulkPromotions.length,
+                bulkPromotions
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bekleyen toplu terfiler alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bekleyen toplu terfiler alınamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - TOPLU TERFİYİ TAMAMLANDI İŞARETLE
+// ========================================
+
+app.patch(
+    "/api/discord/bulk-promotions/:bulkPromotionId/sent",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const bulkPromotionId =
+                Number(
+                    req.params.bulkPromotionId
+                );
+
+            const discordMessageId =
+                String(
+                    req.body?.discordMessageId ||
+                    ""
+                ).trim();
+
+            if (
+                !Number.isInteger(
+                    bulkPromotionId
+                ) ||
+                bulkPromotionId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz toplu terfi kayıt numarası."
+                });
+            }
+
+            if (
+                !discordMessageId ||
+                discordMessageId.length > 100
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçerli Discord mesaj numarası gereklidir."
+                });
+            }
+
+            const existingBulkPromotion =
+                await getBulkPromotionById(
+                    bulkPromotionId
+                );
+
+            if (!existingBulkPromotion) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Toplu terfi kaydı bulunamadı."
+                });
+            }
+
+            if (
+                existingBulkPromotion
+                    .discordSent
+            ) {
+
+                return res.json({
+                    success: true,
+                    message:
+                        "Toplu terfi daha önce Discord'a gönderilmiş.",
+                    bulkPromotion:
+                        existingBulkPromotion
+                });
+            }
+
+            const bulkPromotion =
+                await markBulkPromotionAsDiscordSent({
+                    bulkPromotionId,
+                    discordMessageId
+                });
+
+            if (!bulkPromotion) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Toplu terfi kaydı tamamlanamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                message:
+                    "Toplu terfi Discord'a gönderildi olarak işaretlendi.",
+                bulkPromotion
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Toplu terfi Discord tamamlama hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Toplu terfi Discord kaydı tamamlanamadı."
             });
         }
     }

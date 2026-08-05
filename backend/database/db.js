@@ -403,6 +403,51 @@ await pool.query(`
     ADD COLUMN IF NOT EXISTS note TEXT
 `);
 
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS bulk_promotion_history (
+
+        id BIGSERIAL PRIMARY KEY,
+
+        "distributorName" TEXT NOT NULL,
+
+        "distributorCode" TEXT NOT NULL,
+
+        "startTime" TEXT NOT NULL,
+
+        "endTime" TEXT NOT NULL,
+
+        multiplier INTEGER NOT NULL,
+
+        promotions JSONB NOT NULL,
+
+        "createdBy" TEXT NOT NULL,
+
+        "discordSent" BOOLEAN NOT NULL
+            DEFAULT FALSE,
+
+        "discordMessageId" TEXT,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT bulk_promotion_multiplier_check
+            CHECK (
+                multiplier >= 1
+                AND multiplier <= 100
+            )
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        bulk_promotion_history_pending_idx
+
+    ON bulk_promotion_history (
+        "discordSent",
+        "createdAt" ASC
+    )
+`);
+
     console.log("PostgreSQL bağlandı.");
 }
 
