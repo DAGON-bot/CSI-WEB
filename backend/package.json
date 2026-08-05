@@ -7,7 +7,8 @@
     "start": "node server.js",
     "bot": "node discord/botRunner.js",
     "bot:test-message": "node discord/testMessage.js",
-      "bot:test-promotion": "node discord/testPromotion.js"
+    "bot:test-promotion": "node discord/testPromotion.js",
+    "bot:test-bulk-promotion": "node discord/testBulkPromotion.js"
   },
   "repository": {
     "type": "git",
