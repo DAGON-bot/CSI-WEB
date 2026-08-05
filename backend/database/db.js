@@ -374,17 +374,14 @@ await pool.query(`
 
 await pool.query(`
     CREATE TABLE IF NOT EXISTS promotion_history (
-
         id BIGSERIAL PRIMARY KEY,
 
         username TEXT NOT NULL,
 
         "oldBadge" TEXT NOT NULL,
-
         "oldRank" TEXT NOT NULL,
 
         "newBadge" TEXT NOT NULL,
-
         "newRank" TEXT NOT NULL,
 
         "promotedBy" TEXT NOT NULL,
