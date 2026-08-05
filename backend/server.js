@@ -765,6 +765,8 @@ app.post(
                     req.body?.newRank || ""
                 ).trim();
 
+                
+
                 const workedHours =
     Number(
         req.body?.workedHours
@@ -848,8 +850,15 @@ if (
         promotedBy:
             user.username,
 
-        workedHours,
-        workedMinutes
+        workedHours:
+            Number.isInteger(workedHours)
+                ? workedHours
+                : 0,
+
+        workedMinutes:
+            Number.isInteger(workedMinutes)
+                ? workedMinutes
+                : 0
     });
 
             await createAdminLog({
@@ -891,6 +900,32 @@ if (
         }
     }
 );
+
+if (
+    !Number.isInteger(workedHours) ||
+    workedHours < 0 ||
+    workedHours > 100000
+) {
+
+    return res.status(400).json({
+        success: false,
+        message:
+            "Toplam çalışma saati geçersiz."
+    });
+}
+
+if (
+    !Number.isInteger(workedMinutes) ||
+    workedMinutes < 0 ||
+    workedMinutes > 59
+) {
+
+    return res.status(400).json({
+        success: false,
+        message:
+            "Toplam çalışma dakikası geçersiz."
+    });
+}
 
 // ========================================
 // DISCORD BOT - BEKLEYEN TERFİLERİ GETİR

@@ -604,11 +604,16 @@ const workedMinutes =
         record.workedMinutes || 0
     );
 
+const hasWorkedTime =
+    record.workedHours !== null &&
+    record.workedHours !== undefined &&
+    record.workedMinutes !== null &&
+    record.workedMinutes !== undefined;
+
 const workedTimeText =
-    workedHours === 0 &&
-    workedMinutes === 0
-        ? "Eski kayıtta süre bulunmuyor"
-        : `${workedHours} Saat ${workedMinutes} Dakika`;
+    hasWorkedTime
+        ? `${workedHours} Saat ${workedMinutes} Dakika`
+        : "Eski kayıtta süre bulunmuyor";
 
                 const newBadge =
                     escapePromotionHistoryHtml(

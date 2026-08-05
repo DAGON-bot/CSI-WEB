@@ -317,26 +317,32 @@ async function processPromotion(
         );
     }
 
-    const embed =
-        createPromotionEmbed({
-            personnelName:
-                promotion.username,
+  const embed =
+    createPromotionEmbed({
+        personnelName:
+            promotion.username,
 
-            oldBadge:
-                promotion.oldBadge,
+        oldBadge:
+            promotion.oldBadge,
 
-            oldRank:
-                promotion.oldRank,
+        oldRank:
+            promotion.oldRank,
 
-            newBadge:
-                promotion.newBadge,
+        newBadge:
+            promotion.newBadge,
 
-            newRank:
-                promotion.newRank,
+        newRank:
+            promotion.newRank,
 
-            promotedBy:
-                promotion.promotedBy
-        });
+        promotedBy:
+            promotion.promotedBy,
+
+        workedHours:
+            promotion.workedHours,
+
+        workedMinutes:
+            promotion.workedMinutes
+    });
 
     const message =
         await sendDiscordEmbed(

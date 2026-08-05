@@ -12,12 +12,14 @@ function cleanText(
         String(value || "").trim();
 
     if (!text) {
+
         throw new Error(
             `${fieldName} bilgisi eksik.`
         );
     }
 
     if (text.length > maxLength) {
+
         throw new Error(
             `${fieldName} en fazla ${maxLength} karakter olabilir.`
         );
@@ -70,6 +72,20 @@ function createPromotionEmbed(data) {
             80
         );
 
+    const workedHours =
+        Number.isInteger(
+            Number(data?.workedHours)
+        )
+            ? Number(data.workedHours)
+            : 0;
+
+    const workedMinutes =
+        Number.isInteger(
+            Number(data?.workedMinutes)
+        )
+            ? Number(data.workedMinutes)
+            : 0;
+
     return new EmbedBuilder()
         .setColor(0xf0c419)
         .setTitle(
@@ -80,28 +96,54 @@ function createPromotionEmbed(data) {
         )
         .addFields(
             {
-                name: "👤 Personel",
+                name:
+                    "👤 Personel",
+
                 value:
                     `\`\`\`\n${personnelName}\n\`\`\``,
-                inline: false
+
+                inline:
+                    false
             },
             {
-                name: "🏷️ Rozet Değişimi",
+                name:
+                    "🏷️ Rozet Değişimi",
+
                 value:
                     `\`\`\`\n${oldBadge}  →  ${newBadge}\n\`\`\``,
-                inline: false
+
+                inline:
+                    false
             },
             {
-                name: "🎖️ Rütbe Değişimi",
+                name:
+                    "🎖️ Rütbe Değişimi",
+
                 value:
                     `\`\`\`\n${oldRank}  →  ${newRank}\n\`\`\``,
-                inline: false
+
+                inline:
+                    false
             },
             {
-                name: "👤 Terfiyi Veren",
+                name:
+                    "⏱️ Son Toplam Çalışma Süresi",
+
+                value:
+                    `\`\`\`\n${workedHours} Saat ${workedMinutes} Dakika\n\`\`\``,
+
+                inline:
+                    false
+            },
+            {
+                name:
+                    "👤 Terfiyi Veren",
+
                 value:
                     `\`\`\`\n${promotedBy}\n\`\`\``,
-                inline: false
+
+                inline:
+                    false
             }
         )
         .setFooter({
