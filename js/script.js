@@ -625,11 +625,14 @@ const yeniRutbe =
     if (ad && yeniRutbe) {
 
     topluTerfiListesi.push({
-    username: ad.trim(),
-    badge: yeniRozet,
-    oldBadge: rozet,
-    oldRank: rutbe,
-    newRank: yeniRutbe
+    username:
+        ad.trim(),
+
+    oldRank:
+        rutbe,
+
+    newRank:
+        yeniRutbe
 });
 
 }
@@ -700,8 +703,25 @@ Oyun Çıktısını Görüntüle
 `;
 window.discordMesaji = discordCiktisi;
 
-window.topluTerfiBilgisi =
-    topluTerfiListesi;
+window.topluTerfiBilgisi = {
+    distributorName:
+        dagitan,
+
+    distributorCode:
+        kod,
+
+    startTime:
+        saat,
+
+    endTime:
+        saat,
+
+    multiplier:
+        deger,
+
+    promotions:
+        topluTerfiListesi
+};
 
 console.log("Discord çıktısı:", discordCiktisi);
 showPopup(

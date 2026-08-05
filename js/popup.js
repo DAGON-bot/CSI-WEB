@@ -90,6 +90,28 @@ else if(mode==="toplu"){
     popupButtons.style.display="flex";
 
     copyBtn.style.display="inline-block";
+
+    if (sendDiscordBtn) {
+
+    const canSendBulk =
+        window.topluTerfiBilgisi &&
+        Array.isArray(
+            window.topluTerfiBilgisi.promotions
+        ) &&
+        window.topluTerfiBilgisi
+            .promotions.length > 0;
+
+    sendDiscordBtn.style.display =
+        canSendBulk
+            ? "inline-block"
+            : "none";
+
+    sendDiscordBtn.disabled =
+        false;
+
+    sendDiscordBtn.textContent =
+        "Discord'a İşle";
+}
     if (updateSiteRankBtn) {
     updateSiteRankBtn.style.display = "none";
 }
@@ -105,8 +127,12 @@ if (updateSiteRankBtn) {
 if (updateSiteRanksBtn) {
 
     const hasPromotions =
-        Array.isArray(window.topluTerfiBilgisi) &&
-        window.topluTerfiBilgisi.length > 0;
+    window.topluTerfiBilgisi &&
+    Array.isArray(
+        window.topluTerfiBilgisi.promotions
+    ) &&
+    window.topluTerfiBilgisi
+        .promotions.length > 0;
 
     updateSiteRanksBtn.style.display =
         hasPromotions ? "inline-block" : "none";
@@ -646,10 +672,28 @@ sendDiscordBtn?.addEventListener(
             return;
         }
 
-        if (!window.terfiBilgisi) {
+        const isBulkPromotion =
+            window.topluTerfiBilgisi &&
+            Array.isArray(
+                window.topluTerfiBilgisi.promotions
+            ) &&
+            window.topluTerfiBilgisi
+                .promotions.length > 0;
+
+        const payload =
+            isBulkPromotion
+                ? window.topluTerfiBilgisi
+                : window.terfiBilgisi;
+
+        const endpoint =
+            isBulkPromotion
+                ? "/api/discord/bulk-promotions"
+                : "/api/discord/promotion";
+
+        if (!payload) {
 
             showToast(
-                "Gönderilecek terfi bulunamadı.",
+                "Gönderilecek terfi bilgisi bulunamadı.",
                 "warning"
             );
 
@@ -657,6 +701,7 @@ sendDiscordBtn?.addEventListener(
         }
 
         sendDiscordBtn.disabled = true;
+
         sendDiscordBtn.textContent =
             "Discord'a Gönderiliyor...";
 
@@ -664,51 +709,63 @@ sendDiscordBtn?.addEventListener(
 
             const response =
                 await fetch(
-                    "/api/discord/promotion",
+                    endpoint,
                     {
-                        method:"POST",
-                        headers:{
-                            "Content-Type":"application/json",
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
                             "Authorization":
                                 `Bearer ${token}`
                         },
-                        body:JSON.stringify(
-                            window.terfiBilgisi
-                        )
+
+                        body:
+                            JSON.stringify(
+                                payload
+                            )
                     }
                 );
 
             const data =
                 await response.json();
 
-            if(!response.ok){
+            if (
+                !response.ok ||
+                !data.success
+            ) {
 
                 throw new Error(
-                    data.message
+                    data.message ||
+                    "Discord işlemi başarısız."
                 );
-
             }
 
             showToast(
-                "Discord'a gönderildi.",
+                isBulkPromotion
+                    ? "Toplu terfi Discord kuyruğuna eklendi."
+                    : "Terfi Discord kuyruğuna eklendi.",
                 "success"
             );
 
             sendDiscordBtn.textContent =
                 "✓ Discord'a Gönderildi";
 
-        }catch(err){
+        } catch (err) {
 
             showToast(
-                err.message,
+                err.message ||
+                "Discord'a gönderilemedi.",
                 "error"
             );
 
-            sendDiscordBtn.disabled=false;
+            sendDiscordBtn.disabled =
+                false;
 
             sendDiscordBtn.textContent =
                 "Discord'a İşle";
         }
-
     }
 );
