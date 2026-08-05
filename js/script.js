@@ -95,6 +95,26 @@ const terfiKontrolBtn = document.getElementById("terfiKontrolBtn");
 const personelAdiInput = document.getElementById("personelAdi");
 const yetkiliAdiInput = document.getElementById("yetkiliAdi");
 
+const terfiGecmisiBtn =
+    document.getElementById(
+        "terfiGecmisiBtn"
+    );
+
+const terfiGecmisiAlani =
+    document.getElementById(
+        "terfiGecmisiAlani"
+    );
+
+const terfiGecmisiListesi =
+    document.getElementById(
+        "terfiGecmisiListesi"
+    );
+
+const terfiGecmisiSayisi =
+    document.getElementById(
+        "terfiGecmisiSayisi"
+    );
+
 const eskiSaatInput = document.getElementById("eskiSaat");
 const eskiDakikaInput = document.getElementById("eskiDakika");
 
@@ -463,6 +483,305 @@ showPopup(
 });
 
 }
+
+// =========================
+// TERFİ GEÇMİŞİ SİSTEMİ
+// =========================
+
+function escapePromotionHistoryHtml(
+    value
+) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function formatPromotionHistoryDate(
+    value
+) {
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "Tarih bulunamadı";
+    }
+
+    return date.toLocaleString(
+        "tr-TR",
+        {
+            day:
+                "2-digit",
+
+            month:
+                "2-digit",
+
+            year:
+                "numeric",
+
+            hour:
+                "2-digit",
+
+            minute:
+                "2-digit"
+        }
+    );
+}
+
+function renderPromotionHistory(
+    username,
+    history
+) {
+
+    if (
+        !terfiGecmisiAlani ||
+        !terfiGecmisiListesi ||
+        !terfiGecmisiSayisi
+    ) {
+
+        return;
+    }
+
+    terfiGecmisiAlani.style.display =
+        "block";
+
+    terfiGecmisiSayisi.textContent =
+        `${history.length} kayıt`;
+
+    if (history.length === 0) {
+
+        terfiGecmisiListesi.innerHTML = `
+            <div class="promotion-history-empty">
+                <strong>
+                    ${escapePromotionHistoryHtml(username)}
+                </strong>
+                adlı personele ait daha önce işlenmiş
+                terfi bulunamadı.
+            </div>
+        `;
+
+        return;
+    }
+
+    terfiGecmisiListesi.innerHTML =
+        history
+            .map(record => {
+
+                const oldBadge =
+                    escapePromotionHistoryHtml(
+                        record.oldBadge
+                    );
+
+                const newBadge =
+                    escapePromotionHistoryHtml(
+                        record.newBadge
+                    );
+
+                const oldRank =
+                    escapePromotionHistoryHtml(
+                        record.oldRank
+                    );
+
+                const newRank =
+                    escapePromotionHistoryHtml(
+                        record.newRank
+                    );
+
+                const promotedBy =
+                    escapePromotionHistoryHtml(
+                        record.promotedBy
+                    );
+
+                const createdAt =
+                    formatPromotionHistoryDate(
+                        record.createdAt
+                    );
+
+                return `
+                    <div class="promotion-history-card">
+
+                        <div class="promotion-history-date">
+                            ${createdAt}
+                        </div>
+
+                        <div class="promotion-history-row">
+
+                            <span class="promotion-history-label">
+                                Rozet
+                            </span>
+
+                            <span class="promotion-history-value">
+                                ${oldBadge} → ${newBadge}
+                            </span>
+
+                        </div>
+
+                        <div class="promotion-history-row">
+
+                            <span class="promotion-history-label">
+                                Rütbe
+                            </span>
+
+                            <span class="promotion-history-value">
+                                ${oldRank} → ${newRank}
+                            </span>
+
+                        </div>
+
+                        <div class="promotion-history-row">
+
+                            <span class="promotion-history-label">
+                                Terfiyi Veren
+                            </span>
+
+                            <span class="promotion-history-value">
+                                ${promotedBy}
+                            </span>
+
+                        </div>
+
+                    </div>
+                `;
+            })
+            .join("");
+}
+
+async function loadPromotionHistory() {
+
+    const username =
+        String(
+            personelAdiInput?.value ||
+            ""
+        ).trim();
+
+    const token =
+        localStorage.getItem(
+            "token"
+        );
+
+    if (!username) {
+
+        showToast(
+            "Önce personel adını yazın.",
+            "warning"
+        );
+
+        personelAdiInput?.focus();
+
+        return;
+    }
+
+    if (!token) {
+
+        showToast(
+            "Terfi geçmişini görmek için giriş yapmalısınız.",
+            "warning"
+        );
+
+        return;
+    }
+
+    terfiGecmisiBtn.disabled =
+        true;
+
+    terfiGecmisiBtn.textContent =
+        "Terfi Geçmişi Yükleniyor...";
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/promotion-history/${encodeURIComponent(username)}?limit=50`,
+                {
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Terfi geçmişi yüklenemedi."
+            );
+        }
+
+        renderPromotionHistory(
+            username,
+            Array.isArray(data.history)
+                ? data.history
+                : []
+        );
+
+    } catch (err) {
+
+        console.error(
+            "Terfi geçmişi hatası:",
+            err
+        );
+
+        showToast(
+            err.message ||
+            "Terfi geçmişi yüklenemedi.",
+            "error"
+        );
+
+    } finally {
+
+        terfiGecmisiBtn.disabled =
+            false;
+
+        terfiGecmisiBtn.textContent =
+            "Terfi Geçmişini Göster";
+    }
+}
+
+terfiGecmisiBtn?.addEventListener(
+    "click",
+    loadPromotionHistory
+);
+
+personelAdiInput?.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key !== "Enter") {
+            return;
+        }
+
+        event.preventDefault();
+
+        loadPromotionHistory();
+    }
+);
+
+personelAdiInput?.addEventListener(
+    "input",
+    () => {
+
+        if (terfiGecmisiAlani) {
+            terfiGecmisiAlani.style.display =
+                "none";
+        }
+    }
+);
 
 // =========================
 // TOPLU TERFİ SİSTEMİ

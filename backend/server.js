@@ -71,7 +71,8 @@ const {
     createPromotionHistory,
     getPendingDiscordPromotions,
     markPromotionAsDiscordSent,
-    getPromotionHistoryById
+    getPromotionHistoryById,
+    getPromotionHistoryByUsername
 } = require(
     "./models/promotionHistoryModel"
 );
@@ -238,6 +239,101 @@ function canManageNewsArticle(
 }
 
 const app = express();
+
+// ========================================
+// TERFİ GEÇMİŞİ - PERSONELE GÖRE GETİR
+// ========================================
+
+app.get(
+    "/api/promotion-history/:username",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !hasPanelPermission(
+                    user,
+                    "promotion"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Terfi geçmişini görüntüleme yetkiniz bulunmuyor."
+                });
+            }
+
+            const username =
+                String(
+                    req.params.username || ""
+                ).trim();
+
+            if (!username) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Personel adı gereklidir."
+                });
+            }
+
+            if (username.length > 80) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Personel adı çok uzun."
+                });
+            }
+
+            const requestedLimit =
+                Number(
+                    req.query.limit || 20
+                );
+
+            const history =
+                await getPromotionHistoryByUsername(
+                    username,
+                    requestedLimit
+                );
+
+            return res.json({
+                success: true,
+
+                username,
+
+                count:
+                    history.length,
+
+                history
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Terfi geçmişi yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Terfi geçmişi yüklenemedi."
+            });
+        }
+    }
+);
 
 // ===============================
 // HABER GÖRSELİ YÜKLEME AYARLARI
