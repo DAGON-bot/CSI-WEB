@@ -4864,3 +4864,98 @@ img {
 
     letter-spacing:1px;
 }
+
+.secondary-btn {
+    margin-top: 12px;
+    background: #20242b;
+    color: #f0c419;
+    border: 1px solid rgba(240, 196, 25, 0.45);
+}
+
+.secondary-btn:hover {
+    background: #292e36;
+    border-color: #f0c419;
+}
+
+.promotion-history-section {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid rgba(240, 196, 25, 0.25);
+    border-radius: 14px;
+    background: rgba(16, 18, 22, 0.92);
+}
+
+.promotion-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+.promotion-history-header h2 {
+    margin: 0;
+    color: #f0c419;
+    font-size: 21px;
+}
+
+#terfiGecmisiSayisi {
+    color: #aeb4bd;
+    font-size: 14px;
+}
+
+.promotion-history-empty {
+    padding: 18px;
+    border-radius: 10px;
+    text-align: center;
+    color: #aeb4bd;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.promotion-history-card {
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.045);
+    border-left: 3px solid #f0c419;
+}
+
+.promotion-history-card:last-child {
+    margin-bottom: 0;
+}
+
+.promotion-history-date {
+    margin-bottom: 12px;
+    color: #9da4ae;
+    font-size: 13px;
+}
+
+.promotion-history-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.promotion-history-label {
+    color: #f0c419;
+    font-weight: 700;
+}
+
+.promotion-history-value {
+    color: #f1f1f1;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+
+    .promotion-history-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .promotion-history-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+}
