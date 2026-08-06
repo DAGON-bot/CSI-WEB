@@ -201,31 +201,55 @@ else if (mode === "maas") {
     }
 }
 
-else if(mode=="oyun"){
+else if (mode === "oyun") {
 
-    popupButtons.style.display="flex";
+    popupButtons.style.display =
+        "flex";
 
-    copyBtn.style.display="none";
-    if (updateSiteRankBtn) {
-    updateSiteRankBtn.style.display = "none";
-}
+    popupButtons.style.flexDirection =
+        "column";
 
+    if (copyBtn) {
+        copyBtn.style.display =
+            "none";
+    }
 
-    if(newBtn){
+    if (sendDiscordBtn) {
 
-        newBtn.style.display="inline-block";
-        newBtn.textContent="Kapat";
+        const canSendAttendance =
+            title ===
+                "Puantaj Hesaplandı" &&
+            window.puantajCheckData;
 
+        sendDiscordBtn.style.display =
+            canSendAttendance
+                ? "inline-block"
+                : "none";
+
+        sendDiscordBtn.disabled =
+            false;
+
+        sendDiscordBtn.textContent =
+            "Discord'a İşle";
+    }
+
+    if (newBtn) {
+        newBtn.style.display =
+            "inline-block";
+
+        newBtn.textContent =
+            "Kapat";
     }
 
     if (updateSiteRankBtn) {
-    updateSiteRankBtn.style.display = "none";
-}
+        updateSiteRankBtn.style.display =
+            "none";
+    }
 
-if (updateSiteRanksBtn) {
-    updateSiteRanksBtn.style.display = "none";
-}
-
+    if (updateSiteRanksBtn) {
+        updateSiteRanksBtn.style.display =
+            "none";
+    }
 }
 
     switch(type){
@@ -747,24 +771,38 @@ sendDiscordBtn?.addEventListener(
             successMessage =
                 "Toplu terfi Discord kuyruğuna eklendi.";
 
-        } else if (
-            activePopupMode ===
-            "maas"
-        ) {
+       } else if (
+    activePopupMode ===
+    "maas"
+) {
 
-            payload =
-                window.salaryCheckData;
+    payload =
+        window.salaryCheckData;
 
-            endpoint =
-                "/api/discord/salary";
+    endpoint =
+        "/api/discord/salary";
 
-            successMessage =
-                "Maaş Discord kuyruğuna eklendi.";
+    successMessage =
+        "Maaş Discord kuyruğuna eklendi.";
 
-        } else {
+} else if (
+    activePopupMode ===
+    "oyun"
+) {
 
-            payload =
-                window.terfiBilgisi;
+    payload =
+        window.puantajCheckData;
+
+    endpoint =
+        "/api/discord/attendance";
+
+    successMessage =
+        "Puantaj Discord kuyruğuna eklendi.";
+
+} else {
+
+    payload =
+        window.terfiBilgisi;
 
             endpoint =
                 "/api/discord/promotion";
@@ -775,12 +813,21 @@ sendDiscordBtn?.addEventListener(
 
         if (!payload) {
 
-            showToast(
-                activePopupMode ===
-                "maas"
-                    ? "Gönderilecek maaş bilgisi bulunamadı."
-                    : "Gönderilecek terfi bilgisi bulunamadı.",
+            let missingMessage =
+                "Gönderilecek terfi bilgisi bulunamadı.";
 
+            if (activePopupMode === "maas") {
+                missingMessage =
+                    "Gönderilecek maaş bilgisi bulunamadı.";
+            }
+
+            if (activePopupMode === "oyun") {
+                missingMessage =
+                    "Gönderilecek puantaj bilgisi bulunamadı.";
+            }
+
+            showToast(
+                missingMessage,
                 "warning"
             );
 
@@ -845,6 +892,15 @@ sendDiscordBtn?.addEventListener(
             ) {
 
                 window.salaryCheckData =
+                    null;
+            }
+
+            if (
+                activePopupMode ===
+                "oyun"
+            ) {
+
+                window.puantajCheckData =
                     null;
             }
 

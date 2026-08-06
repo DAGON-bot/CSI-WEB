@@ -1605,30 +1605,65 @@ function puantajSonucunuGoster() {
     discordRaporuOlustur();
 
     window.puantajCheckData = {
-        personnelName:
-            personel,
+    personnelName:
+        personel,
 
-        currentXP:
-            mevcutXP(),
+    currentXP:
+        mevcutXP(),
 
-        normalScore:
-            normalPuan,
+    mrCount:
+        negatifOlmayanSayiAl(
+            mrInput
+        ),
 
-        penalty:
-            ceza,
+    promotionCount:
+        negatifOlmayanSayiAl(
+            terfiInput
+        ),
 
-        netNormalScore:
-            netNormalPuan,
+    educationCount:
+        negatifOlmayanSayiAl(
+            egitimInput
+        ),
 
-        extraScore:
-            ekstraPuan,
+    bulkPromotionCount:
+        negatifOlmayanSayiAl(
+            ttInput
+        ),
 
-        newXP:
-            yeniXP,
+    licenseCount:
+        negatifOlmayanSayiAl(
+            lisansInput
+        ),
 
-        earnedEsCoin:
-            esCoin
-    };
+    activeHours:
+        negatifOlmayanSayiAl(
+            aktifInput
+        ),
+
+    workingHours:
+        negatifOlmayanSayiAl(
+            calismaInput
+        ),
+
+    normalScore:
+        normalPuan,
+
+    penalty:
+        ceza,
+
+    netNormalScore:
+        netNormalPuan,
+
+    extraScore:
+        ekstraPuan,
+
+    newXP:
+        yeniXP,
+
+    earnedEsCoin:
+        esCoin
+};
 
     if (
         typeof showPopup ===

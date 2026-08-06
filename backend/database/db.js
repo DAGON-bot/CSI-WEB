@@ -517,6 +517,52 @@ await pool.query(`
     )
 `);
 
+// ========================================
+// PUANTAJ GEÇMİŞİ
+// ========================================
+
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS attendance_history (
+
+        id BIGSERIAL PRIMARY KEY,
+        "personnelName" TEXT NOT NULL,
+        "performedBy" TEXT NOT NULL,
+        "currentXP" INTEGER NOT NULL DEFAULT 0,
+        "mrCount" INTEGER NOT NULL DEFAULT 0,
+        "promotionCount" INTEGER NOT NULL DEFAULT 0,
+        "educationCount" INTEGER NOT NULL DEFAULT 0,
+        "bulkPromotionCount" INTEGER NOT NULL DEFAULT 0,
+        "licenseCount" INTEGER NOT NULL DEFAULT 0,
+        "activeHours" INTEGER NOT NULL DEFAULT 0,
+        "workingHours" INTEGER NOT NULL DEFAULT 0,
+        "normalScore" INTEGER NOT NULL DEFAULT 0,
+        penalty INTEGER NOT NULL DEFAULT 0,
+        "netNormalScore" INTEGER NOT NULL DEFAULT 0,
+        "extraScore" INTEGER NOT NULL DEFAULT 0,
+        "newXP" INTEGER NOT NULL DEFAULT 0,
+        "earnedEsCoin" INTEGER NOT NULL DEFAULT 0,
+        "discordSent" BOOLEAN NOT NULL DEFAULT FALSE,
+        "discordMessageId" TEXT,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS attendance_history_pending_idx
+    ON attendance_history (
+        "discordSent",
+        "createdAt" ASC
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS attendance_history_personnel_idx
+    ON attendance_history (
+        LOWER("personnelName"),
+        "createdAt" DESC
+    )
+`);
+
 await pool.query(`
     CREATE TABLE IF NOT EXISTS bulk_promotion_history (
 
