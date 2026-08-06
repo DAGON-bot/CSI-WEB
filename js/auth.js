@@ -16,6 +16,15 @@ const managementPanelNav = document.getElementById("managementPanelNav");
 const managementPanel = document.getElementById("panel");
 const API_URL = window.location.origin;
 
+const authNewsPanelNav =
+    document.getElementById("newsPanelNav");
+
+const authFounderPanelNav =
+    document.getElementById("founderPanelNav");
+
+const authNotificationPanelNav =
+    document.getElementById("notificationPanelNav");
+
 /* =========================================
    YÖNETİM PANELİ ROL YETKİLERİ
 ========================================= */
@@ -316,6 +325,22 @@ function showGuestNavbar() {
         managementPanel.style.display = "none";
     }
 
+    if (managementPanelNav) {
+        managementPanelNav.style.display = "none";
+    }
+
+    if (authNewsPanelNav) {
+        authNewsPanelNav.style.display = "none";
+    }
+
+    if (authFounderPanelNav) {
+        authFounderPanelNav.style.display = "none";
+    }
+
+    if (authNotificationPanelNav) {
+        authNotificationPanelNav.style.display = "none";
+    }
+
     document
     .querySelectorAll(
         ".tab-btn[data-tab]"
@@ -503,22 +528,16 @@ profileSettingsBtn?.addEventListener("click", () => {
 
 logoutBtn?.addEventListener("click", () => {
 
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("username");
 
     profileDropdown?.classList.remove("active");
 
     showGuestNavbar();
 
-    showDialog(
-        "Çıkış Yapıldı",
-        "Hesabınızdan başarıyla çıkış yaptınız.",
-        "success",
-        () => {
-
-            window.location.href =
-                window.location.pathname;
-
-        }
+    window.location.replace(
+        `${window.location.pathname}?logout=${Date.now()}`
     );
 
 });
@@ -825,16 +844,19 @@ loginSubmitBtn?.addEventListener("click", async () => {
 
         const data = await response.json();
 
-        if (!response.ok) {
+        if (!response.ok || !data.success) {
 
-    showDialog(
-        "Giriş Başarısız",
-        data.message || "Kullanıcı adı veya şifre yanlış.",
-        "error"
-    );
+            showToast(
+                data.message ||
+                "Kullanıcı adı veya şifre yanlış.",
+                "error"
+            );
 
-    return;
-}
+            loginPassword.value = "";
+            loginPassword.focus();
+
+            return;
+        }
 
         localStorage.setItem("token", data.token);
 
