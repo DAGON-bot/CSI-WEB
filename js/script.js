@@ -1,44 +1,75 @@
 const buttons =
-    document.querySelectorAll(".tab-btn");
-
-const tabs =
-    document.querySelectorAll(".tab-content");
-
-const promotionBadgeGroups =
-    Object.keys(rankData).slice(
-        0,
-        Object.keys(rankData).indexOf(
-            "Cumhurbaşkanları"
-        ) + 1
+    document.querySelectorAll(
+        ".tab-btn"
     );
 
-buttons.forEach(button => {
+const tabs =
+    document.querySelectorAll(
+        ".tab-content"
+    );
 
-    button.addEventListener("click", () => {
+buttons.forEach(
+    button => {
 
-        if (
-    button.disabled ||
-    button.style.display === "none"
-) {
-    return;
-}
+        button.addEventListener(
+            "click",
+            () => {
 
-        buttons.forEach(btn =>
-            btn.classList.remove("active")
+                if (
+                    button.disabled ||
+                    button.style.display ===
+                        "none"
+                ) {
+                    return;
+                }
+
+                const targetPanel =
+                    document.getElementById(
+                        button.dataset.tab
+                    );
+
+                if (
+                    !targetPanel ||
+                    targetPanel.dataset.allowed ===
+                        "false"
+                ) {
+                    return;
+                }
+
+                buttons.forEach(
+                    btn => {
+                        btn.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+                tabs.forEach(
+                    tab => {
+
+                        tab.classList.remove(
+                            "active"
+                        );
+
+                        tab.style.display =
+                            "none";
+                    }
+                );
+
+                button.classList.add(
+                    "active"
+                );
+
+                targetPanel.classList.add(
+                    "active"
+                );
+
+                targetPanel.style.display =
+                    "block";
+            }
         );
-
-        tabs.forEach(tab =>
-            tab.classList.remove("active")
-        );
-
-        button.classList.add("active");
-
-        document
-            .getElementById(button.dataset.tab)
-            .classList.add("active");
-    });
-
-});
+    }
+);
 // =========================
 // TERFİ KONTROL DROPDOWN
 // =========================

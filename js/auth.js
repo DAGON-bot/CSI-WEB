@@ -142,24 +142,27 @@ function yonetimPaneliYetkileriniUygula(
     );
 
     tabContents.forEach(
-        panel => {
+    panel => {
 
-            const allowed =
-                kullaniciPaneliGorebilir(
-                    userRoles,
-                    panel.id
-                );
-
-            panel.style.display =
-                allowed
-                    ? ""
-                    : "none";
-
-            panel.classList.remove(
-                "active"
+        const allowed =
+            kullaniciPaneliGorebilir(
+                userRoles,
+                panel.id
             );
-        }
-    );
+
+        panel.style.display =
+            "none";
+
+        panel.classList.remove(
+            "active"
+        );
+
+        panel.dataset.allowed =
+            allowed
+                ? "true"
+                : "false";
+    }
+);
 
     tabButtons.forEach(
         button => {
