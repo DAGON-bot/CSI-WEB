@@ -5432,21 +5432,23 @@ img {
     align-items: stretch;
     padding: 0;
     overflow: hidden;
+    border-radius: 15px;
 }
 
 .puantaj-bolunmus-parca {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 20px 12px;
+    align-items: center;
+    padding: 18px 22px;
     text-align: center;
 }
 
 .puantaj-bolunmus-cizgi {
     width: 1px;
-    height: 65%;
-    align-self: center;
-    background: #404040;
+    align-self: stretch;
+    background: rgba(255,255,255,.08);
+    margin: 14px 0;
 }
 
 .puantaj-bolunmus-parca h3 {
@@ -5633,46 +5635,12 @@ img {
 }
 
 #puantaj .puantaj-bolunmus-cizgi {
-    position: relative;
-
     width: 1px;
-    height: 58%;
+    height: 46px;
 
     align-self: center;
 
-    background: #555;
-}
-
-#puantaj .puantaj-bolunmus-cizgi::after {
-    content: "+";
-
-    position: absolute;
-    top: 50%;
-    left: 50%;
-
-    transform: translate(
-        -50%,
-        -50%
-    );
-
-    width: 30px;
-    height: 30px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #f0c419;
-    background: #181818;
-
-    border: 1px solid #f0c419;
-    border-radius: 50%;
-
-    font-size: 18px;
-    font-weight: 900;
-
-    box-shadow:
-        0 0 0 6px #181818;
+    background: rgba(255, 255, 255, 0.14);
 }
 
 #ekstraXPText.positive {
