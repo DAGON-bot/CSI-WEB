@@ -5607,7 +5607,7 @@ img {
     justify-content: center;
 
     min-width: 0;
-    padding: 20px 10px;
+    padding: 20px 18px;
 
     background: transparent;
     border: none;
@@ -5633,12 +5633,46 @@ img {
 }
 
 #puantaj .puantaj-bolunmus-cizgi {
+    position: relative;
+
     width: 1px;
-    height: 65%;
+    height: 58%;
 
     align-self: center;
 
-    background: #414141;
+    background: #555;
+}
+
+#puantaj .puantaj-bolunmus-cizgi::after {
+    content: "+";
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    transform: translate(
+        -50%,
+        -50%
+    );
+
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #f0c419;
+    background: #181818;
+
+    border: 1px solid #f0c419;
+    border-radius: 50%;
+
+    font-size: 18px;
+    font-weight: 900;
+
+    box-shadow:
+        0 0 0 6px #181818;
 }
 
 #ekstraXPText.positive {
