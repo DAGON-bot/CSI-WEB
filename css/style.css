@@ -5546,3 +5546,112 @@ img {
         justify-self: center;
     }
 }
+
+/* =========================================
+   PUANTAJ ÖZET SON DÜZELTME
+========================================= */
+
+#puantaj .puantaj-ozet {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+#puantaj .puantaj-ozet > div {
+    min-width: 0;
+    padding: 22px;
+
+    background: #181818;
+    border: 1px solid #343434;
+    border-radius: 15px;
+
+    text-align: center;
+    transition: 0.25s;
+}
+
+#puantaj .puantaj-ozet > div:hover {
+    border-color: #f0c419;
+    transform: translateY(-4px);
+}
+
+#puantaj .puantaj-ozet > div > h3 {
+    margin-bottom: 12px;
+
+    color: #cfcfcf;
+    font-size: 17px;
+}
+
+#puantaj .puantaj-ozet > div > span {
+    display: block;
+
+    color: #f0c419;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+/* NET + EKSTRA PUAN */
+
+#puantaj .puantaj-ozet > .puantaj-bolunmus-kart {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+
+    padding: 0;
+    overflow: hidden;
+}
+
+#puantaj .puantaj-bolunmus-parca {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    padding: 20px 10px;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+#puantaj .puantaj-bolunmus-parca:hover {
+    transform: none;
+    border-color: transparent;
+}
+
+#puantaj .puantaj-bolunmus-parca h3 {
+    margin: 0 0 10px;
+
+    color: #cfcfcf;
+    font-size: 14px;
+}
+
+#puantaj .puantaj-bolunmus-parca span {
+    color: #f0c419;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+#puantaj .puantaj-bolunmus-cizgi {
+    width: 1px;
+    height: 65%;
+
+    align-self: center;
+
+    background: #414141;
+}
+
+#ekstraXPText.positive {
+    color: #36d17c !important;
+}
+
+#ekstraXPText.negative {
+    color: #ff5f6d !important;
+}
+
+@media (max-width: 900px) {
+
+    #puantaj .puantaj-ozet {
+        grid-template-columns: 1fr;
+    }
+}
