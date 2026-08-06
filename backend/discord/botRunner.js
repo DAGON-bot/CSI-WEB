@@ -28,6 +28,10 @@ const {
     createPromotionEmbed
 } = require("./modules/promotionModule");
 
+const {
+    createSalaryEmbed
+} = require("./modules/salaryModule");
+
 const POLL_INTERVAL_MS =
     Math.max(
         Number(
@@ -64,6 +68,13 @@ function getWorkerConfig() {
             ""
         ).trim();
 
+    const salaryChannelId =
+        String(
+            process.env
+                .DISCORD_SALARY_CHANNEL_ID ||
+            promotionChannelId
+        ).trim();
+
     if (!apiBaseUrl) {
         throw new Error(
             "CSI_API_BASE_URL tanımlı değil."
@@ -82,10 +93,17 @@ function getWorkerConfig() {
         );
     }
 
+    if (!salaryChannelId) {
+        throw new Error(
+            "DISCORD_SALARY_CHANNEL_ID tanımlı değil."
+        );
+    }
+
     return {
         apiBaseUrl,
         workerApiKey,
-        promotionChannelId
+        promotionChannelId,
+        salaryChannelId
     };
 }
 
@@ -167,6 +185,45 @@ async function fetchPendingBulkPromotions(
         : [];
 }
 
+async function fetchPendingSalaries(
+    config
+) {
+
+    const response =
+        await axios.get(
+            `${config.apiBaseUrl}/api/discord/pending-salaries`,
+            {
+                params: {
+                    limit: 10
+                },
+
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "Bekleyen maaş kayıtları alınamadı."
+        );
+    }
+
+    return Array.isArray(
+        response.data.salaries
+    )
+        ? response.data.salaries
+        : [];
+}
+
 async function markPromotionAsSent(
     config,
     promotionId,
@@ -239,6 +296,42 @@ async function markBulkPromotionAsSent(
     return response.data.bulkPromotion;
 }
 
+async function markSalaryAsSent(
+    config,
+    salaryId,
+    discordMessageId
+) {
+
+    const response =
+        await axios.patch(
+            `${config.apiBaseUrl}/api/discord/salaries/${salaryId}/sent`,
+            {
+                discordMessageId
+            },
+            {
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "Maaş kaydı tamamlandı olarak işaretlenemedi."
+        );
+    }
+
+    return response.data.salary;
+}
+
 async function processBulkPromotion(
     config,
     bulkPromotion
@@ -296,6 +389,74 @@ async function processBulkPromotion(
 
     console.log(
         `Toplu terfi Discord'a işlendi: #${bulkPromotionId} - ${bulkPromotion.promotions.length} personel`
+    );
+}
+
+async function processSalary(
+    config,
+    salary
+) {
+
+    const salaryId =
+        Number(salary?.id);
+
+    if (
+        !Number.isInteger(salaryId) ||
+        salaryId <= 0
+    ) {
+
+        throw new Error(
+            "Geçersiz maaş kaydı alındı."
+        );
+    }
+
+    const embed =
+        createSalaryEmbed({
+            personnelName:
+                salary.personnelName,
+
+            salaryOfficerName:
+                salary.salaryOfficerName,
+
+            badge:
+                salary.badge,
+
+            credit:
+                salary.credit,
+
+            requiredMinutes:
+                salary.requiredMinutes,
+
+            previousHours:
+                salary.previousHours,
+
+            previousMinutes:
+                salary.previousMinutes,
+
+            currentHours:
+                salary.currentHours,
+
+            currentMinutes:
+                salary.currentMinutes,
+
+            workedMinutes:
+                salary.workedMinutes
+        });
+
+    const message =
+        await sendDiscordEmbed(
+            config.salaryChannelId,
+            embed
+        );
+
+    await markSalaryAsSent(
+        config,
+        salaryId,
+        message.id
+    );
+
+    console.log(
+        `Maaş Discord'a işlendi: #${salaryId} - ${salary.personnelName}`
     );
 }
 
@@ -430,6 +591,33 @@ for (
         );
     }
 }
+
+        const salaries =
+            await fetchPendingSalaries(
+                config
+            );
+
+        for (
+            const salary of salaries
+        ) {
+
+            try {
+
+                await processSalary(
+                    config,
+                    salary
+                );
+
+            } catch (error) {
+
+                console.error(
+                    `Maaş işlenemedi (#${salary?.id || "?"}):`,
+                    error.response?.data ||
+                    error.message ||
+                    error
+                );
+            }
+        }
 
     } catch (error) {
 

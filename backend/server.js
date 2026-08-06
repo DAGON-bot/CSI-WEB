@@ -4,6 +4,16 @@ require("dotenv").config({
     path: path.join(__dirname, ".env")
 });
 
+const {
+    createSalaryHistory,
+    getPendingDiscordSalaries,
+    markSalaryAsDiscordSent,
+    getSalaryHistoryByPersonnelName,
+    getSalaryHistoryById
+} = require(
+    "./models/salaryHistoryModel"
+);
+
 const fs = require("fs");
 const crypto = require("crypto");
 const multer = require("multer");
@@ -112,6 +122,13 @@ const PANEL_PERMISSIONS = {
         "founder",
         "moderator",
         "promotion_controller"
+    ],
+
+    salary: [
+    "admin",
+    "founder",
+    "moderator",
+    "salary_officer"
     ],
 
     payban: [
@@ -330,6 +347,98 @@ app.get(
                 success: false,
                 message:
                     "Terfi geçmişi yüklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// MAAŞ GEÇMİŞİ - PERSONELE GÖRE GETİR
+// ========================================
+
+app.get(
+    "/api/salary-history/:personnelName",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !hasPanelPermission(
+                    user,
+                    "salary"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Maaş geçmişini görüntüleme yetkiniz bulunmuyor."
+                });
+            }
+
+            const personnelName =
+                String(
+                    req.params.personnelName || ""
+                ).trim();
+
+            if (!personnelName) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Personel adı gereklidir."
+                });
+            }
+
+            if (personnelName.length > 80) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Personel adı çok uzun."
+                });
+            }
+
+            const requestedLimit =
+                Number(
+                    req.query.limit || 20
+                );
+
+            const history =
+                await getSalaryHistoryByPersonnelName(
+                    personnelName,
+                    requestedLimit
+                );
+
+            return res.json({
+                success: true,
+                personnelName,
+                count:
+                    history.length,
+                history
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Maaş geçmişi yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Maaş geçmişi yüklenemedi."
             });
         }
     }
@@ -1069,6 +1178,441 @@ app.patch(
                 success: false,
                 message:
                     "Discord terfi kaydı tamamlanamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD - MAAŞ KAYDI OLUŞTUR
+// ========================================
+
+app.post(
+    "/api/discord/salary",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !hasPanelPermission(
+                    user,
+                    "salary"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Discord maaş işlemi için yetkiniz bulunmuyor."
+                });
+            }
+
+            const personnelName =
+                String(
+                    req.body?.personnelName || ""
+                ).trim();
+
+            const salaryOfficerName =
+                String(
+                    req.body?.salaryOfficerName || ""
+                ).trim();
+
+            const badge =
+                String(
+                    req.body?.badge || ""
+                ).trim();
+
+            const credit =
+                Number(
+                    req.body?.credit
+                );
+
+            const requiredMinutes =
+                Number(
+                    req.body?.requiredMinutes
+                );
+
+            const previousHours =
+                Number(
+                    req.body?.previousHours
+                );
+
+            const previousMinutes =
+                Number(
+                    req.body?.previousMinutes
+                );
+
+            const currentHours =
+                Number(
+                    req.body?.currentHours
+                );
+
+            const currentMinutes =
+                Number(
+                    req.body?.currentMinutes
+                );
+
+            const workedMinutes =
+                Number(
+                    req.body?.workedMinutes
+                );
+
+            if (
+                !personnelName ||
+                !salaryOfficerName ||
+                !badge
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Maaş bilgilerinin tamamı gereklidir."
+                });
+            }
+
+            if (
+                personnelName.length > 80 ||
+                salaryOfficerName.length > 80 ||
+                badge.length > 80
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Maaş bilgilerinden biri çok uzun."
+                });
+            }
+
+            const integerValues = [
+                credit,
+                requiredMinutes,
+                previousHours,
+                previousMinutes,
+                currentHours,
+                currentMinutes,
+                workedMinutes
+            ];
+
+            if (
+                integerValues.some(
+                    value =>
+                        !Number.isInteger(value) ||
+                        value < 0
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Maaş süre veya kredi bilgileri geçersiz."
+                });
+            }
+
+            if (
+                previousMinutes > 59 ||
+                currentMinutes > 59
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Dakika bilgileri 0 ile 59 arasında olmalıdır."
+                });
+            }
+
+            const previousTotalMinutes =
+                (
+                    previousHours * 60
+                ) +
+                previousMinutes;
+
+            const currentTotalMinutes =
+                (
+                    currentHours * 60
+                ) +
+                currentMinutes;
+
+            if (
+                currentTotalMinutes <
+                previousTotalMinutes
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Şu anki toplam çalışma süresi eski süreden düşük olamaz."
+                });
+            }
+
+            const calculatedWorkedMinutes =
+                currentTotalMinutes -
+                previousTotalMinutes;
+
+            if (
+                calculatedWorkedMinutes !==
+                workedMinutes
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Çalışılan süre bilgisi hesaplamayla uyuşmuyor."
+                });
+            }
+
+            if (
+                workedMinutes <
+                requiredMinutes
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Personel bu maaş rozeti için gerekli süreyi doldurmamış."
+                });
+            }
+
+            const salary =
+                await createSalaryHistory({
+                    personnelName,
+
+                    salaryOfficerName,
+
+                    badge,
+
+                    credit,
+
+                    requiredMinutes,
+
+                    previousHours,
+
+                    previousMinutes,
+
+                    currentHours,
+
+                    currentMinutes,
+
+                    workedMinutes
+                });
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    personnelName,
+
+                actionType:
+                    "discord_salary_queued",
+
+                oldValue:
+                    `${previousHours} saat ${previousMinutes} dakika`,
+
+                newValue:
+                    `${badge} / ${credit} kredi / ${currentHours} saat ${currentMinutes} dakika`
+            });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    "Maaş Discord kuyruğuna eklendi.",
+                salary
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Discord maaş kayıt hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Maaş Discord kuyruğuna eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - BEKLEYEN MAAŞLARI GETİR
+// ========================================
+
+app.get(
+    "/api/discord/pending-salaries",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const requestedLimit =
+                Number(
+                    req.query.limit || 10
+                );
+
+            const salaries =
+                await getPendingDiscordSalaries(
+                    requestedLimit
+                );
+
+            return res.json({
+                success: true,
+                count:
+                    salaries.length,
+                salaries
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bekleyen Discord maaşları alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bekleyen Discord maaşları alınamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - MAAŞI TAMAMLANDI İŞARETLE
+// ========================================
+
+app.patch(
+    "/api/discord/salaries/:salaryId/sent",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const salaryId =
+                Number(
+                    req.params.salaryId
+                );
+
+            const discordMessageId =
+                String(
+                    req.body?.discordMessageId ||
+                    ""
+                ).trim();
+
+            if (
+                !Number.isInteger(salaryId) ||
+                salaryId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz maaş kayıt numarası."
+                });
+            }
+
+            if (
+                !discordMessageId ||
+                discordMessageId.length > 100
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçerli Discord mesaj numarası gereklidir."
+                });
+            }
+
+            const existingSalary =
+                await getSalaryHistoryById(
+                    salaryId
+                );
+
+            if (!existingSalary) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Maaş kaydı bulunamadı."
+                });
+            }
+
+            if (
+                existingSalary.discordSent
+            ) {
+
+                return res.json({
+                    success: true,
+                    message:
+                        "Maaş daha önce Discord'a gönderilmiş.",
+                    salary:
+                        existingSalary
+                });
+            }
+
+            const salary =
+                await markSalaryAsDiscordSent({
+                    salaryId,
+                    discordMessageId
+                });
+
+            if (!salary) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Maaş kaydı tamamlanamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                message:
+                    "Maaş Discord'a gönderildi olarak işaretlendi.",
+                salary
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Discord maaş tamamlama hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Discord maaş kaydı tamamlanamadı."
             });
         }
     }
