@@ -1720,7 +1720,7 @@ HAKKIMIZDA
 
 }
 
-.puantaj-ozet div:hover{
+.puantaj-ozet > div:hover {
 
     border-color:#f0c419;
 
@@ -4033,7 +4033,7 @@ img {
     margin: 22px 0;
 }
 
-#panel .puantaj-ozet div {
+#panel .puantaj-ozet > div {
     padding: 16px;
 }
 
@@ -5556,46 +5556,6 @@ img {
 
 /* NET + EKSTRA PUAN */
 
-#puantaj .puantaj-ozet > .puantaj-bolunmus-kart {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
-
-    padding: 0;
-    overflow: hidden;
-}
-
-#puantaj .puantaj-bolunmus-parca {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    min-width: 0;
-    padding: 20px 18px;
-
-    background: transparent;
-    border: none;
-    border-radius: 0;
-}
-
-#puantaj .puantaj-bolunmus-parca:hover {
-    transform: none;
-    border-color: transparent;
-}
-
-#puantaj .puantaj-bolunmus-parca h3 {
-    margin: 0 0 10px;
-
-    color: #cfcfcf;
-    font-size: 14px;
-}
-
-#puantaj .puantaj-bolunmus-parca span {
-    color: #f0c419;
-    font-size: 22px;
-    font-weight: 800;
-}
-
 #ekstraXPText.positive {
     color: #36d17c !important;
 }
@@ -5678,4 +5638,26 @@ img {
     border-radius: 0;
 
     box-shadow: none;
+}
+
+/* Çizgi div'inin kart gibi görünmesini engelle */
+#puantaj .puantaj-ozet > .puantaj-bolunmus-kart > .puantaj-bolunmus-cizgi {
+    width: 1px !important;
+    min-width: 1px !important;
+    max-width: 1px !important;
+
+    height: 42px !important;
+    min-height: 42px !important;
+
+    padding: 0 !important;
+    margin: auto 0 !important;
+
+    align-self: center !important;
+
+    background: #f0c419 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    transform: none !important;
 }
