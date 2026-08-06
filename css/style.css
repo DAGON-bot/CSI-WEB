@@ -5444,13 +5444,6 @@ img {
     text-align: center;
 }
 
-.puantaj-bolunmus-cizgi {
-    width: 1px;
-    align-self: stretch;
-    background: rgba(255,255,255,.08);
-    margin: 14px 0;
-}
-
 .puantaj-bolunmus-parca h3 {
     margin-bottom: 10px;
 }
@@ -5542,11 +5535,6 @@ img {
         grid-template-columns: 1fr;
     }
 
-    .puantaj-bolunmus-cizgi {
-        width: 70%;
-        height: 1px;
-        justify-self: center;
-    }
 }
 
 /* =========================================
@@ -5637,10 +5625,9 @@ img {
 #puantaj .puantaj-bolunmus-cizgi {
     width: 1px;
     height: 46px;
-
     align-self: center;
-
     background: rgba(255, 255, 255, 0.14);
+    border-radius: 0;
 }
 
 #ekstraXPText.positive {
