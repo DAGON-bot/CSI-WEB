@@ -8,6 +8,14 @@ const tabs =
         ".tab-content"
     );
 
+const promotionBadgeGroups =
+    Object.keys(rankData).slice(
+        0,
+        Object.keys(rankData).indexOf(
+            "Cumhurbaşkanları"
+        ) + 1
+    );
+
 buttons.forEach(
     button => {
 
