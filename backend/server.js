@@ -114,14 +114,16 @@ const PANEL_PERMISSIONS = {
         "admin",
         "founder",
         "moderator",
-        "promotion_controller"
+        "promotion_controller",
+    
     ],
 
     bulkPromotion: [
         "admin",
         "founder",
         "moderator",
-        "promotion_controller"
+        "promotion_controller",
+    
     ],
 
     salary: [
@@ -139,11 +141,11 @@ const PANEL_PERMISSIONS = {
     ],
 
     puantaj: [
-        "admin",
-        "founder",
-        "moderator",
-        "salary_officer"
-    ],
+    "admin",
+    "founder",
+    "moderator",
+    "attendance_controller"
+],
 
     news: [
         "admin",
@@ -6607,7 +6609,8 @@ if (
                     "reporter",
                     "salary_officer",
                     "promotion_controller",
-                    "member"
+                    "member",
+                    "attendance_controller"
                 ];
 
                 if (!allowedRoles.includes(value)) {
@@ -6790,6 +6793,7 @@ app.patch(
             const allowedRoles = [
                 "member",
                 "promotion_controller",
+                "attendance_controller",
                 "salary_officer",
                 "reporter",
                 "moderator",

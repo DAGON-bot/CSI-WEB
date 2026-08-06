@@ -97,6 +97,18 @@ function getChatRoleInfo(roles, fallbackRole) {
         };
     }
 
+    if (
+    userRoles.includes(
+        "attendance_controller"
+    )
+) {
+    return {
+    className: "chat-role-attendance",
+    icon: "📋",
+    text: "Puantaj Kontrolcüsü"
+};
+}
+
     return {
         className: "chat-role-member",
         icon: "",

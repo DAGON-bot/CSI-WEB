@@ -529,14 +529,15 @@ function formatFounderDate(value) {
 function getFounderRoleText(role) {
 
     const roles = {
-        admin: "Admin",
-        founder: "Kurucu",
-        moderator: "Moderatör",
-        reporter: "Haberci",
-        salary_officer: "Maaş Görevlisi",
-        promotion_controller: "Terfi Kontrolcüsü",
-        member: "Üye"
-    };
+    admin: "Admin",
+    founder: "Kurucu",
+    moderator: "Moderatör",
+    reporter: "Haberci",
+    salary_officer: "Maaş Görevlisi",
+    promotion_controller: "Terfi Kontrolcüsü",
+    attendance_controller: "Puantaj Kontrolcüsü",
+    member: "Üye"
+};
 
     return roles[role] || "Üye";
 
