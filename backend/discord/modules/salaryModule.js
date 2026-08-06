@@ -201,95 +201,27 @@ function createSalaryEmbed(
             `**${personnelName}** adlı personelin maaş uygunluğu onaylandı.`
         )
         .addFields(
-            {
-                name:
-                    "👤 Maaşı Alan Personel",
-
-                value:
-                    `\`\`\`\n${personnelName}\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "🏷️ Maaş Rozeti",
-
-                value:
-                    `\`\`\`\n${badge}\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "🕒 Son Maaş Anındaki Süre",
-
-                value:
-                    `\`\`\`\n${formatSalaryMinutes(
-                        previousTotalMinutes
-                    )}\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "⏱️ Şu Anki Toplam Süre",
-
-                value:
-                    `\`\`\`\n${formatSalaryMinutes(
-                        currentTotalMinutes
-                    )}\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "📊 Maaştan Sonra Çalışılan Süre",
-
-                value:
-                    `\`\`\`\n${formatSalaryMinutes(
-                        workedMinutes
-                    )}\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "🎯 Rozet İçin Gerekli Süre",
-
-                value:
-                    `\`\`\`\n${formatSalaryMinutes(
-                        requiredMinutes
-                    )}\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "💳 Kredi Değeri",
-
-                value:
-                    `\`\`\`\n${credit} Kredi\n\`\`\``,
-
-                inline:
-                    false
-            },
-            {
-                name:
-                    "👮 Maaşı Veren Yetkili",
-
-                value:
-                    `\`\`\`\n${salaryOfficerName}\n\`\`\``,
-
-                inline:
-                    false
-            }
-        )
+    {
+        name: "👤 Maaşı Alan Personel",
+        value: `\`\`\`\n${personnelName}\n\`\`\``,
+        inline: false
+    },
+    {
+        name: "🏷️ Maaş Rozeti",
+        value: `\`\`\`\n${badge}\n\`\`\``,
+        inline: false
+    },
+    {
+        name: "⏱️ Şu Anki Toplam Süre",
+        value: `\`\`\`\n${formatSalaryMinutes(currentTotalMinutes)}\n\`\`\``,
+        inline: false
+    },
+    {
+        name: "👮 Maaşı Veren Yetkili",
+        value: `\`\`\`\n${salaryOfficerName}\n\`\`\``,
+        inline: false
+    }
+)
         .setFooter({
             text:
                 "CSI Maaş Kontrol Sistemi"
