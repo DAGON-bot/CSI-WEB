@@ -1725,18 +1725,39 @@ app.post(
                 });
             }
 
-            const calculatedNormal = Math.min(
-                (fields.mrCount * 1) +
-                (fields.promotionCount * 3) +
-                (fields.educationCount * 5) +
-                (fields.bulkPromotionCount * 10) +
-                (fields.licenseCount * 10) +
-                (fields.activeHours * 1) +
-                (fields.workingHours * 3),
-                75
-            );
+            const calculatedNormal =
+    (
+        fields.mrCount * 1
+    ) +
+    (
+        fields.promotionCount * 3
+    ) +
+    (
+        fields.educationCount * 5
+    ) +
+    (
+        fields.bulkPromotionCount * 10
+    ) +
+    (
+        fields.licenseCount * 10
+    ) +
+    (
+        fields.activeHours * 1
+    ) +
+    (
+        fields.workingHours * 3
+    );
 
-            const calculatedNet = calculatedNormal - fields.penalty;
+const calculatedNet =
+    Math.min(
+        Math.max(
+            calculatedNormal -
+            fields.penalty,
+            0
+        ),
+        75
+    );
+
             const calculatedNewXP = fields.currentXP + calculatedNet + fields.extraScore;
             const calculatedCoin = calculatedNet === 75 ? 1 : 0;
 

@@ -368,13 +368,6 @@ function hesaplaHamFaaliyetPuani() {
     return puan;
 }
 
-function hesaplaNormalPuan() {
-    return Math.min(
-        hesaplaHamFaaliyetPuani(),
-        PUANTAJ_MAX_NORMAL_PUAN
-    );
-}
-
 /* =========================================
    CEZA
 ========================================= */
@@ -410,10 +403,22 @@ function hesaplaCeza() {
    NET PUAN, YENİ XP VE EŞ COİN
 ========================================= */
 
+function hesaplaNormalPuan() {
+    return hesaplaHamFaaliyetPuani();
+}
+
 function hesaplaNetNormalPuan() {
-    return (
+
+    const cezaSonrasiPuan =
         hesaplaNormalPuan() -
-        hesaplaCeza()
+        hesaplaCeza();
+
+    return Math.min(
+        Math.max(
+            cezaSonrasiPuan,
+            0
+        ),
+        PUANTAJ_MAX_NORMAL_PUAN
     );
 }
 
