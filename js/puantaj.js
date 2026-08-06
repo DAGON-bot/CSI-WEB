@@ -651,44 +651,45 @@ function puantajPersonelOnerileriniGoster() {
                 "tr-TR"
             );
 
-    if (!aranan) {
-
-        puantajPersonelOnerileriniKapat();
-
-        return;
-    }
-
-    const oneriler =
-        puantajPersonelVerileri
-            .filter(
-                personel =>
-                    String(
-                        personel.kullaniciAdi
+    const kaynakListe =
+    aranan
+        ? puantajPersonelVerileri.filter(
+            personel =>
+                String(
+                    personel.kullaniciAdi
+                )
+                    .toLocaleLowerCase(
+                        "tr-TR"
                     )
-                        .toLocaleLowerCase(
-                            "tr-TR"
-                        )
-                        .includes(
-                            aranan
-                        )
-            )
-            .sort(
-                (
-                    birinci,
-                    ikinci
-                ) => {
+                    .includes(
+                        aranan
+                    )
+        )
+        : [...puantajPersonelVerileri];
 
-                    const birinciAd =
+const oneriler =
+    kaynakListe
+        .sort(
+            (
+                birinci,
+                ikinci
+            ) => {
+
+                const birinciAd =
+                    String(
                         birinci.kullaniciAdi
-                            .toLocaleLowerCase(
-                                "tr-TR"
-                            );
+                    ).toLocaleLowerCase(
+                        "tr-TR"
+                    );
 
-                    const ikinciAd =
+                const ikinciAd =
+                    String(
                         ikinci.kullaniciAdi
-                            .toLocaleLowerCase(
-                                "tr-TR"
-                            );
+                    ).toLocaleLowerCase(
+                        "tr-TR"
+                    );
+
+                if (aranan) {
 
                     const birinciBasliyor =
                         birinciAd.startsWith(
@@ -713,17 +714,18 @@ function puantajPersonelOnerileriniGoster() {
                     ) {
                         return 1;
                     }
-
-                    return birinciAd.localeCompare(
-                        ikinciAd,
-                        "tr-TR"
-                    );
                 }
-            )
-            .slice(
-                0,
-                6
-            );
+
+                return birinciAd.localeCompare(
+                    ikinciAd,
+                    "tr-TR"
+                );
+            }
+        )
+        .slice(
+            0,
+            20
+        );
 
     if (oneriler.length === 0) {
 
@@ -763,10 +765,15 @@ function puantajPersonelOnerileriniGoster() {
                             </span>
 
                             <strong>
-                                ${Number(
-                                    personel.xp || 0
-                                )} XP
-                            </strong>
+    ${Number(
+        personel.xp || 0
+    )} XP
+    <span class="puantaj-oneri-coin">
+        · ${Number(
+            personel.esCoin || 0
+        )} Eş Coin
+    </span>
+</strong>
 
                         </button>
                     `;
