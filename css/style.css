@@ -5108,3 +5108,92 @@ img {
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================
+   MAAŞ PANELİ SON DÜZEN
+======================================== */
+
+#maas .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 14px;
+    align-items: start;
+}
+
+#maas .left-side {
+    display: contents;
+}
+
+#maas #maasPersonelAdi {
+    grid-column: 1;
+}
+
+#maas #maasYetkiliAdi {
+    grid-column: 2;
+}
+
+#maas #maasRozet {
+    grid-column: 1;
+    margin-top: 0;
+}
+
+#maas .right-side {
+    display: contents;
+}
+
+#maas .right-side .info-card:first-child {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+}
+
+#maas .right-side .info-card:last-child {
+    grid-column: 2;
+    grid-row: 4 / span 2;
+}
+
+#maas .info-card {
+    margin: 0;
+}
+
+#maas .left-side > *,
+#maas .right-side > * {
+    min-width: 0;
+}
+
+/* Rozet ile süre kartları arasında nefes alanı */
+#maas #maasRozet {
+    margin-bottom: 14px;
+}
+
+/* Alt butonları görünür ve düzenli tut */
+#maas .divider {
+    clear: both;
+    margin-top: 28px;
+    margin-bottom: 16px;
+}
+
+#maas #maasKontrolBtn,
+#maas #maasGecmisiBtn {
+    width: 100%;
+}
+
+/* Küçük ekran */
+@media (max-width: 760px) {
+
+    #maas .grid {
+        grid-template-columns: 1fr;
+    }
+
+    #maas #maasPersonelAdi,
+    #maas #maasYetkiliAdi,
+    #maas #maasRozet,
+    #maas .right-side .info-card:first-child,
+    #maas .right-side .info-card:last-child {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    #maas #maasRozet {
+        margin-bottom: 4px;
+    }
+}
