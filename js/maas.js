@@ -723,29 +723,34 @@ const extraResultRow =
         </table>
     `;
 
+    window.discordMesaji = [
+        "💰 Personel Maaş Bildirimi",
+        "",
+        `Maaşı Alan Personel: ${result.personnelName}`,
+        `Maaş Rozeti: ${result.badge}`,
+        `Şu Anki Toplam Süre: ${formatSalaryMinutes(
+            result.currentTotalMinutes
+        )}`,
+        `Maaşı Veren Yetkili: ${result.salaryOfficerName}`
+    ].join("\n");
+
     if (
         typeof showPopup ===
         "function"
     ) {
 
         showPopup(
-    result.eligible
-        ? "Maaş Onaylandı"
-        : "Maaş Reddedildi",
+            result.eligible
+                ? "Maaş Onaylandı"
+                : "Maaş Reddedildi",
 
-    popupMessage,
-
-    result.eligible
-        ? "success"
-        : "warning",
-
-    "maas"
-);
-            popupMessage,(
+            popupMessage,
 
             result.eligible
                 ? "success"
-                : "warning"
+                : "warning",
+
+            "maas"
         );
 
         return;
@@ -758,7 +763,6 @@ const extraResultRow =
             : "warning"
     );
 }
-
 // ========================================
 // KONTROL BUTONU
 // ========================================
