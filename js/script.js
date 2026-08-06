@@ -16,6 +16,13 @@ buttons.forEach(button => {
 
     button.addEventListener("click", () => {
 
+        if (
+    button.disabled ||
+    button.style.display === "none"
+) {
+    return;
+}
+
         buttons.forEach(btn =>
             btn.classList.remove("active")
         );

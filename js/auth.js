@@ -16,6 +16,208 @@ const managementPanelNav = document.getElementById("managementPanelNav");
 const managementPanel = document.getElementById("panel");
 const API_URL = window.location.origin;
 
+/* =========================================
+   YÖNETİM PANELİ ROL YETKİLERİ
+========================================= */
+
+const FRONTEND_PANEL_PERMISSIONS = {
+    terfi: [
+        "admin",
+        "founder",
+        "moderator",
+        "promotion_controller"
+    ],
+
+    toplu: [
+        "admin",
+        "founder",
+        "moderator",
+        "promotion_controller"
+    ],
+
+    maas: [
+        "admin",
+        "founder",
+        "moderator",
+        "salary_officer"
+    ],
+
+    payban: [
+        "admin",
+        "founder",
+        "moderator",
+        "salary_officer"
+    ],
+
+    puantaj: [
+        "admin",
+        "founder",
+        "moderator",
+        "attendance_controller"
+    ]
+};
+
+function getCurrentUserRoles(user) {
+
+    if (
+        Array.isArray(user?.roles) &&
+        user.roles.length > 0
+    ) {
+        return user.roles;
+    }
+
+    if (user?.role) {
+        return [user.role];
+    }
+
+    return ["member"];
+}
+
+function kullaniciPaneliGorebilir(
+    userRoles,
+    panelName
+) {
+
+    const allowedRoles =
+        FRONTEND_PANEL_PERMISSIONS[
+            panelName
+        ] || [];
+
+    return allowedRoles.some(
+        role => userRoles.includes(role)
+    );
+}
+
+function yonetimPaneliYetkileriniUygula(
+    user
+) {
+
+    const userRoles =
+        getCurrentUserRoles(user);
+
+    const tabButtons =
+        Array.from(
+            document.querySelectorAll(
+                ".tab-btn[data-tab]"
+            )
+        );
+
+    const tabContents =
+        Array.from(
+            document.querySelectorAll(
+                ".tab-content"
+            )
+        );
+
+    let firstAllowedTab = null;
+
+    tabButtons.forEach(
+        button => {
+
+            const panelName =
+                button.dataset.tab;
+
+            const allowed =
+                kullaniciPaneliGorebilir(
+                    userRoles,
+                    panelName
+                );
+
+            button.style.display =
+                allowed
+                    ? ""
+                    : "none";
+
+            button.disabled =
+                !allowed;
+
+            if (
+                allowed &&
+                !firstAllowedTab
+            ) {
+                firstAllowedTab =
+                    panelName;
+            }
+        }
+    );
+
+    tabContents.forEach(
+        panel => {
+
+            const allowed =
+                kullaniciPaneliGorebilir(
+                    userRoles,
+                    panel.id
+                );
+
+            panel.style.display =
+                allowed
+                    ? ""
+                    : "none";
+
+            panel.classList.remove(
+                "active"
+            );
+        }
+    );
+
+    tabButtons.forEach(
+        button => {
+            button.classList.remove(
+                "active"
+            );
+        }
+    );
+
+    if (!firstAllowedTab) {
+
+        if (managementPanel) {
+            managementPanel.style.display =
+                "none";
+        }
+
+        if (managementPanelNav) {
+            managementPanelNav.style.display =
+                "none";
+        }
+
+        return;
+    }
+
+    if (managementPanel) {
+        managementPanel.style.display =
+            "block";
+    }
+
+    if (managementPanelNav) {
+        managementPanelNav.style.display =
+            "";
+    }
+
+    const firstButton =
+        document.querySelector(
+            `.tab-btn[data-tab="${firstAllowedTab}"]`
+        );
+
+    const firstPanel =
+        document.getElementById(
+            firstAllowedTab
+        );
+
+    firstButton?.classList.add(
+        "active"
+    );
+
+    firstPanel?.classList.add(
+        "active"
+    );
+
+    if (firstPanel) {
+        firstPanel.style.display =
+            "block";
+    }
+}
+
 const registerType =
     document.getElementById("registerType");
 
@@ -111,6 +313,32 @@ function showGuestNavbar() {
         managementPanel.style.display = "none";
     }
 
+    document
+    .querySelectorAll(
+        ".tab-btn[data-tab]"
+    )
+    .forEach(
+        button => {
+            button.style.display =
+                "none";
+        }
+    );
+
+document
+    .querySelectorAll(
+        ".tab-content"
+    )
+    .forEach(
+        panel => {
+            panel.style.display =
+                "none";
+
+            panel.classList.remove(
+                "active"
+            );
+        }
+    );
+
 }
 
 function showUserNavbar(username) {
@@ -173,6 +401,10 @@ async function checkCurrentSession() {
             "";
 
         showUserNavbar(username);
+
+    yonetimPaneliYetkileriniUygula(
+    currentUser
+);
 
     } catch (err) {
 

@@ -79,6 +79,7 @@ function getRoleText(role) {
         reporter: "Haberci",
         salary_officer: "Maaş Görevlisi",
         promotion_controller: "Terfi Kontrolcüsü",
+        attendance_controller: "Puantaj Kontrolcüsü",
         member: "Üye"
     };
 
