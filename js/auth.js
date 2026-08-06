@@ -588,6 +588,9 @@ passwordResetToken = "";
     const title = document.getElementById("authTitle");
     const subtitle = document.getElementById("authSubtitle");
 
+    subtitle.style.color = "";
+    subtitle.style.fontWeight = "";
+
     if(authMode === "register"){
 
         registerPassword.value = "";
@@ -846,17 +849,28 @@ loginSubmitBtn?.addEventListener("click", async () => {
 
         if (!response.ok || !data.success) {
 
-            showToast(
-                data.message ||
-                "Kullanıcı adı veya şifre yanlış.",
-                "error"
-            );
+    const authSubtitle =
+        document.getElementById(
+            "authSubtitle"
+        );
 
-            loginPassword.value = "";
-            loginPassword.focus();
+    if (authSubtitle) {
+        authSubtitle.textContent =
+            data.message ||
+            "Kullanıcı adı veya şifre yanlış.";
 
-            return;
-        }
+        authSubtitle.style.color =
+            "#ff4d4d";
+
+        authSubtitle.style.fontWeight =
+            "700";
+    }
+
+    loginPassword.value = "";
+    loginPassword.focus();
+
+    return;
+}
 
         localStorage.setItem("token", data.token);
 
