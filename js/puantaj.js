@@ -852,20 +852,52 @@ function cezaSatirlari() {
 ========================================= */
 
 function discordRaporuOlustur() {
+
     const personel =
         String(
-            personelInput?.value ||
-            ""
+            personelInput?.value || ""
         ).trim();
 
-    const faaliyetler =
-        raporSatirlari();
+    const aktifSaat =
+        negatifOlmayanSayiAl(
+            aktifInput
+        );
 
-    const cezalar =
-        cezaSatirlari();
+    const calismaSaati =
+        negatifOlmayanSayiAl(
+            calismaInput
+        );
+
+    const mrSayisi =
+        negatifOlmayanSayiAl(
+            mrInput
+        );
+
+    const terfiSayisi =
+        negatifOlmayanSayiAl(
+            terfiInput
+        );
+
+    const egitimSayisi =
+        negatifOlmayanSayiAl(
+            egitimInput
+        );
+
+    const topluTerfiSayisi =
+        negatifOlmayanSayiAl(
+            ttInput
+        );
+
+    const lisansSayisi =
+        negatifOlmayanSayiAl(
+            lisansInput
+        );
 
     const normalPuan =
         hesaplaNormalPuan();
+
+    const ceza =
+        hesaplaCeza();
 
     const netNormalPuan =
         hesaplaNetNormalPuan();
@@ -879,71 +911,145 @@ function discordRaporuOlustur() {
     const esCoin =
         hesaplaEsCoin();
 
-    const satirlar = [
-        "📊 Personel Puantaj Bildirimi",
-        "",
-        `Personel: ${
-            personel ||
-            "Personel"
-        }`,
-        ""
-    ];
+    const satirlar = [];
 
-    faaliyetler.forEach(
-        faaliyet => {
-            satirlar.push(
-                faaliyet
-            );
-        }
+    const tarih =
+        new Date().toLocaleDateString(
+            "tr-TR",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }
+        );
+
+    satirlar.push(
+        "📋 Puantaj Raporu"
     );
 
     satirlar.push("");
     satirlar.push(
-        `Normal Puan: ${normalPuan} / 75`
+        personel || "Personel"
     );
+    satirlar.push(tarih);
+    satirlar.push("");
 
-    if (
-        cezalar.length > 0
-    ) {
-        satirlar.push("");
-        satirlar.push("Cezalar:");
+    if (aktifSaat > 0) {
+        satirlar.push(
+            `${aktifSaat} saat süre +${aktifSaat}XP`
+        );
+    }
 
-        cezalar.forEach(
-            ceza => {
-                satirlar.push(
-                    ceza
-                );
-            }
+    if (calismaSaati > 0) {
+        satirlar.push(
+            `${calismaSaati} saat çalışma süresi +${
+                calismaSaati *
+                puantajXPMap.calisma
+            }XP`
+        );
+    }
+
+    if (mrSayisi > 0) {
+        satirlar.push(
+            `${mrSayisi}X MR +${
+                mrSayisi *
+                puantajXPMap.mr
+            }XP`
+        );
+    }
+
+    if (terfiSayisi > 0) {
+        satirlar.push(
+            `${terfiSayisi}X Terfi +${
+                terfiSayisi *
+                puantajXPMap.terfi
+            }XP`
+        );
+    }
+
+    if (egitimSayisi > 0) {
+        satirlar.push(
+            `${egitimSayisi}X Eğitim +${
+                egitimSayisi *
+                puantajXPMap.egitim
+            }XP`
+        );
+    }
+
+    if (topluTerfiSayisi > 0) {
+        satirlar.push(
+            `${topluTerfiSayisi}X Toplu Terfi +${
+                topluTerfiSayisi *
+                puantajXPMap.tt
+            }XP`
+        );
+    }
+
+    if (lisansSayisi > 0) {
+        satirlar.push(
+            `${lisansSayisi}X Lisans +${
+                lisansSayisi *
+                puantajXPMap.lisans
+            }XP`
+        );
+    }
+
+    if (ceza > 0) {
+        satirlar.push(
+            `Ceza -${ceza}XP`
         );
     }
 
     satirlar.push("");
-    satirlar.push(
-        `Net Normal Puan: ${netNormalPuan} XP`
-    );
+
+    if (normalPuan >= 75) {
+        satirlar.push(
+            "Toplam: Max Puan 75XP"
+        );
+    } else {
+        satirlar.push(
+            `Toplam: ${normalPuan}XP`
+        );
+    }
+
+    const ekstraIsareti =
+        ekstraPuan >= 0
+            ? "+"
+            : "";
 
     satirlar.push(
-        `Ekstra Puan: ${
-            ekstraPuan >= 0
-                ? "+"
-                : ""
-        }${ekstraPuan} XP`
+        `(Ekstra Puan ${ekstraIsareti}${ekstraPuan}XP) ${
+            netNormalPuan +
+            ekstraPuan
+        }XP`
     );
 
+    satirlar.push("");
     satirlar.push(
-        `Mevcut XP: ${mevcutXP()} XP`
+        `Yeni XP: ${yeniXP}XP`
     );
 
+    satirlar.push("");
     satirlar.push(
-        `Yeni XP: ${yeniXP} XP`
+        `Eş Coin: ${esCoin}`
     );
 
+    const currentUser =
+        window.currentUser ||
+        window.authUser ||
+        null;
+
+    const puantajiYapan =
+        currentUser?.username ||
+        currentUser?.name ||
+        localStorage.getItem(
+            "username"
+        ) ||
+        "Bilinmiyor";
+
+    satirlar.push("");
     satirlar.push(
-        `Eş Coin: ${
-            esCoin === 1
-                ? "1 adet kazandı"
-                : "Kazanamadı"
-        }`
+        `Puantajı Yapan: ${puantajiYapan}`
     );
 
     window.discordMesaji =
@@ -951,7 +1057,6 @@ function discordRaporuOlustur() {
 
     return window.discordMesaji;
 }
-
 /* =========================================
    PERSONEL LİSTESİ
 ========================================= */

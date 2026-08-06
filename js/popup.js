@@ -210,9 +210,12 @@ else if (mode === "oyun") {
         "column";
 
     if (copyBtn) {
-        copyBtn.style.display =
-            "none";
-    }
+    copyBtn.style.display =
+        "inline-block";
+
+    copyBtn.textContent =
+        "Discord Çıktısını Kopyala";
+}
 
     if (sendDiscordBtn) {
 
