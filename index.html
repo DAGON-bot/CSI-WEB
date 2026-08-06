@@ -1054,22 +1054,60 @@ class="main-btn">
 
         <div class="left-side">
 
-            <input
-                type="text"
-                id="puantajPersonel"
-                placeholder="Personel Adı">
+            <div class="puantaj-form-alani puantaj-personel-input-alani">
 
-            <input
-                type="number"
-                id="puantajXP"
-                placeholder="Mevcut XP">
+    <label for="puantajPersonel">
+        Personel Adı
+    </label>
 
-            <input
-    type="number"
-    id="ekstraXP"
-    placeholder="Ekstra Puan"
-    value="0"
-    min="0">
+    <input
+        type="text"
+        id="puantajPersonel"
+        maxlength="80"
+        autocomplete="off"
+        placeholder="Personel adını yazın">
+
+    <div
+        id="puantajPersonelOnerileri"
+        class="puantaj-personel-onerileri"
+        style="display:none;">
+
+    </div>
+
+</div>
+
+<div class="puantaj-form-alani">
+
+    <label for="puantajXP">
+        Mevcut XP
+    </label>
+
+    <input
+        type="number"
+        id="puantajXP"
+        value="0"
+        readonly>
+
+</div>
+
+<div class="puantaj-form-alani">
+
+    <label for="ekstraXP">
+        Ekstra Puan
+    </label>
+
+    <input
+        type="number"
+        id="ekstraXP"
+        value="0"
+        min="-100000"
+        max="100000">
+
+    <small>
+        Ekstra puan Eş Coin hesabına katılmaz.
+    </small>
+
+</div>
 
             <div class="info-card">
 
@@ -1223,15 +1261,31 @@ class="main-btn">
 
         </div>
 
-        <div>
+        <div class="puantaj-bolunmus-kart">
 
-            <h3>Net</h3>
+    <div class="puantaj-bolunmus-parca">
 
-            <span id="netXP">0 XP</span>
+        <h3>Net Puan</h3>
 
-        </div>
+        <span id="netXP">
+            0 XP
+        </span>
 
-        <div>
+    </div>
+
+    <div class="puantaj-bolunmus-cizgi"></div>
+
+    <div class="puantaj-bolunmus-parca">
+
+        <h3>Ekstra Puan</h3>
+
+        <span id="ekstraXPText">
+            0 XP
+        </span>
+
+    </div>
+
+</div>
 
     <h3>Mevcut XP</h3>
 
