@@ -1346,14 +1346,69 @@ class="main-btn">
             </h2>
 
             <p>
-                Personeli seçerek mevcut XP bilgisini forma aktarabilirsiniz.
+                Personel XP ve Eş Coin bilgilerini yönetin.
             </p>
 
         </div>
 
         <span id="puantajPersonelSayisi">
-            20 personel
+            0 personel
         </span>
+
+    </div>
+
+    <div class="puantaj-personel-ekleme">
+
+        <div class="puantaj-personel-ekleme-alani">
+
+            <label for="yeniPuantajPersonelAdi">
+                Kullanıcı Adı
+            </label>
+
+            <input
+                type="text"
+                id="yeniPuantajPersonelAdi"
+                maxlength="80"
+                autocomplete="off"
+                placeholder="Yeni kullanıcı adı">
+
+        </div>
+
+        <div class="puantaj-personel-ekleme-alani">
+
+            <label for="yeniPuantajPersonelXP">
+                Başlangıç XP
+            </label>
+
+            <input
+                type="number"
+                id="yeniPuantajPersonelXP"
+                value="0">
+
+        </div>
+
+        <div class="puantaj-personel-ekleme-alani">
+
+            <label for="yeniPuantajPersonelCoin">
+                Başlangıç Eş Coin
+            </label>
+
+            <input
+                type="number"
+                id="yeniPuantajPersonelCoin"
+                value="0"
+                min="0">
+
+        </div>
+
+        <button
+            type="button"
+            id="puantajPersonelEkleBtn"
+            class="puantaj-personel-ekle-btn">
+
+            + Kullanıcı Ekle
+
+        </button>
 
     </div>
 
