@@ -5197,3 +5197,205 @@ img {
         margin-bottom: 4px;
     }
 }
+
+/* =========================================
+   PUANTAJ PERSONEL LİSTESİ
+========================================= */
+
+.puantaj-personel-alani{
+
+    margin-top:35px;
+
+    padding:22px;
+
+    border:1px solid #353535;
+    border-radius:16px;
+
+    background:#151515;
+
+}
+
+.puantaj-personel-baslik{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.puantaj-personel-baslik h2{
+
+    color:#f0c419;
+    font-size:23px;
+    margin:0;
+
+}
+
+.puantaj-personel-baslik p{
+
+    color:#9d9d9d;
+    margin-top:6px;
+    font-size:13px;
+
+}
+
+#puantajPersonelSayisi{
+
+    background:#f0c419;
+    color:#111;
+
+    padding:8px 14px;
+
+    border-radius:999px;
+
+    font-weight:800;
+
+    font-size:13px;
+
+}
+
+.puantaj-personel-arama{
+
+    margin-bottom:16px;
+
+}
+
+.puantaj-personel-arama input{
+
+    width:100%;
+
+    padding:14px;
+
+    background:#222;
+
+    color:#fff;
+
+    border:1px solid #404040;
+
+    border-radius:10px;
+
+    outline:none;
+
+}
+
+.puantaj-personel-arama input:focus{
+
+    border-color:#f0c419;
+
+    box-shadow:0 0 0 2px rgba(240,196,25,.18);
+
+}
+
+.puantaj-personel-listesi{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:10px;
+
+    max-height:420px;
+
+    overflow-y:auto;
+
+    padding-right:5px;
+
+}
+
+.puantaj-personel-satiri{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:14px 16px;
+
+    border:1px solid #3d3d3d;
+
+    border-radius:10px;
+
+    background:#202020;
+
+    cursor:pointer;
+
+    transition:.20s;
+
+}
+
+.puantaj-personel-satiri:hover{
+
+    border-color:#f0c419;
+
+    background:#262626;
+
+    transform:translateY(-2px);
+
+}
+
+.puantaj-personel-adi{
+
+    color:#fff;
+
+    font-weight:700;
+
+}
+
+.puantaj-personel-xp{
+
+    color:#f0c419;
+
+    font-weight:900;
+
+}
+
+.puantaj-personel-bos{
+
+    grid-column:1/-1;
+
+    text-align:center;
+
+    padding:25px;
+
+    border:1px dashed #404040;
+
+    border-radius:10px;
+
+    color:#999;
+
+}
+
+.puantaj-personel-listesi::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+.puantaj-personel-listesi::-webkit-scrollbar-thumb{
+
+    background:#555;
+
+    border-radius:999px;
+
+}
+
+.puantaj-personel-listesi::-webkit-scrollbar-thumb:hover{
+
+    background:#f0c419;
+
+}
+
+@media(max-width:850px){
+
+    .puantaj-personel-listesi{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
