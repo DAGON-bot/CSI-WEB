@@ -14,6 +14,15 @@ const {
     "./models/salaryHistoryModel"
 );
 
+const {
+    createAttendanceHistory,
+    getPendingDiscordAttendances,
+    getAttendanceHistoryById,
+    markAttendanceAsDiscordSent
+} = require(
+    "./models/attendanceHistoryModel"
+);
+
 const fs = require("fs");
 const crypto = require("crypto");
 const multer = require("multer");
@@ -1615,6 +1624,281 @@ app.patch(
                 success: false,
                 message:
                     "Discord maaş kaydı tamamlanamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD - PUANTAJ KAYDI OLUŞTUR
+// ========================================
+
+app.post(
+    "/api/discord/attendance",
+    async (req, res) => {
+
+        try {
+
+            const user = await requireRequestUser(req, res);
+
+            if (!user) {
+                return;
+            }
+
+            if (!hasPanelPermission(user, "puantaj")) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Discord puantaj işlemi için yetkiniz bulunmuyor."
+                });
+            }
+
+            const personnelName = String(
+                req.body?.personnelName || ""
+            ).trim();
+
+            const fields = {
+                currentXP: Number(req.body?.currentXP),
+                mrCount: Number(req.body?.mrCount),
+                promotionCount: Number(req.body?.promotionCount),
+                educationCount: Number(req.body?.educationCount),
+                bulkPromotionCount: Number(req.body?.bulkPromotionCount),
+                licenseCount: Number(req.body?.licenseCount),
+                activeHours: Number(req.body?.activeHours),
+                workingHours: Number(req.body?.workingHours),
+                normalScore: Number(req.body?.normalScore),
+                penalty: Number(req.body?.penalty),
+                netNormalScore: Number(req.body?.netNormalScore),
+                extraScore: Number(req.body?.extraScore),
+                newXP: Number(req.body?.newXP),
+                earnedEsCoin: Number(req.body?.earnedEsCoin)
+            };
+
+            if (!personnelName) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Personel adı gereklidir."
+                });
+            }
+
+            if (personnelName.length > 80) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Personel adı çok uzun."
+                });
+            }
+
+            const nonNegativeFields = [
+                fields.mrCount,
+                fields.promotionCount,
+                fields.educationCount,
+                fields.bulkPromotionCount,
+                fields.licenseCount,
+                fields.activeHours,
+                fields.workingHours,
+                fields.normalScore,
+                fields.penalty,
+                fields.earnedEsCoin
+            ];
+
+            if (nonNegativeFields.some(
+                value => !Number.isInteger(value) || value < 0
+            )) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Puantaj sayısal bilgileri geçersiz."
+                });
+            }
+
+            const signedFields = [
+                fields.currentXP,
+                fields.netNormalScore,
+                fields.extraScore,
+                fields.newXP
+            ];
+
+            if (signedFields.some(
+                value => !Number.isInteger(value)
+            )) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Puantaj XP bilgileri geçersiz."
+                });
+            }
+
+            const calculatedNormal = Math.min(
+                (fields.mrCount * 1) +
+                (fields.promotionCount * 3) +
+                (fields.educationCount * 5) +
+                (fields.bulkPromotionCount * 10) +
+                (fields.licenseCount * 10) +
+                (fields.activeHours * 1) +
+                (fields.workingHours * 3),
+                75
+            );
+
+            const calculatedNet = calculatedNormal - fields.penalty;
+            const calculatedNewXP = fields.currentXP + calculatedNet + fields.extraScore;
+            const calculatedCoin = calculatedNet === 75 ? 1 : 0;
+
+            if (
+                calculatedNormal !== fields.normalScore ||
+                calculatedNet !== fields.netNormalScore ||
+                calculatedNewXP !== fields.newXP ||
+                calculatedCoin !== fields.earnedEsCoin
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Puantaj hesaplaması sunucu hesabıyla uyuşmuyor."
+                });
+            }
+
+            const attendance = await createAttendanceHistory({
+                personnelName,
+                performedBy: user.username,
+                ...fields
+            });
+
+            await createAdminLog({
+                performedBy: user.username,
+                targetUsername: personnelName,
+                actionType: "discord_attendance_queued",
+                oldValue: `${fields.currentXP} XP`,
+                newValue: `${fields.newXP} XP / ${fields.earnedEsCoin} Eş Coin`
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "Puantaj Discord kuyruğuna eklendi.",
+                attendance
+            });
+
+        } catch (err) {
+
+            console.error("Discord puantaj kayıt hatası:", err);
+
+            return res.status(500).json({
+                success: false,
+                message: "Puantaj Discord kuyruğuna eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - BEKLEYEN PUANTAJLAR
+// ========================================
+
+app.get(
+    "/api/discord/pending-attendances",
+    async (req, res) => {
+
+        try {
+
+            const authorized = requireDiscordWorkerKey(req, res);
+
+            if (!authorized) {
+                return;
+            }
+
+            const attendances = await getPendingDiscordAttendances(
+                req.query.limit
+            );
+
+            return res.json({
+                success: true,
+                count: attendances.length,
+                attendances
+            });
+
+        } catch (err) {
+
+            console.error("Bekleyen puantaj kayıtları alınamadı:", err);
+
+            return res.status(500).json({
+                success: false,
+                message: "Bekleyen puantaj kayıtları alınamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - PUANTAJ GÖNDERİLDİ
+// ========================================
+
+app.patch(
+    "/api/discord/attendances/:attendanceId/sent",
+    async (req, res) => {
+
+        try {
+
+            const authorized = requireDiscordWorkerKey(req, res);
+
+            if (!authorized) {
+                return;
+            }
+
+            const attendanceId = Number(req.params.attendanceId);
+            const discordMessageId = String(
+                req.body?.discordMessageId || ""
+            ).trim();
+
+            if (!Number.isInteger(attendanceId) || attendanceId <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Geçersiz puantaj kayıt numarası."
+                });
+            }
+
+            if (!discordMessageId || discordMessageId.length > 100) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Geçerli Discord mesaj numarası gereklidir."
+                });
+            }
+
+            const existing = await getAttendanceHistoryById(attendanceId);
+
+            if (!existing) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Puantaj kaydı bulunamadı."
+                });
+            }
+
+            if (existing.discordSent) {
+                return res.json({
+                    success: true,
+                    message: "Puantaj daha önce Discord'a gönderilmiş.",
+                    attendance: existing
+                });
+            }
+
+            const attendance = await markAttendanceAsDiscordSent({
+                attendanceId,
+                discordMessageId
+            });
+
+            if (!attendance) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Puantaj kaydı tamamlanamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: "Puantaj Discord'a gönderildi olarak işaretlendi.",
+                attendance
+            });
+
+        } catch (err) {
+
+            console.error("Puantaj gönderildi işaretleme hatası:", err);
+
+            return res.status(500).json({
+                success: false,
+                message: "Puantaj kaydı tamamlanamadı."
             });
         }
     }

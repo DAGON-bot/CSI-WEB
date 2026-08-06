@@ -32,6 +32,12 @@ const {
     createSalaryEmbed
 } = require("./modules/salaryModule");
 
+const {
+    createAttendanceEmbed
+} = require(
+    "./modules/attendanceModule"
+);
+
 const POLL_INTERVAL_MS =
     Math.max(
         Number(
@@ -75,6 +81,13 @@ function getWorkerConfig() {
             promotionChannelId
         ).trim();
 
+    const attendanceChannelId =
+        String(
+            process.env
+                .DISCORD_ATTENDANCE_CHANNEL_ID ||
+            promotionChannelId
+        ).trim();
+
     if (!apiBaseUrl) {
         throw new Error(
             "CSI_API_BASE_URL tanımlı değil."
@@ -99,11 +112,18 @@ function getWorkerConfig() {
         );
     }
 
+    if (!attendanceChannelId) {
+        throw new Error(
+            "DISCORD_ATTENDANCE_CHANNEL_ID tanımlı değil."
+        );
+    }
+
     return {
         apiBaseUrl,
         workerApiKey,
         promotionChannelId,
-        salaryChannelId
+        salaryChannelId,
+        attendanceChannelId
     };
 }
 
@@ -224,6 +244,33 @@ async function fetchPendingSalaries(
         : [];
 }
 
+async function fetchPendingAttendances(config) {
+
+    const response = await axios.get(
+        `${config.apiBaseUrl}/api/discord/pending-attendances`,
+        {
+            params: {
+                limit: 10
+            },
+            headers: {
+                "X-Discord-Worker-Key": config.workerApiKey
+            },
+            timeout: 15000
+        }
+    );
+
+    if (!response.data || response.data.success !== true) {
+        throw new Error(
+            response.data?.message ||
+            "Bekleyen puantajlar alınamadı."
+        );
+    }
+
+    return Array.isArray(response.data.attendances)
+        ? response.data.attendances
+        : [];
+}
+
 async function markPromotionAsSent(
     config,
     promotionId,
@@ -330,6 +377,61 @@ async function markSalaryAsSent(
     }
 
     return response.data.salary;
+}
+
+async function markAttendanceAsSent(
+    config,
+    attendanceId,
+    discordMessageId
+) {
+
+    const response = await axios.patch(
+        `${config.apiBaseUrl}/api/discord/attendances/${attendanceId}/sent`,
+        {
+            discordMessageId
+        },
+        {
+            headers: {
+                "X-Discord-Worker-Key": config.workerApiKey
+            },
+            timeout: 15000
+        }
+    );
+
+    if (!response.data || response.data.success !== true) {
+        throw new Error(
+            response.data?.message ||
+            "Puantaj tamamlandı olarak işaretlenemedi."
+        );
+    }
+
+    return response.data.attendance;
+}
+
+async function processAttendance(config, attendance) {
+
+    const attendanceId = Number(attendance?.id);
+
+    if (!Number.isInteger(attendanceId) || attendanceId <= 0) {
+        throw new Error("Geçersiz puantaj kaydı alındı.");
+    }
+
+    const embed = createAttendanceEmbed(attendance);
+
+    const message = await sendDiscordEmbed(
+        config.attendanceChannelId,
+        embed
+    );
+
+    await markAttendanceAsSent(
+        config,
+        attendanceId,
+        message.id
+    );
+
+    console.log(
+        `Puantaj Discord'a işlendi: #${attendanceId} - ${attendance.personnelName}`
+    );
 }
 
 async function processBulkPromotion(
@@ -612,6 +714,31 @@ for (
 
                 console.error(
                     `Maaş işlenemedi (#${salary?.id || "?"}):`,
+                    error.response?.data ||
+                    error.message ||
+                    error
+                );
+            }
+        }
+
+        const attendances =
+            await fetchPendingAttendances(
+                config
+            );
+
+        for (const attendance of attendances) {
+
+            try {
+
+                await processAttendance(
+                    config,
+                    attendance
+                );
+
+            } catch (error) {
+
+                console.error(
+                    `Puantaj işlenemedi (#${attendance?.id || "?"}):`,
                     error.response?.data ||
                     error.message ||
                     error
