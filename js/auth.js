@@ -503,8 +503,10 @@ profileSettingsBtn?.addEventListener("click", () => {
 
 logoutBtn?.addEventListener("click", () => {
 
-    localStorage.removeItem("token");
+    localStorage.clear();
+
     profileDropdown?.classList.remove("active");
+
     showGuestNavbar();
 
     showDialog(
@@ -512,7 +514,10 @@ logoutBtn?.addEventListener("click", () => {
         "Hesabınızdan başarıyla çıkış yaptınız.",
         "success",
         () => {
-            location.reload();
+
+            window.location.href =
+                window.location.pathname;
+
         }
     );
 
@@ -822,14 +827,14 @@ loginSubmitBtn?.addEventListener("click", async () => {
 
         if (!response.ok) {
 
-            showDialog(
-                "Giriş Başarısız",
-                data.message || "Kullanıcı adı veya şifre yanlış.",
-                "error"
-            );
+    showDialog(
+        "Giriş Başarısız",
+        data.message || "Kullanıcı adı veya şifre yanlış.",
+        "error"
+    );
 
-            return;
-        }
+    return;
+}
 
         localStorage.setItem("token", data.token);
 
