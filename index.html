@@ -1036,93 +1036,263 @@ class="main-btn">
 </div>
 <!-- ================= PUANTAJ ================= -->
 
-<div class="panel tab-content" id="puantaj">
+<!-- ================= PUANTAJ ================= -->
+
+<div
+    class="panel tab-content"
+    id="puantaj">
 
     <div class="page-logo">
-        <img src="assets/logo.png" alt="CSI Logo">
+
+        <img
+            src="assets/logo.png"
+            alt="CSI Logo">
+
     </div>
 
-    <h1>Puantaj Hesaplama Sistemi</h1>
+    <h1>
+        Puantaj Hesaplama Sistemi
+    </h1>
 
     <p class="subtitle">
-        Personel günlük puantaj ve XP hesaplama sistemi
+        Personel günlük puan, ekstra puan ve Eş Coin hesaplama sistemi
     </p>
 
-    <div class="grid">
+    <div class="puantaj-new-layout">
 
         <!-- SOL TARAF -->
 
-        <div class="left-side">
+        <div class="puantaj-form-card">
+
+            <div class="puantaj-field">
+
+                <label for="puantajPersonel">
+                    Personel Adı
+                </label>
+
+                <input
+                    type="text"
+                    id="puantajPersonel"
+                    maxlength="80"
+                    autocomplete="off"
+                    placeholder="Personel adını yazın">
+
+            </div>
+
+            <div class="puantaj-field">
+
+                <label for="puantajMevcutXP">
+                    Mevcut XP
+                </label>
+
+                <input
+                    type="number"
+                    id="puantajMevcutXP"
+                    value="0"
+                    min="-100000"
+                    readonly>
+
+                <span class="puantaj-field-note">
+                    Personel datasından otomatik alınacak.
+                </span>
+
+            </div>
+
+            <div class="puantaj-field">
+
+                <label for="puantajNormalPuan">
+                    Normal Puan
+                </label>
+
+                <input
+                    type="number"
+                    id="puantajNormalPuan"
+                    value="0"
+                    min="0"
+                    max="75">
+
+                <span class="puantaj-field-note">
+                    En fazla 75 puan girilebilir.
+                </span>
+
+            </div>
+
+            <div class="puantaj-field">
+
+                <label for="puantajEkstraPuan">
+                    Ekstra Puan
+                </label>
+
+                <input
+                    type="number"
+                    id="puantajEkstraPuan"
+                    value="0"
+                    min="-100000"
+                    max="100000">
+
+                <span class="puantaj-field-note">
+                    Ekstra puan Eş Coin hesabına katılmaz.
+                </span>
+
+            </div>
+
+            <div class="puantaj-field">
+
+                <label for="puantajYetkili">
+                    Puantajı İşleyen Yetkili
+                </label>
+
+                <input
+                    type="text"
+                    id="puantajYetkili"
+                    maxlength="80"
+                    autocomplete="off"
+                    placeholder="Yetkili adını yazın">
+
+            </div>
+
+        </div>
+
+        <!-- SAĞ TARAF -->
+
+        <div class="puantaj-summary-area">
+
+            <div class="puantaj-summary-card">
+
+                <span class="puantaj-summary-label">
+                    Mevcut XP
+                </span>
+
+                <strong id="puantajMevcutXPOzet">
+                    0 XP
+                </strong>
+
+            </div>
+
+            <div class="puantaj-summary-card">
+
+                <span class="puantaj-summary-label">
+                    Normal Puan
+                </span>
+
+                <strong id="puantajNormalPuanOzet">
+                    0 / 75
+                </strong>
+
+            </div>
+
+            <div class="puantaj-summary-card">
+
+                <span class="puantaj-summary-label">
+                    Ekstra Puan
+                </span>
+
+                <strong id="puantajEkstraPuanOzet">
+                    0 XP
+                </strong>
+
+            </div>
+
+            <div class="puantaj-summary-card puantaj-new-xp-card">
+
+                <span class="puantaj-summary-label">
+                    Yeni XP
+                </span>
+
+                <strong id="puantajYeniXP">
+                    0 XP
+                </strong>
+
+            </div>
+
+            <div
+                id="puantajCoinCard"
+                class="puantaj-summary-card puantaj-coin-card">
+
+                <span class="puantaj-summary-label">
+                    Eş Coin Durumu
+                </span>
+
+                <strong id="puantajCoinDurumu">
+                    Henüz kazanılmadı
+                </strong>
+
+                <small id="puantajCoinAciklama">
+                    1 Eş Coin kazanmak için 75 normal puana ulaşılmalıdır.
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <button
+        type="button"
+        id="puantajBtn"
+        class="main-btn">
+
+        Puantajı Hesapla
+
+    </button>
+
+    <button
+        type="button"
+        id="puantajTemizleBtn"
+        class="main-btn secondary-btn">
+
+        Temizle
+
+    </button>
+
+    <!-- PERSONEL LİSTESİ -->
+
+    <div
+        id="puantajPersonelListesiAlani"
+        class="puantaj-personnel-section">
+
+        <div class="puantaj-personnel-header">
+
+            <div>
+
+                <h2>
+                    Personel Puan Listesi
+                </h2>
+
+                <p>
+                    Bir personele tıklayarak bilgilerini puantaj formuna aktarabilirsiniz.
+                </p>
+
+            </div>
+
+            <span id="puantajPersonelSayisi">
+                20 personel
+            </span>
+
+        </div>
+
+        <div class="puantaj-personnel-search">
 
             <input
                 type="text"
-                id="puantajPersonel"
-                placeholder="Personel Adı">
+                id="puantajPersonelAra"
+                maxlength="80"
+                autocomplete="off"
+                placeholder="Personel ara...">
 
-            <input
-                type="number"
-                id="puantajXP"
-                placeholder="Mevcut XP">
+        </div>
 
-            <select id="puantajRutbe">
+        <div
+            id="puantajPersonelListesi"
+            class="puantaj-personnel-list">
 
-                <option value="">Rütbe Seçiniz</option>
+        </div>
 
-                <option value="750">Eş Sahip</option>
+    </div>
 
-                <option value="1000">Direktör</option>
-
-                <option value="1500">Oda Moderatörü</option>
-
-                <option value="2000">Oda Denetleyicisi</option>
-
-                <option value="2500">Oda Temsilcisi</option>
-
-                <option value="2750">Üst Düzey Liderler</option>
-
-                <option value="3000">Oda Yöneticisi</option>
-
-            </select>
-
-            <div class="info-card">
-
-                <h3>Cezalar</h3>
-
-                <div class="ceza-grid">
-
-                    <label>
-
-                        <input
-                            type="checkbox"
-                            id="cezaSure">
-
-                        <span>Süre Atmadı</span>
-
-                    </label>
-
-                    <label>
-
-                        <input
-                            type="checkbox"
-                            id="cezaTT">
-
-                        <span>TT Dağıtmadı</span>
-
-                    </label>
-
-                    <label>
-
-                        <input
-                            type="checkbox"
-                            id="cezaLisans">
-
-                        <span>Lisans Dağıtmadı</span>
-
-                    </label>
-
-                </div>
-
-            </div>
+</div>
 
         </div>
 
