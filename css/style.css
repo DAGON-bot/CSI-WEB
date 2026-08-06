@@ -5426,32 +5426,6 @@ img {
    NET + EKSTRA PUAN BÖLÜNMÜŞ KART
 ========================================= */
 
-.puantaj-ozet .puantaj-bolunmus-kart {
-    display: grid;
-    grid-template-columns: 1fr 1px 1fr;
-    align-items: stretch;
-    padding: 0;
-    overflow: hidden;
-    border-radius: 15px;
-}
-
-.puantaj-bolunmus-parca {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 18px 22px;
-    text-align: center;
-}
-
-.puantaj-bolunmus-parca h3 {
-    margin-bottom: 10px;
-}
-
-.puantaj-bolunmus-parca span {
-    font-size: 24px;
-}
-
 #ekstraXPText.positive {
     color: #36d17c;
 }
@@ -5622,14 +5596,6 @@ img {
     font-weight: 800;
 }
 
-#puantaj .puantaj-bolunmus-cizgi {
-    width: 1px;
-    height: 46px;
-    align-self: center;
-    background: rgba(255, 255, 255, 0.14);
-    border-radius: 0;
-}
-
 #ekstraXPText.positive {
     color: #36d17c !important;
 }
@@ -5643,4 +5609,73 @@ img {
     #puantaj .puantaj-ozet {
         grid-template-columns: 1fr;
     }
+}
+
+/* =========================================
+   PUANTAJ NET + EKSTRA PUAN KARTI
+========================================= */
+
+#puantaj .puantaj-ozet > .puantaj-bolunmus-kart {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+
+    align-items: stretch;
+
+    padding: 0;
+    overflow: hidden;
+
+    background: #181818;
+    border: 1px solid #343434;
+    border-radius: 15px;
+}
+
+#puantaj .puantaj-bolunmus-parca {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+
+    padding: 20px 18px;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+
+    text-align: center;
+}
+
+#puantaj .puantaj-bolunmus-parca:hover {
+    transform: none;
+    border-color: transparent;
+}
+
+#puantaj .puantaj-bolunmus-parca h3 {
+    margin: 0 0 10px;
+
+    color: #cfcfcf;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+#puantaj .puantaj-bolunmus-parca span {
+    display: block;
+
+    color: #f0c419;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+#puantaj .puantaj-bolunmus-cizgi {
+    width: 1px;
+    height: 48px;
+
+    align-self: center;
+
+    background: #f0c419;
+    border: none;
+    border-radius: 0;
+
+    box-shadow: none;
 }
