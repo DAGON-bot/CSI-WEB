@@ -224,3 +224,32 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* ========================================
+   MAAŞ SONUÇ DURUMU
+======================================== */
+
+.salary-result-row td {
+    padding-top: 18px !important;
+    padding-bottom: 18px !important;
+}
+
+.salary-result-label {
+    color: #ffd400 !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+}
+
+.salary-result-value {
+    font-size: 19px !important;
+    font-weight: 900 !important;
+    line-height: 1.3;
+    text-align: right;
+}
+
+@media (max-width: 520px) {
+
+    .salary-result-value {
+        font-size: 17px !important;
+    }
+}
