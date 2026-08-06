@@ -29,83 +29,103 @@ const puantajCezaMap = {
 const puantajPersonelVerileri = [
     {
         kullaniciAdi: "oheling",
-        xp: 833
+        xp: 833,
+        esCoin: 0
     },
     {
         kullaniciAdi: "mirindaa",
-        xp: 342
+        xp: 342,
+        esCoin: 0
     },
     {
         kullaniciAdi: "slaysu",
-        xp: 40
+        xp: 40,
+        esCoin: 0
     },
     {
         kullaniciAdi: "nyara",
-        xp: 614
+        xp: 614,
+        esCoin: 0
     },
     {
         kullaniciAdi: "harikaresul34",
-        xp: 449
+        xp: 449,
+        esCoin: 0
     },
     {
         kullaniciAdi: "Angela",
-        xp: 920
+        xp: 920,
+        esCoin: 0
     },
     {
         kullaniciAdi: "bln2323",
-        xp: 196
+        xp: 196,
+        esCoin: 0
     },
     {
         kullaniciAdi: "cbenescb",
-        xp: 903
+        xp: 903,
+        esCoin: 0
     },
     {
         kullaniciAdi: "cute",
-        xp: -1
+        xp: -1,
+        esCoin: 0
     },
     {
         kullaniciAdi: "çağrı1903",
-        xp: 482
+        xp: 482,
+        esCoin: 0
     },
     {
         kullaniciAdi: "çomar",
-        xp: 215
+        xp: 215,
+        esCoin: 0
     },
     {
         kullaniciAdi: "gorken",
-        xp: 72
+        xp: 72,
+        esCoin: 0
     },
     {
         kullaniciAdi: "drakmir",
-        xp: 205
+        xp: 205,
+        esCoin: 0
     },
     {
         kullaniciAdi: "blub",
-        xp: 33
+        xp: 33,
+        esCoin: 0
     },
     {
         kullaniciAdi: "nur58",
-        xp: 8
+        xp: 8,
+        esCoin: 0
     },
     {
         kullaniciAdi: "sadenok",
-        xp: -40
+        xp: -40,
+        esCoin: 0
     },
     {
         kullaniciAdi: "google-amca",
-        xp: -18
+        xp: -18,
+        esCoin: 0
     },
     {
         kullaniciAdi: "rockstar1881",
-        xp: -129
+        xp: -129,
+        esCoin: 0
     },
     {
         kullaniciAdi: "teddiciq19",
-        xp: 271
+        xp: 271,
+        esCoin: 0
     },
     {
         kullaniciAdi: "infillame",
-        xp: -19
+        xp: -19,
+        esCoin: 0
     }
 ];
 
@@ -197,6 +217,26 @@ const puantajPersonelSayisi =
 const puantajPersonelListesi =
     document.getElementById(
         "puantajPersonelListesi"
+    );
+
+const yeniPuantajPersonelAdiInput =
+    document.getElementById(
+        "yeniPuantajPersonelAdi"
+    );
+
+const yeniPuantajPersonelXPInput =
+    document.getElementById(
+        "yeniPuantajPersonelXP"
+    );
+
+const yeniPuantajPersonelCoinInput =
+    document.getElementById(
+        "yeniPuantajPersonelCoin"
+    );
+
+const puantajPersonelEkleBtn =
+    document.getElementById(
+        "puantajPersonelEkleBtn"
     );
 
 /* =========================================
@@ -1009,26 +1049,35 @@ function puantajPersonelListesiniGoster(
     }
 
     puantajPersonelListesi.innerHTML =
-        puantajPersonelSirala(
-            liste
-        )
-            .map(
-                personel => {
+    puantajPersonelSirala(
+        liste
+    )
+        .map(
+            personel => {
 
-                    const guvenliAd =
-                        puantajHtmlTemizle(
-                            personel.kullaniciAdi
-                        );
+                const guvenliAd =
+                    puantajHtmlTemizle(
+                        personel.kullaniciAdi
+                    );
 
-                    const guvenliXP =
-                        Number(
-                            personel.xp || 0
-                        );
+                const guvenliXP =
+                    Number(
+                        personel.xp || 0
+                    );
 
-                    return `
+                const guvenliCoin =
+                    Number(
+                        personel.esCoin || 0
+                    );
+
+                return `
+                    <div
+                        class="puantaj-personel-satiri"
+                        data-kullanici-adi="${guvenliAd}">
+
                         <button
                             type="button"
-                            class="puantaj-personel-satiri"
+                            class="puantaj-personel-sec-btn"
                             data-kullanici-adi="${guvenliAd}"
                             data-personel-xp="${guvenliXP}">
 
@@ -1036,40 +1085,304 @@ function puantajPersonelListesiniGoster(
                                 ${guvenliAd}
                             </span>
 
-                            <strong class="puantaj-personel-xp">
-                                ${guvenliXP} XP
-                            </strong>
+                        </button>
+
+                        <div class="puantaj-personel-deger-alani">
+
+                            <label>
+                                XP
+                            </label>
+
+                            <input
+                                type="number"
+                                class="puantaj-personel-xp-input"
+                                value="${guvenliXP}">
+
+                        </div>
+
+                        <div class="puantaj-personel-deger-alani">
+
+                            <label>
+                                Eş Coin
+                            </label>
+
+                            <input
+                                type="number"
+                                class="puantaj-personel-coin-input"
+                                value="${guvenliCoin}"
+                                min="0">
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="puantaj-personel-kaydet-btn">
+
+                            Kaydet
 
                         </button>
-                    `;
-                }
-            )
-            .join("");
+
+                        <button
+                            type="button"
+                            class="puantaj-personel-sil-btn">
+
+                            Sil
+
+                        </button>
+
+                    </div>
+                `;
+            }
+        )
+        .join("");
 
     puantajPersonelListesi
-        .querySelectorAll(
-            ".puantaj-personel-satiri"
-        )
-        .forEach(
-            satir => {
+    .querySelectorAll(
+        ".puantaj-personel-sec-btn"
+    )
+    .forEach(
+        buton => {
 
-                satir.addEventListener(
-                    "click",
-                    () => {
+            buton.addEventListener(
+                "click",
+                () => {
 
-                        puantajPersonelSec(
-                            satir.dataset
-                                .kullaniciAdi,
+                    puantajPersonelSec(
+                        buton.dataset
+                            .kullaniciAdi,
 
-                            Number(
-                                satir.dataset
-                                    .personelXp
-                            )
+                        Number(
+                            buton.dataset
+                                .personelXp
+                        )
+                    );
+                }
+            );
+        }
+    );
+
+puantajPersonelListesi
+    .querySelectorAll(
+        ".puantaj-personel-kaydet-btn"
+    )
+    .forEach(
+        buton => {
+
+            buton.addEventListener(
+                "click",
+                () => {
+
+                    const satir =
+                        buton.closest(
+                            ".puantaj-personel-satiri"
                         );
+
+                    if (!satir) {
+                        return;
                     }
-                );
-            }
+
+                    const kullaniciAdi =
+                        satir.dataset
+                            .kullaniciAdi;
+
+                    const personel =
+                        puantajPersonelVerileri.find(
+                            kayit =>
+                                kayit.kullaniciAdi ===
+                                kullaniciAdi
+                        );
+
+                    if (!personel) {
+                        return;
+                    }
+
+                    const xpInput =
+                        satir.querySelector(
+                            ".puantaj-personel-xp-input"
+                        );
+
+                    const coinInput =
+                        satir.querySelector(
+                            ".puantaj-personel-coin-input"
+                        );
+
+                    personel.xp =
+                        Number.parseInt(
+                            xpInput?.value,
+                            10
+                        ) || 0;
+
+                    personel.esCoin =
+                        Math.max(
+                            Number.parseInt(
+                                coinInput?.value,
+                                10
+                            ) || 0,
+                            0
+                        );
+
+                    puantajPersonelListesiniGoster(
+                        puantajPersonelVerileri
+                    );
+
+                    puantajMesajGoster(
+                        `${kullaniciAdi} güncellendi.`,
+                        "success"
+                    );
+                }
+            );
+        }
+    );
+
+puantajPersonelListesi
+    .querySelectorAll(
+        ".puantaj-personel-sil-btn"
+    )
+    .forEach(
+        buton => {
+
+            buton.addEventListener(
+                "click",
+                () => {
+
+                    const satir =
+                        buton.closest(
+                            ".puantaj-personel-satiri"
+                        );
+
+                    if (!satir) {
+                        return;
+                    }
+
+                    const kullaniciAdi =
+                        satir.dataset
+                            .kullaniciAdi;
+
+                    const personelIndex =
+                        puantajPersonelVerileri.findIndex(
+                            kayit =>
+                                kayit.kullaniciAdi ===
+                                kullaniciAdi
+                        );
+
+                    if (personelIndex === -1) {
+                        return;
+                    }
+
+                    const onay =
+                        window.confirm(
+                            `${kullaniciAdi} silinsin mi?`
+                        );
+
+                    if (!onay) {
+                        return;
+                    }
+
+                    puantajPersonelVerileri.splice(
+                        personelIndex,
+                        1
+                    );
+
+                    puantajPersonelListesiniGoster(
+                        puantajPersonelVerileri
+                    );
+
+                    puantajMesajGoster(
+                        `${kullaniciAdi} silindi.`,
+                        "success"
+                    );
+                }
+            );
+        }
+        
+    );
+}
+
+
+function puantajYeniPersonelEkle() {
+
+    const kullaniciAdi =
+        String(
+            yeniPuantajPersonelAdiInput
+                ?.value || ""
+        ).trim();
+
+    const xp =
+        Number.parseInt(
+            yeniPuantajPersonelXPInput
+                ?.value,
+            10
+        ) || 0;
+
+    const esCoin =
+        Math.max(
+            Number.parseInt(
+                yeniPuantajPersonelCoinInput
+                    ?.value,
+                10
+            ) || 0,
+            0
         );
+
+    if (!kullaniciAdi) {
+
+        puantajMesajGoster(
+            "Yeni kullanıcı adını yazın.",
+            "warning"
+        );
+
+        yeniPuantajPersonelAdiInput
+            ?.focus();
+
+        return;
+    }
+
+    const zatenVar =
+        puantajPersonelVerileri.some(
+            personel =>
+                personel.kullaniciAdi
+                    .toLocaleLowerCase(
+                        "tr-TR"
+                    ) ===
+                kullaniciAdi
+                    .toLocaleLowerCase(
+                        "tr-TR"
+                    )
+        );
+
+    if (zatenVar) {
+
+        puantajMesajGoster(
+            "Bu kullanıcı zaten listede.",
+            "warning"
+        );
+
+        return;
+    }
+
+    puantajPersonelVerileri.push({
+        kullaniciAdi,
+        xp,
+        esCoin
+    });
+
+    yeniPuantajPersonelAdiInput.value =
+        "";
+
+    yeniPuantajPersonelXPInput.value =
+        "0";
+
+    yeniPuantajPersonelCoinInput.value =
+        "0";
+
+    puantajPersonelListesiniGoster(
+        puantajPersonelVerileri
+    );
+
+    puantajMesajGoster(
+        `${kullaniciAdi} listeye eklendi.`,
+        "success"
+    );
 }
 
 function puantajPersonelAra() {
@@ -1473,6 +1786,12 @@ personelInput
     ?.addEventListener(
         "blur",
         puantajPersonelAdindanXPGetir
+    );
+
+puantajPersonelEkleBtn
+    ?.addEventListener(
+        "click",
+        puantajYeniPersonelEkle
     );
 
 /* =========================================
