@@ -4959,3 +4959,152 @@ img {
         gap: 3px;
     }
 }
+
+/* ========================================
+   MAAŞ KONTROL PANELİ
+======================================== */
+
+#maas {
+    padding: 28px 22px;
+}
+
+#maas .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+#maas .left-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+#maas .left-side #maasRozet {
+    grid-column: 1 / -1;
+}
+
+#maas input,
+#maas select {
+    width: 100%;
+    min-height: 54px;
+    box-sizing: border-box;
+    padding: 0 16px;
+
+    color: #ffffff;
+    background: linear-gradient(
+        180deg,
+        #242424 0%,
+        #1d1d1d 100%
+    );
+
+    border: 1px solid #444444;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+#maas input::placeholder {
+    color: #929292;
+    font-weight: 500;
+}
+
+#maas input:focus,
+#maas select:focus {
+    border-color: #f1c500;
+    box-shadow:
+        0 0 0 3px rgba(241, 197, 0, 0.12);
+    background: #262626;
+}
+
+#maas select {
+    cursor: pointer;
+}
+
+#maas select option {
+    color: #ffffff;
+    background: #222222;
+}
+
+#maas .right-side {
+    display: contents;
+}
+
+#maas .info-card {
+    grid-column: 1 / -1;
+
+    padding: 18px 14px;
+    margin: 0;
+
+    background: linear-gradient(
+        180deg,
+        #191919 0%,
+        #151515 100%
+    );
+
+    border: 1px solid #404040;
+    border-radius: 12px;
+}
+
+#maas .info-card h3 {
+    margin: 0 0 14px;
+
+    color: #ffd400;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#maas .time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+#maas .time-row > div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+#maas .time-row input {
+    min-height: 52px;
+}
+
+#maas .time-row span {
+    color: #b8b8b8;
+    font-size: 12px;
+}
+
+#maas .divider {
+    margin: 26px 0 16px;
+}
+
+#maas #maasKontrolBtn,
+#maas #maasGecmisiBtn {
+    min-height: 52px;
+    border-radius: 10px;
+}
+
+@media (max-width: 760px) {
+
+    #maas .grid,
+    #maas .left-side {
+        grid-template-columns: 1fr;
+    }
+
+    #maas .left-side #maasRozet {
+        grid-column: auto;
+    }
+
+    #maas .time-row {
+        grid-template-columns: 1fr;
+    }
+}

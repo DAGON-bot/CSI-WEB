@@ -607,54 +607,58 @@ function showSalaryEligibilityResult(
             ? "#36d17c"
             : "#ff5f6d";
 
-    const extraResultRow =
-        result.eligible
-            ? `
-                <tr>
-                    <td>
-                        ✅ Durum
-                    </td>
+const extraResultRow =
+    result.eligible
+        ? `
+            <tr class="salary-result-row">
 
-                    <td
-                        style="
-                            color:${resultColor};
-                            font-weight:700;
-                        ">
+                <td class="salary-result-label">
+                    ✅ Durum
+                </td>
 
-                        ${resultText}
+                <td
+                    class="salary-result-value"
+                    style="
+                        color:${resultColor};
+                    ">
 
-                    </td>
-                </tr>
-            `
-            : `
-                <tr>
-                    <td>
-                        ⏳ Kalan Süre
-                    </td>
+                    Maaş almaya uygundur
 
-                    <td>
-                        ${formatSalaryMinutes(
-                            result.remainingMinutes
-                        )}
-                    </td>
-                </tr>
+                </td>
 
-                <tr>
-                    <td>
-                        ❌ Durum
-                    </td>
+            </tr>
+        `
+        : `
+            <tr>
+                <td>
+                    ⏳ Kalan Süre
+                </td>
 
-                    <td
-                        style="
-                            color:${resultColor};
-                            font-weight:700;
-                        ">
+                <td>
+                    ${formatSalaryMinutes(
+                        result.remainingMinutes
+                    )}
+                </td>
+            </tr>
 
-                        ${resultText}
+            <tr class="salary-result-row">
 
-                    </td>
-                </tr>
-            `;
+                <td class="salary-result-label">
+                    ❌ Durum
+                </td>
+
+                <td
+                    class="salary-result-value"
+                    style="
+                        color:${resultColor};
+                    ">
+
+                    Maaş almaya uygun değildir
+
+                </td>
+
+            </tr>
+        `;
 
     const popupMessage = `
         <table class="popup-table">
@@ -713,39 +717,6 @@ function showSalaryEligibilityResult(
                 </td>
             </tr>
 
-            <tr>
-                <td>
-                    📊 Maaştan Sonra Çalışılan
-                </td>
-
-                <td>
-                    ${formatSalaryMinutes(
-                        result.workedMinutes
-                    )}
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    🎯 Gerekli Süre
-                </td>
-
-                <td>
-                    ${formatSalaryMinutes(
-                        result.requiredMinutes
-                    )}
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    💳 Kredi Değeri
-                </td>
-
-                <td>
-                    ${result.credit} Kredi
-                </td>
-            </tr>
 
             ${extraResultRow}
 
