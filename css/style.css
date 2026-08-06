@@ -5808,3 +5808,21 @@ img {
         grid-template-columns: 1fr;
     }
 }
+
+.puantaj-personel-onerileri {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.puantaj-oneri-satiri strong {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.puantaj-oneri-coin {
+    color: #36d17c;
+    font-size: 12px;
+    font-weight: 800;
+}
