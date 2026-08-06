@@ -18,6 +18,8 @@ const newBtn =
     const newBtnExists = newBtn !== null;
    let popupHistory = null;
 
+   let activePopupMode = "terfi";
+
 const updateSiteRanksBtn =
     document.getElementById("updateSiteRanksBtn");
 
@@ -27,6 +29,8 @@ function showPopup(
     type = "success",
     mode = "terfi"
 ) {
+
+        activePopupMode = mode;
 
 
     if(mode === "oyun"){
@@ -144,6 +148,57 @@ if (updateSiteRanksBtn) {
 
 }
 
+}
+
+else if (mode === "maas") {
+
+    popupButtons.style.display =
+        "flex";
+
+    popupButtons.style.flexDirection =
+        "column";
+
+    if (copyBtn) {
+
+        copyBtn.style.display =
+            "inline-block";
+    }
+
+    if (sendDiscordBtn) {
+
+        const canSendSalary =
+            title === "Maaş Onaylandı" &&
+            window.salaryCheckData;
+
+        sendDiscordBtn.style.display =
+            canSendSalary
+                ? "inline-block"
+                : "none";
+
+        sendDiscordBtn.disabled =
+            false;
+
+        sendDiscordBtn.textContent =
+            "Discord'a İşle";
+    }
+
+    if (updateSiteRankBtn) {
+
+        updateSiteRankBtn.style.display =
+            "none";
+    }
+
+    if (updateSiteRanksBtn) {
+
+        updateSiteRanksBtn.style.display =
+            "none";
+    }
+
+    if (newBtn) {
+
+        newBtn.style.display =
+            "none";
+    }
 }
 
 else if(mode=="oyun"){
@@ -660,7 +715,9 @@ sendDiscordBtn?.addEventListener(
     async () => {
 
         const token =
-            localStorage.getItem("token");
+            localStorage.getItem(
+                "token"
+            );
 
         if (!token) {
 
@@ -672,35 +729,66 @@ sendDiscordBtn?.addEventListener(
             return;
         }
 
-        const isBulkPromotion =
-            window.topluTerfiBilgisi &&
-            Array.isArray(
-                window.topluTerfiBilgisi.promotions
-            ) &&
-            window.topluTerfiBilgisi
-                .promotions.length > 0;
+        let payload = null;
+        let endpoint = "";
+        let successMessage = "";
 
-        const payload =
-            isBulkPromotion
-                ? window.topluTerfiBilgisi
-                : window.terfiBilgisi;
+        if (
+            activePopupMode ===
+            "toplu"
+        ) {
 
-        const endpoint =
-            isBulkPromotion
-                ? "/api/discord/bulk-promotions"
-                : "/api/discord/promotion";
+            payload =
+                window.topluTerfiBilgisi;
+
+            endpoint =
+                "/api/discord/bulk-promotions";
+
+            successMessage =
+                "Toplu terfi Discord kuyruğuna eklendi.";
+
+        } else if (
+            activePopupMode ===
+            "maas"
+        ) {
+
+            payload =
+                window.salaryCheckData;
+
+            endpoint =
+                "/api/discord/salary";
+
+            successMessage =
+                "Maaş Discord kuyruğuna eklendi.";
+
+        } else {
+
+            payload =
+                window.terfiBilgisi;
+
+            endpoint =
+                "/api/discord/promotion";
+
+            successMessage =
+                "Terfi Discord kuyruğuna eklendi.";
+        }
 
         if (!payload) {
 
             showToast(
-                "Gönderilecek terfi bilgisi bulunamadı.",
+                activePopupMode ===
+                "maas"
+                    ? "Gönderilecek maaş bilgisi bulunamadı."
+                    : "Gönderilecek terfi bilgisi bulunamadı.",
+
                 "warning"
             );
 
             return;
         }
 
-        sendDiscordBtn.disabled = true;
+        sendDiscordBtn.disabled =
+            true;
 
         sendDiscordBtn.textContent =
             "Discord'a Gönderiliyor...";
@@ -744,16 +832,28 @@ sendDiscordBtn?.addEventListener(
             }
 
             showToast(
-                isBulkPromotion
-                    ? "Toplu terfi Discord kuyruğuna eklendi."
-                    : "Terfi Discord kuyruğuna eklendi.",
+                successMessage,
                 "success"
             );
 
             sendDiscordBtn.textContent =
                 "✓ Discord'a Gönderildi";
 
+            if (
+                activePopupMode ===
+                "maas"
+            ) {
+
+                window.salaryCheckData =
+                    null;
+            }
+
         } catch (err) {
+
+            console.error(
+                "Discord işlemi hatası:",
+                err
+            );
 
             showToast(
                 err.message ||

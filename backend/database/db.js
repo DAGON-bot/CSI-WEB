@@ -416,6 +416,107 @@ await pool.query(`
         INTEGER NOT NULL DEFAULT 0
 `);
 
+// ========================================
+// MAAŞ GEÇMİŞİ
+// ========================================
+
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS salary_history (
+
+        id BIGSERIAL PRIMARY KEY,
+
+        "personnelName" TEXT NOT NULL,
+
+        "salaryOfficerName" TEXT NOT NULL,
+
+        badge TEXT NOT NULL,
+
+        credit INTEGER NOT NULL,
+
+        "requiredMinutes" INTEGER NOT NULL,
+
+        "previousHours" INTEGER NOT NULL
+            DEFAULT 0,
+
+        "previousMinutes" INTEGER NOT NULL
+            DEFAULT 0,
+
+        "currentHours" INTEGER NOT NULL
+            DEFAULT 0,
+
+        "currentMinutes" INTEGER NOT NULL
+            DEFAULT 0,
+
+        "workedMinutes" INTEGER NOT NULL
+            DEFAULT 0,
+
+        "discordSent" BOOLEAN NOT NULL
+            DEFAULT FALSE,
+
+        "discordMessageId" TEXT,
+
+        "createdAt" TIMESTAMPTZ NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT salary_history_credit_check
+            CHECK (
+                credit >= 0
+            ),
+
+        CONSTRAINT salary_history_required_minutes_check
+            CHECK (
+                "requiredMinutes" >= 0
+            ),
+
+        CONSTRAINT salary_history_previous_hours_check
+            CHECK (
+                "previousHours" >= 0
+            ),
+
+        CONSTRAINT salary_history_previous_minutes_check
+            CHECK (
+                "previousMinutes" >= 0
+                AND "previousMinutes" <= 59
+            ),
+
+        CONSTRAINT salary_history_current_hours_check
+            CHECK (
+                "currentHours" >= 0
+            ),
+
+        CONSTRAINT salary_history_current_minutes_check
+            CHECK (
+                "currentMinutes" >= 0
+                AND "currentMinutes" <= 59
+            ),
+
+        CONSTRAINT salary_history_worked_minutes_check
+            CHECK (
+                "workedMinutes" >= 0
+            )
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        salary_history_pending_idx
+
+    ON salary_history (
+        "discordSent",
+        "createdAt" ASC
+    )
+`);
+
+await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+        salary_history_personnel_name_idx
+
+    ON salary_history (
+        LOWER("personnelName"),
+        "createdAt" DESC
+    )
+`);
+
 await pool.query(`
     CREATE TABLE IF NOT EXISTS bulk_promotion_history (
 

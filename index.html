@@ -537,7 +537,8 @@
 
     <div class="tabs">
         <button class="tab-btn active" data-tab="terfi">Terfi Kontrol</button>
-        <button class="tab-btn" data-tab="toplu">Toplu Terfi</button>
+        <button class="tab-btn" data-tab="toplu">Toplu Terfi </button>
+        <button class="tab-btn" data-tab="maas"> Maaş Kontrol </button>
         <button class="tab-btn" data-tab="payban">Payban Yönetimi</button>
         <button class="tab-btn" data-tab="puantaj">Puantaj Hesaplama</button>
     </div>
@@ -762,6 +763,197 @@ class="main-btn">
     >
         TT Hesapla
     </button>
+
+</div>
+
+<div
+    class="panel tab-content"
+    id="maas">
+
+    <div class="page-logo">
+        <img
+            src="assets/logo.png"
+            alt="CSI Logo">
+    </div>
+
+    <h1>Maaş Kontrol Sistemi</h1>
+
+    <p class="subtitle">
+        Personel maaş uygunluk kontrol ve değerlendirme sistemi
+    </p>
+
+    <div class="grid">
+
+        <input
+    type="text"
+    id="maasPersonelAdi"
+    placeholder="Maaşı alacak personelin adı">
+
+<input
+    type="text"
+    id="maasYetkiliAdi"
+    placeholder="Maaşı veren yetkilinin adı">
+
+<select id="maasRozet">
+
+    <option value="">
+        Maaş rozeti seçiniz
+    </option>
+
+    <option value="Bronz Maaş">
+        Bronz Maaş
+    </option>
+
+    <option value="Demir Maaş">
+        Demir Maaş
+    </option>
+
+    <option value="Gümüş Maaş">
+        Gümüş Maaş
+    </option>
+
+    <option value="Altın Maaş">
+        Altın Maaş
+    </option>
+
+    <option value="Plat Maaş">
+        Plat Maaş
+    </option>
+
+    <option value="Elmas Maaş">
+        Elmas Maaş
+    </option>
+
+    <option value="Zümrüt Maaş">
+        Zümrüt Maaş
+    </option>
+
+    <option value="Ek-Maaş 1">
+        Ek-Maaş 1
+    </option>
+
+    <option value="Ek-Maaş 2">
+        Ek-Maaş 2
+    </option>
+
+    <option value="Ek-Maaş 3">
+        Ek-Maaş 3
+    </option>
+
+</select>
+
+        </div>
+
+        <div class="right-side">
+
+            <div class="info-card">
+
+                <h3>
+                    Son maaş anındaki toplam çalışma süresi
+                </h3>
+
+                <div class="time-row">
+
+                    <div>
+                        <input
+                            type="number"
+                            id="maasEskiSaat"
+                            value="0"
+                            min="0">
+
+                        <span>Saat</span>
+                    </div>
+
+                    <div>
+                        <input
+                            type="number"
+                            id="maasEskiDakika"
+                            value="0"
+                            min="0"
+                            max="59">
+
+                        <span>Dakika</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="info-card">
+
+                <h3>
+                    Şu anki toplam çalışma süresi
+                </h3>
+
+                <div class="time-row">
+
+                    <div>
+                        <input
+                            type="number"
+                            id="maasYeniSaat"
+                            value="0"
+                            min="0">
+
+                        <span>Saat</span>
+                    </div>
+
+                    <div>
+                        <input
+                            type="number"
+                            id="maasYeniDakika"
+                            value="0"
+                            min="0"
+                            max="59">
+
+                        <span>Dakika</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <button
+        id="maasKontrolBtn"
+        class="main-btn"
+        type="button">
+
+        Maaş Kontrolünü Başlat
+
+    </button>
+
+    <button
+        id="maasGecmisiBtn"
+        class="main-btn secondary-btn"
+        type="button">
+
+        Maaş Geçmişini Göster
+
+    </button>
+
+    <div
+        id="maasGecmisiAlani"
+        class="promotion-history-section"
+        style="display:none;">
+
+        <div class="promotion-history-header">
+
+            <h2>Maaş Geçmişi</h2>
+
+            <span id="maasGecmisiSayisi">
+                0 kayıt
+            </span>
+
+        </div>
+
+        <div id="maasGecmisiListesi"></div>
+
+    </div>
 
 </div>
 
@@ -2853,6 +3045,7 @@ Admin
 
 <script src="js/ranks.js"></script>
 <script src="js/script.js"></script>
+<script src="js/maas.js"></script>
 <script src="js/puantaj.js"></script>
 <script src="js/dialog.js"></script>
 <script src="js/auth.js"></script>
