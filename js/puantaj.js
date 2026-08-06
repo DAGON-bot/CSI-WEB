@@ -160,6 +160,14 @@ const cezaSpan =
 
 const netSpan =
     document.getElementById("netXP");
+const ekstraXPText =
+    document.getElementById(
+        "ekstraXPText"
+    );
+const puantajPersonelOnerileri =
+    document.getElementById(
+        "puantajPersonelOnerileri"
+    );
 
 const mevcutXPText =
     document.getElementById("mevcutXPText");
@@ -423,6 +431,27 @@ function ozetYazdir() {
             `${netNormalPuan} XP`;
     }
 
+    if (ekstraXPText) {
+
+    const ekstraPuan =
+        ekstraXP();
+
+    ekstraXPText.textContent =
+        ekstraPuan > 0
+            ? `+${ekstraPuan} XP`
+            : `${ekstraPuan} XP`;
+
+    ekstraXPText.classList.toggle(
+        "positive",
+        ekstraPuan > 0
+    );
+
+    ekstraXPText.classList.toggle(
+        "negative",
+        ekstraPuan < 0
+    );
+}
+
     if (mevcutXPText) {
         mevcutXPText.textContent =
             `${mevcutXP()} XP`;
@@ -549,6 +578,191 @@ function raporSatirlari() {
     }
 
     return satirlar;
+}
+
+function puantajPersonelOnerileriniKapat() {
+
+    if (!puantajPersonelOnerileri) {
+        return;
+    }
+
+    puantajPersonelOnerileri.style.display =
+        "none";
+
+    puantajPersonelOnerileri.innerHTML =
+        "";
+}
+
+function puantajPersonelOnerileriniGoster() {
+
+    if (
+        !personelInput ||
+        !puantajPersonelOnerileri
+    ) {
+        return;
+    }
+
+    const aranan =
+        String(
+            personelInput.value || ""
+        )
+            .trim()
+            .toLocaleLowerCase(
+                "tr-TR"
+            );
+
+    if (!aranan) {
+
+        puantajPersonelOnerileriniKapat();
+
+        return;
+    }
+
+    const oneriler =
+        puantajPersonelVerileri
+            .filter(
+                personel =>
+                    String(
+                        personel.kullaniciAdi
+                    )
+                        .toLocaleLowerCase(
+                            "tr-TR"
+                        )
+                        .includes(
+                            aranan
+                        )
+            )
+            .sort(
+                (
+                    birinci,
+                    ikinci
+                ) => {
+
+                    const birinciAd =
+                        birinci.kullaniciAdi
+                            .toLocaleLowerCase(
+                                "tr-TR"
+                            );
+
+                    const ikinciAd =
+                        ikinci.kullaniciAdi
+                            .toLocaleLowerCase(
+                                "tr-TR"
+                            );
+
+                    const birinciBasliyor =
+                        birinciAd.startsWith(
+                            aranan
+                        );
+
+                    const ikinciBasliyor =
+                        ikinciAd.startsWith(
+                            aranan
+                        );
+
+                    if (
+                        birinciBasliyor &&
+                        !ikinciBasliyor
+                    ) {
+                        return -1;
+                    }
+
+                    if (
+                        !birinciBasliyor &&
+                        ikinciBasliyor
+                    ) {
+                        return 1;
+                    }
+
+                    return birinciAd.localeCompare(
+                        ikinciAd,
+                        "tr-TR"
+                    );
+                }
+            )
+            .slice(
+                0,
+                6
+            );
+
+    if (oneriler.length === 0) {
+
+        puantajPersonelOnerileri.innerHTML = `
+            <div class="puantaj-oneri-bos">
+                Eşleşen personel bulunamadı.
+            </div>
+        `;
+
+        puantajPersonelOnerileri.style.display =
+            "block";
+
+        return;
+    }
+
+    puantajPersonelOnerileri.innerHTML =
+        oneriler
+            .map(
+                personel => {
+
+                    const guvenliAd =
+                        puantajHtmlTemizle(
+                            personel.kullaniciAdi
+                        );
+
+                    return `
+                        <button
+                            type="button"
+                            class="puantaj-oneri-satiri"
+                            data-oneri-adi="${guvenliAd}"
+                            data-oneri-xp="${Number(
+                                personel.xp || 0
+                            )}">
+
+                            <span>
+                                ${guvenliAd}
+                            </span>
+
+                            <strong>
+                                ${Number(
+                                    personel.xp || 0
+                                )} XP
+                            </strong>
+
+                        </button>
+                    `;
+                }
+            )
+            .join("");
+
+    puantajPersonelOnerileri.style.display =
+        "block";
+
+    puantajPersonelOnerileri
+        .querySelectorAll(
+            ".puantaj-oneri-satiri"
+        )
+        .forEach(
+            satir => {
+
+                satir.addEventListener(
+                    "click",
+                    () => {
+
+                        puantajPersonelSec(
+                            satir.dataset
+                                .oneriAdi,
+
+                            Number(
+                                satir.dataset
+                                    .oneriXp
+                            )
+                        );
+
+                        puantajPersonelOnerileriniKapat();
+                    }
+                );
+            }
+        );
 }
 
 function cezaSatirlari() {
@@ -1202,6 +1416,34 @@ puantajCanliInputlar.forEach(
             "change",
             ozetYazdir
         );
+    }
+);
+
+personelInput
+    ?.addEventListener(
+        "input",
+        puantajPersonelOnerileriniGoster
+    );
+
+personelInput
+    ?.addEventListener(
+        "focus",
+        puantajPersonelOnerileriniGoster
+    );
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const personelAlani =
+            event.target.closest(
+                ".puantaj-personel-input-alani"
+            );
+
+        if (!personelAlani) {
+
+            puantajPersonelOnerileriniKapat();
+        }
     }
 );
 
