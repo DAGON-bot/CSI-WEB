@@ -1064,25 +1064,12 @@ class="main-btn">
                 id="puantajXP"
                 placeholder="Mevcut XP">
 
-            <select id="puantajRutbe">
-
-                <option value="">Rütbe Seçiniz</option>
-
-                <option value="750">Eş Sahip</option>
-
-                <option value="1000">Direktör</option>
-
-                <option value="1500">Oda Moderatörü</option>
-
-                <option value="2000">Oda Denetleyicisi</option>
-
-                <option value="2500">Oda Temsilcisi</option>
-
-                <option value="2750">Üst Düzey Liderler</option>
-
-                <option value="3000">Oda Yöneticisi</option>
-
-            </select>
+            <input
+    type="number"
+    id="ekstraXP"
+    placeholder="Ekstra Puan"
+    value="0"
+    min="0">
 
             <div class="info-card">
 
@@ -1264,6 +1251,16 @@ class="main-btn">
 
 </div>
 
+<div>
+
+    <h3>Eş Coin</h3>
+
+    <span id="esCoinText">
+        0
+    </span>
+
+</div>
+
     </div>
 
     <button
@@ -1282,7 +1279,51 @@ class="main-btn">
 
 </button>
 
+<div class="divider"></div>
+
+<div
+    id="puantajPersonelAlani"
+    class="puantaj-personel-alani">
+
+    <div class="puantaj-personel-baslik">
+
+        <div>
+
+            <h2>
+                Personel Puan Listesi
+            </h2>
+
+            <p>
+                Personeli seçerek mevcut XP bilgisini forma aktarabilirsiniz.
+            </p>
+
+        </div>
+
+        <span id="puantajPersonelSayisi">
+            20 personel
+        </span>
+
+    </div>
+
+    <div class="puantaj-personel-arama">
+
+        <input
+            type="text"
+            id="puantajPersonelAra"
+            maxlength="80"
+            autocomplete="off"
+            placeholder="Personel ara...">
+
+    </div>
+
+    <div
+        id="puantajPersonelListesi"
+        class="puantaj-personel-listesi">
+
+    </div>
+
 </div>
+
 </div>
 
 <div id="popupOverlay" class="popup-overlay">

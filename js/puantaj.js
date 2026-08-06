@@ -1,549 +1,1137 @@
-/*=========================================
-            CSI PUANTAJ SİSTEMİ
-            Bölüm 1
-=========================================*/
+/* =========================================
+   CSI PUANTAJ SİSTEMİ
+========================================= */
+
+"use strict";
+
+/* =========================================
+   PUAN DEĞERLERİ
+========================================= */
+
+const PUANTAJ_MAX_NORMAL_PUAN = 75;
 
 const puantajXPMap = {
-
-    mr:1,
-    terfi:3,
-    egitim:5,
-    tt:10,
-    lisans:10,
-    aktif:1,
-    calisma:3
-
+    mr: 1,
+    terfi: 3,
+    egitim: 5,
+    tt: 10,
+    lisans: 10,
+    aktif: 1,
+    calisma: 3
 };
 
-const puantajCezaMap={
-
-    sure:10,
-    tt:20,
-    lisans:20
-
+const puantajCezaMap = {
+    sure: 10,
+    tt: 20,
+    lisans: 20
 };
 
-/*=========================================
-            ELEMENTLER
-=========================================*/
-
-const personelInput=document.getElementById("puantajPersonel");
-
-const mevcutXPInput=document.getElementById("puantajXP");
-
-const rutbeSelect=document.getElementById("puantajRutbe");
-
-const mrInput=document.getElementById("mrSayi");
-
-const terfiInput=document.getElementById("terfiSayi");
-
-const egitimInput=document.getElementById("egitimSayi");
-
-const ttInput=document.getElementById("ttSayi");
-
-const lisansInput=document.getElementById("lisansSayi");
-
-const aktifInput=document.getElementById("aktifSaat");
-
-const calismaInput=document.getElementById("calismaSaat");
-
-const sureCeza=document.getElementById("cezaSure");
-
-const ttCeza=document.getElementById("cezaTT");
-
-const lisansCeza=document.getElementById("cezaLisans");
-
-const toplamSpan=document.getElementById("toplamXP");
-
-const cezaSpan=document.getElementById("cezaXP");
-
-const netSpan=document.getElementById("netXP");
-
-
-/*=========================================
-        SAYI ALMA
-=========================================*/
-
-function sayiAl(input){
-
-    const deger=parseInt(input.value);
-
-    if(isNaN(deger))
-        return 0;
-
-    return deger;
-
-}
-
-/*=========================================
-        KAZANILAN XP
-=========================================*/
-
-function hesaplaKazanilanXP(){
-
-    let xp=0;
-
-    xp+=sayiAl(mrInput)*puantajXPMap.mr;
-
-    xp+=sayiAl(terfiInput)*puantajXPMap.terfi;
-
-    xp+=sayiAl(egitimInput)*puantajXPMap.egitim;
-
-    xp+=sayiAl(ttInput)*puantajXPMap.tt;
-
-    xp+=sayiAl(lisansInput)*puantajXPMap.lisans;
-
-    xp+=sayiAl(aktifInput)*puantajXPMap.aktif;
-
-    xp+=sayiAl(calismaInput)*puantajXPMap.calisma;
-
-    return xp;
-
-}
-
-/*=========================================
-            CEZA
-=========================================*/
-
-function hesaplaCeza(){
-
-    let ceza=0;
-
-    if(sureCeza.checked)
-        ceza+=puantajCezaMap.sure;
-
-    if(ttCeza.checked)
-        ceza+=puantajCezaMap.tt;
-
-    if(lisansCeza.checked)
-        ceza+=puantajCezaMap.lisans;
-
-    return ceza;
-
-}
-
-/*=========================================
-            TOPLAM
-=========================================*/
-
-function guncelleOzet(){
-
-    let kazanilan=hesaplaKazanilanXP();
-
-    const ceza=hesaplaCeza();
-
-    if(kazanilan>75)
-        kazanilan=75;
-
-    const net=kazanilan-ceza;
-
-    toplamSpan.textContent=kazanilan+" XP";
-
-    cezaSpan.textContent="-"+ceza+" XP";
-
-    netSpan.textContent=net+" XP";
-
-}
-
-/*=========================================
-        EVENTLER
-=========================================*/
-
-const inputlar=[
-
-    mrInput,
-    terfiInput,
-    egitimInput,
-    ttInput,
-    lisansInput,
-    aktifInput,
-    calismaInput,
-
-    sureCeza,
-    ttCeza,
-    lisansCeza
-
+const puantajPersonelVerileri = [
+    {
+        kullaniciAdi: "oheling",
+        xp: 833
+    },
+    {
+        kullaniciAdi: "mirindaa",
+        xp: 342
+    },
+    {
+        kullaniciAdi: "slaysu",
+        xp: 40
+    },
+    {
+        kullaniciAdi: "nyara",
+        xp: 614
+    },
+    {
+        kullaniciAdi: "harikaresul34",
+        xp: 449
+    },
+    {
+        kullaniciAdi: "Angela",
+        xp: 920
+    },
+    {
+        kullaniciAdi: "bln2323",
+        xp: 196
+    },
+    {
+        kullaniciAdi: "cbenescb",
+        xp: 903
+    },
+    {
+        kullaniciAdi: "cute",
+        xp: -1
+    },
+    {
+        kullaniciAdi: "çağrı1903",
+        xp: 482
+    },
+    {
+        kullaniciAdi: "çomar",
+        xp: 215
+    },
+    {
+        kullaniciAdi: "gorken",
+        xp: 72
+    },
+    {
+        kullaniciAdi: "drakmir",
+        xp: 205
+    },
+    {
+        kullaniciAdi: "blub",
+        xp: 33
+    },
+    {
+        kullaniciAdi: "nur58",
+        xp: 8
+    },
+    {
+        kullaniciAdi: "sadenok",
+        xp: -40
+    },
+    {
+        kullaniciAdi: "google-amca",
+        xp: -18
+    },
+    {
+        kullaniciAdi: "rockstar1881",
+        xp: -129
+    },
+    {
+        kullaniciAdi: "teddiciq19",
+        xp: 271
+    },
+    {
+        kullaniciAdi: "infillame",
+        xp: -19
+    }
 ];
 
-inputlar.forEach(eleman=>{
+/* =========================================
+   HTML ELEMENTLERİ
+========================================= */
 
-    eleman.addEventListener("input",guncelleOzet);
+const personelInput =
+    document.getElementById("puantajPersonel");
 
-    eleman.addEventListener("change",guncelleOzet);
+const mevcutXPInput =
+    document.getElementById("puantajXP");
 
-});
+const ekstraXPInput =
+    document.getElementById("ekstraXP");
 
-guncelleOzet();
+const mrInput =
+    document.getElementById("mrSayi");
 
-/*=========================================
-        RÜTBE - YENİ XP
-=========================================*/
+const terfiInput =
+    document.getElementById("terfiSayi");
 
-function mevcutXP(){
+const egitimInput =
+    document.getElementById("egitimSayi");
 
-    const xp=parseInt(mevcutXPInput.value);
+const ttInput =
+    document.getElementById("ttSayi");
 
-    if(isNaN(xp))
-        return 0;
+const lisansInput =
+    document.getElementById("lisansSayi");
 
-    return xp;
+const aktifInput =
+    document.getElementById("aktifSaat");
 
+const calismaInput =
+    document.getElementById("calismaSaat");
+
+const sureCeza =
+    document.getElementById("cezaSure");
+
+const ttCeza =
+    document.getElementById("cezaTT");
+
+const lisansCeza =
+    document.getElementById("cezaLisans");
+
+const toplamSpan =
+    document.getElementById("toplamXP");
+
+const cezaSpan =
+    document.getElementById("cezaXP");
+
+const netSpan =
+    document.getElementById("netXP");
+
+const mevcutXPText =
+    document.getElementById("mevcutXPText");
+
+const yeniXPText =
+    document.getElementById("yeniXPText");
+
+const esCoinText =
+    document.getElementById("esCoinText");
+
+const puantajBtn =
+    document.getElementById("puantajBtn");
+
+const puantajTemizleBtn =
+    document.getElementById("puantajTemizleBtn");
+
+    const puantajPersonelAraInput =
+    document.getElementById(
+        "puantajPersonelAra"
+    );
+
+const puantajPersonelSayisi =
+    document.getElementById(
+        "puantajPersonelSayisi"
+    );
+
+const puantajPersonelListesi =
+    document.getElementById(
+        "puantajPersonelListesi"
+    );
+
+/* =========================================
+   YARDIMCI FONKSİYONLAR
+========================================= */
+
+function puantajMesajGoster(
+    mesaj,
+    tip = "info"
+) {
+    if (
+        typeof showToast ===
+        "function"
+    ) {
+        showToast(
+            mesaj,
+            tip
+        );
+
+        return;
+    }
+
+    console.log(
+        `[Puantaj] ${mesaj}`
+    );
 }
 
-function hedefXP(){
+function sayiAl(
+    input,
+    varsayilan = 0
+) {
+    if (!input) {
+        return varsayilan;
+    }
 
-    const hedef=parseInt(rutbeSelect.value);
+    const deger =
+        Number.parseInt(
+            input.value,
+            10
+        );
 
-    if(isNaN(hedef))
-        return 0;
+    if (
+        !Number.isInteger(deger)
+    ) {
+        return varsayilan;
+    }
 
-    return hedef;
-
+    return deger;
 }
 
-function hesaplaNetXP(){
+function negatifOlmayanSayiAl(
+    input
+) {
+    const deger =
+        sayiAl(
+            input,
+            0
+        );
 
-    let kazanilan=hesaplaKazanilanXP();
-
-    if(kazanilan>75)
-        kazanilan=75;
-
-    return kazanilan-hesaplaCeza();
-
+    return Math.max(
+        deger,
+        0
+    );
 }
 
-function yeniXP(){
-
-    return mevcutXP()+hesaplaNetXP();
-
+function mevcutXP() {
+    return sayiAl(
+        mevcutXPInput,
+        0
+    );
 }
 
-/*=========================================
-            ÖZET KUTUSU
-=========================================*/
-
-function ozetYazdir(){
-
-    let kazanilan=hesaplaKazanilanXP();
-
-    if(kazanilan>75)
-        kazanilan=75;
-
-    const ceza=hesaplaCeza();
-
-    const net=hesaplaNetXP();
-
-    toplamSpan.textContent=kazanilan+" XP";
-
-    cezaSpan.textContent="-"+ceza+" XP";
-
-    netSpan.textContent=net+" XP";
-
-    if(document.getElementById("mevcutXPText")){
-
-        document.getElementById("mevcutXPText").innerHTML=
-            mevcutXP()+" / "+hedefXP()+" XP";
-
-    }
-
-    if(document.getElementById("yeniXPText")){
-
-        document.getElementById("yeniXPText").innerHTML=
-            yeniXP()+" / "+hedefXP()+" XP";
-
-    }
-
+function ekstraXP() {
+    return sayiAl(
+        ekstraXPInput,
+        0
+    );
 }
 
-/*=========================================
-            EVENT
-=========================================*/
+/* =========================================
+   FAALİYET PUANI
+========================================= */
 
-[
-    mevcutXPInput,
-    rutbeSelect
-].forEach(eleman=>{
+function hesaplaHamFaaliyetPuani() {
+    let puan = 0;
 
-    eleman.addEventListener("input",ozetYazdir);
+    puan +=
+        negatifOlmayanSayiAl(
+            mrInput
+        ) *
+        puantajXPMap.mr;
 
-    eleman.addEventListener("change",ozetYazdir);
+    puan +=
+        negatifOlmayanSayiAl(
+            terfiInput
+        ) *
+        puantajXPMap.terfi;
 
-});
+    puan +=
+        negatifOlmayanSayiAl(
+            egitimInput
+        ) *
+        puantajXPMap.egitim;
 
-inputlar.forEach(eleman=>{
+    puan +=
+        negatifOlmayanSayiAl(
+            ttInput
+        ) *
+        puantajXPMap.tt;
 
-    eleman.addEventListener("input",ozetYazdir);
+    puan +=
+        negatifOlmayanSayiAl(
+            lisansInput
+        ) *
+        puantajXPMap.lisans;
 
-    eleman.addEventListener("change",ozetYazdir);
+    puan +=
+        negatifOlmayanSayiAl(
+            aktifInput
+        ) *
+        puantajXPMap.aktif;
 
-});
+    puan +=
+        negatifOlmayanSayiAl(
+            calismaInput
+        ) *
+        puantajXPMap.calisma;
 
-ozetYazdir();
-
-/*=========================================
-        DISCORD RAPORU
-=========================================*/
-
-function bugunTarih(){
-
-    const tarih=new Date();
-
-    let gun=tarih.getDate();
-    let ay=tarih.getMonth()+1;
-    let yil=tarih.getFullYear();
-
-    if(gun<10) gun="0"+gun;
-    if(ay<10) ay="0"+ay;
-
-    return `${gun}.${ay}.${yil}`;
-
+    return puan;
 }
 
-function raporSatirlari(){
+function hesaplaNormalPuan() {
+    return Math.min(
+        hesaplaHamFaaliyetPuani(),
+        PUANTAJ_MAX_NORMAL_PUAN
+    );
+}
 
-    const satirlar=[];
+/* =========================================
+   CEZA
+========================================= */
 
-    if(sayiAl(aktifInput)>0){
+function hesaplaCeza() {
+    let ceza = 0;
 
-        satirlar.push(
-            `${sayiAl(aktifInput)} saat süre +${sayiAl(aktifInput)}XP`
-        );
-
+    if (
+        sureCeza?.checked
+    ) {
+        ceza +=
+            puantajCezaMap.sure;
     }
 
-    if(sayiAl(calismaInput)>0){
-
-        satirlar.push(
-            `${sayiAl(calismaInput)} saat çalışma süresi +${sayiAl(calismaInput)*3}XP`
-        );
-
+    if (
+        ttCeza?.checked
+    ) {
+        ceza +=
+            puantajCezaMap.tt;
     }
 
-    if(sayiAl(terfiInput)>0){
-
-        satirlar.push(
-            `${sayiAl(terfiInput)}X Terfi +${sayiAl(terfiInput)*3}XP`
-        );
-
+    if (
+        lisansCeza?.checked
+    ) {
+        ceza +=
+            puantajCezaMap.lisans;
     }
 
-    if(sayiAl(egitimInput)>0){
+    return ceza;
+}
 
-        satirlar.push(
-            `${sayiAl(egitimInput)}X Eğitim +${sayiAl(egitimInput)*5}XP`
-        );
+/* =========================================
+   NET PUAN, YENİ XP VE EŞ COİN
+========================================= */
 
+function hesaplaNetNormalPuan() {
+    return (
+        hesaplaNormalPuan() -
+        hesaplaCeza()
+    );
+}
+
+function hesaplaYeniXP() {
+    return (
+        mevcutXP() +
+        hesaplaNetNormalPuan() +
+        ekstraXP()
+    );
+}
+
+function hesaplaEsCoin() {
+    return (
+        hesaplaNetNormalPuan() ===
+        PUANTAJ_MAX_NORMAL_PUAN
+    )
+        ? 1
+        : 0;
+}
+
+/* =========================================
+   ÖZET EKRANI
+========================================= */
+
+function ozetYazdir() {
+    const normalPuan =
+        hesaplaNormalPuan();
+
+    const ceza =
+        hesaplaCeza();
+
+    const netNormalPuan =
+        hesaplaNetNormalPuan();
+
+    const yeniXP =
+        hesaplaYeniXP();
+
+    const kazanilanEsCoin =
+        hesaplaEsCoin();
+
+    if (toplamSpan) {
+        toplamSpan.textContent =
+            `${normalPuan} XP`;
     }
 
-    if(sayiAl(ttInput)>0){
-
-        satirlar.push(
-            `${sayiAl(ttInput)}X TT +${sayiAl(ttInput)*10}XP`
-        );
-
+    if (cezaSpan) {
+        cezaSpan.textContent =
+            ceza > 0
+                ? `-${ceza} XP`
+                : "0 XP";
     }
 
-    if(sayiAl(lisansInput)>0){
-
-        satirlar.push(
-            `${sayiAl(lisansInput)}X Lisans +${sayiAl(lisansInput)*10}XP`
-        );
-
+    if (netSpan) {
+        netSpan.textContent =
+            `${netNormalPuan} XP`;
     }
 
-    if(sayiAl(mrInput)>0){
+    if (mevcutXPText) {
+        mevcutXPText.textContent =
+            `${mevcutXP()} XP`;
+    }
 
-        satirlar.push(
-            `${sayiAl(mrInput)}X MR +${sayiAl(mrInput)}XP`
+    if (yeniXPText) {
+        yeniXPText.textContent =
+            `${yeniXP} XP`;
+    }
+
+    if (esCoinText) {
+        esCoinText.textContent =
+            kazanilanEsCoin === 1
+                ? "1 Eş Coin"
+                : "0 Eş Coin";
+
+        esCoinText.classList.toggle(
+            "earned",
+            kazanilanEsCoin === 1
+        );
+    }
+}
+
+/* =========================================
+   RAPOR SATIRLARI
+========================================= */
+
+function raporSatirlari() {
+    const satirlar = [];
+
+    const aktif =
+        negatifOlmayanSayiAl(
+            aktifInput
         );
 
+    const calisma =
+        negatifOlmayanSayiAl(
+            calismaInput
+        );
+
+    const terfi =
+        negatifOlmayanSayiAl(
+            terfiInput
+        );
+
+    const egitim =
+        negatifOlmayanSayiAl(
+            egitimInput
+        );
+
+    const tt =
+        negatifOlmayanSayiAl(
+            ttInput
+        );
+
+    const lisans =
+        negatifOlmayanSayiAl(
+            lisansInput
+        );
+
+    const mr =
+        negatifOlmayanSayiAl(
+            mrInput
+        );
+
+    if (aktif > 0) {
+        satirlar.push(
+            `${aktif} saat süre +${aktif} XP`
+        );
+    }
+
+    if (calisma > 0) {
+        satirlar.push(
+            `${calisma} saat çalışma süresi +${
+                calisma *
+                puantajXPMap.calisma
+            } XP`
+        );
+    }
+
+    if (terfi > 0) {
+        satirlar.push(
+            `${terfi}x Terfi +${
+                terfi *
+                puantajXPMap.terfi
+            } XP`
+        );
+    }
+
+    if (egitim > 0) {
+        satirlar.push(
+            `${egitim}x Eğitim +${
+                egitim *
+                puantajXPMap.egitim
+            } XP`
+        );
+    }
+
+    if (tt > 0) {
+        satirlar.push(
+            `${tt}x Toplu Terfi +${
+                tt *
+                puantajXPMap.tt
+            } XP`
+        );
+    }
+
+    if (lisans > 0) {
+        satirlar.push(
+            `${lisans}x Lisans +${
+                lisans *
+                puantajXPMap.lisans
+            } XP`
+        );
+    }
+
+    if (mr > 0) {
+        satirlar.push(
+            `${mr}x MR +${
+                mr *
+                puantajXPMap.mr
+            } XP`
+        );
     }
 
     return satirlar;
-
 }
 
-function cezaSatirlari(){
+function cezaSatirlari() {
+    const satirlar = [];
 
-    const liste=[];
-
-    if(sureCeza.checked){
-
-        liste.push("Süre Atmadı -10XP");
-
+    if (
+        sureCeza?.checked
+    ) {
+        satirlar.push(
+            "Süre Atmadı -10 XP"
+        );
     }
 
-    if(ttCeza.checked){
-
-        liste.push("Toplu Terfi Dağıtmadı -20XP");
-
+    if (
+        ttCeza?.checked
+    ) {
+        satirlar.push(
+            "Toplu Terfi Dağıtmadı -20 XP"
+        );
     }
 
-    if(lisansCeza.checked){
-
-        liste.push("Lisans Dağıtmadı -20XP");
-
+    if (
+        lisansCeza?.checked
+    ) {
+        satirlar.push(
+            "Lisans Dağıtmadı -20 XP"
+        );
     }
 
-    return liste;
-
+    return satirlar;
 }
-/*=========================================
-        DISCORD RAPORU OLUŞTUR
-=========================================*/
 
-function discordRaporuOlustur(){
+/* =========================================
+   DISCORD METNİ
+========================================= */
 
-    const satirlar=[];
+function discordRaporuOlustur() {
+    const personel =
+        String(
+            personelInput?.value ||
+            ""
+        ).trim();
 
-    const faaliyetler=raporSatirlari();
+    const faaliyetler =
+        raporSatirlari();
 
-    const cezalar=cezaSatirlari();
+    const cezalar =
+        cezaSatirlari();
 
-    satirlar.push(personelInput.value || "Personel");
+    const normalPuan =
+        hesaplaNormalPuan();
 
-    satirlar.push("");
+    const netNormalPuan =
+        hesaplaNetNormalPuan();
 
-    satirlar.push(bugunTarih());
+    const ekstraPuan =
+        ekstraXP();
 
-    satirlar.push("");
+    const yeniXP =
+        hesaplaYeniXP();
 
-    faaliyetler.forEach(x=>{
+    const esCoin =
+        hesaplaEsCoin();
 
-        satirlar.push(x);
+    const satirlar = [
+        "📊 Personel Puantaj Bildirimi",
+        "",
+        `Personel: ${
+            personel ||
+            "Personel"
+        }`,
+        ""
+    ];
 
-    });
-
-    satirlar.push("");
-
-    let kazanilan=hesaplaKazanilanXP();
-
-    if(kazanilan>75){
-
-        satirlar.push("Toplam: Max Puan +75XP");
-
-        kazanilan=75;
-
-    }else{
-
-        satirlar.push(`Toplam: +${kazanilan}XP`);
-
-    }
-
-    if(cezalar.length>0){
-
-        satirlar.push("");
-
-        satirlar.push("Cezalar");
-
-        satirlar.push("");
-
-        cezalar.forEach(c=>{
-
-            satirlar.push(c);
-
-        });
-
-    }
-
-    satirlar.push("");
-
-    const net=hesaplaNetXP();
-
-    if(net>=0){
-
-        satirlar.push(`Net XP: +${net}XP`);
-
-    }else{
-
-        satirlar.push(`Net XP: ${net}XP`);
-
-    }
-
-    satirlar.push("");
-
-    satirlar.push(
-        `Mevcut XP: ${mevcutXP()}XP / ${hedefXP()}XP`
-    );
-
-    satirlar.push("");
-
-    satirlar.push(
-        `Yeni XP: ${yeniXP()}XP / ${hedefXP()}XP`
-    );
-
-
-    window.discordMesaji = satirlar.join("\n");
-
-    return window.discordMesaji;    
-
-}
-/*=========================================
-        KOPYALAMA
-=========================================*/
-
-async function discordKopyala(){
-
-    const rapor=discordRaporuOlustur();
-
-    try{
-
-        await navigator.clipboard.writeText(rapor);
-
-        if(typeof showPopup==="function"){
-
-            showPopup("Discord raporu panoya kopyalandı.");
-
-        }else if(typeof showToast==="function"){
-
-            showToast("Discord raporu panoya kopyalandı.");
-
-        }else{
-
-            alert("Discord raporu panoya kopyalandı.");
-
+    faaliyetler.forEach(
+        faaliyet => {
+            satirlar.push(
+                faaliyet
+            );
         }
+    );
 
-    }catch{
+    satirlar.push("");
+    satirlar.push(
+        `Normal Puan: ${normalPuan} / 75`
+    );
 
-        alert(rapor);
+    if (
+        cezalar.length > 0
+    ) {
+        satirlar.push("");
+        satirlar.push("Cezalar:");
 
+        cezalar.forEach(
+            ceza => {
+                satirlar.push(
+                    ceza
+                );
+            }
+        );
     }
 
+    satirlar.push("");
+    satirlar.push(
+        `Net Normal Puan: ${netNormalPuan} XP`
+    );
+
+    satirlar.push(
+        `Ekstra Puan: ${
+            ekstraPuan >= 0
+                ? "+"
+                : ""
+        }${ekstraPuan} XP`
+    );
+
+    satirlar.push(
+        `Mevcut XP: ${mevcutXP()} XP`
+    );
+
+    satirlar.push(
+        `Yeni XP: ${yeniXP} XP`
+    );
+
+    satirlar.push(
+        `Eş Coin: ${
+            esCoin === 1
+                ? "1 adet kazandı"
+                : "Kazanamadı"
+        }`
+    );
+
+    window.discordMesaji =
+        satirlar.join("\n");
+
+    return window.discordMesaji;
 }
-/*=========================================
-            BUTON
-=========================================*/
 
-const puantajBtn=document.getElementById("puantajBtn");
-if (puantajBtn) {
+/* =========================================
+   PERSONEL LİSTESİ
+========================================= */
 
-    puantajBtn.addEventListener("click", () => {
+function puantajHtmlTemizle(
+    deger
+) {
 
-        const rapor = discordRaporuOlustur();
+    return String(
+        deger ?? ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
 
-        showPopup(
-            "Puantaj Önizleme",
-            `<pre class="discord-preview">${rapor}</pre>`,
-            "success",
-            "toplu"
+function puantajPersonelSirala(
+    personeller
+) {
+
+    return [
+        ...personeller
+    ].sort(
+        (
+            birinci,
+            ikinci
+        ) =>
+            ikinci.xp -
+            birinci.xp
+    );
+}
+
+function puantajPersonelSec(
+    kullaniciAdi,
+    xp
+) {
+
+    if (personelInput) {
+
+        personelInput.value =
+            kullaniciAdi;
+    }
+
+    if (mevcutXPInput) {
+
+        mevcutXPInput.value =
+            String(xp);
+    }
+
+    ozetYazdir();
+
+    mrInput?.focus();
+
+    puantajMesajGoster(
+        `${kullaniciAdi} puantaj formuna aktarıldı.`,
+        "success"
+    );
+}
+
+function puantajPersonelListesiniGoster(
+    personeller
+) {
+
+    if (!puantajPersonelListesi) {
+        return;
+    }
+
+    const liste =
+        Array.isArray(
+            personeller
+        )
+            ? personeller
+            : [];
+
+    if (puantajPersonelSayisi) {
+
+        puantajPersonelSayisi.textContent =
+            `${liste.length} personel`;
+    }
+
+    if (liste.length === 0) {
+
+        puantajPersonelListesi.innerHTML = `
+            <div class="puantaj-personel-bos">
+                Aranan personel bulunamadı.
+            </div>
+        `;
+
+        return;
+    }
+
+    puantajPersonelListesi.innerHTML =
+        puantajPersonelSirala(
+            liste
+        )
+            .map(
+                personel => {
+
+                    const guvenliAd =
+                        puantajHtmlTemizle(
+                            personel.kullaniciAdi
+                        );
+
+                    const guvenliXP =
+                        Number(
+                            personel.xp || 0
+                        );
+
+                    return `
+                        <button
+                            type="button"
+                            class="puantaj-personel-satiri"
+                            data-kullanici-adi="${guvenliAd}"
+                            data-personel-xp="${guvenliXP}">
+
+                            <span class="puantaj-personel-adi">
+                                ${guvenliAd}
+                            </span>
+
+                            <strong class="puantaj-personel-xp">
+                                ${guvenliXP} XP
+                            </strong>
+
+                        </button>
+                    `;
+                }
+            )
+            .join("");
+
+    puantajPersonelListesi
+        .querySelectorAll(
+            ".puantaj-personel-satiri"
+        )
+        .forEach(
+            satir => {
+
+                satir.addEventListener(
+                    "click",
+                    () => {
+
+                        puantajPersonelSec(
+                            satir.dataset
+                                .kullaniciAdi,
+
+                            Number(
+                                satir.dataset
+                                    .personelXp
+                            )
+                        );
+                    }
+                );
+            }
+        );
+}
+
+function puantajPersonelAra() {
+
+    const aranan =
+        String(
+            puantajPersonelAraInput
+                ?.value || ""
+        )
+            .trim()
+            .toLocaleLowerCase(
+                "tr-TR"
+            );
+
+    if (!aranan) {
+
+        puantajPersonelListesiniGoster(
+            puantajPersonelVerileri
         );
 
-    });
+        return;
+    }
 
+    const bulunanlar =
+        puantajPersonelVerileri.filter(
+            personel =>
+                String(
+                    personel.kullaniciAdi
+                )
+                    .toLocaleLowerCase(
+                        "tr-TR"
+                    )
+                    .includes(
+                        aranan
+                    )
+        );
+
+    puantajPersonelListesiniGoster(
+        bulunanlar
+    );
 }
 
-/*=========================================
-            FORM TEMİZLE
-=========================================*/
+function puantajPersonelAdindanXPGetir() {
 
-function puantajTemizle(){
+    const personelAdi =
+        String(
+            personelInput?.value ||
+            ""
+        )
+            .trim()
+            .toLocaleLowerCase(
+                "tr-TR"
+            );
 
-    personelInput.value="";
+    if (!personelAdi) {
+        return;
+    }
 
-    mevcutXPInput.value="";
+    const personel =
+        puantajPersonelVerileri.find(
+            kayit =>
+                String(
+                    kayit.kullaniciAdi
+                )
+                    .toLocaleLowerCase(
+                        "tr-TR"
+                    ) ===
+                personelAdi
+        );
 
-    rutbeSelect.selectedIndex=0;
+    if (!personel) {
+        return;
+    }
+
+    mevcutXPInput.value =
+        String(
+            personel.xp
+        );
+
+    ozetYazdir();
+}
+
+/* =========================================
+   FORM KONTROLÜ
+========================================= */
+
+function puantajFormunuDogrula() {
+    const personel =
+        String(
+            personelInput?.value ||
+            ""
+        ).trim();
+
+    if (!personel) {
+        puantajMesajGoster(
+            "Personel adını yazın.",
+            "warning"
+        );
+
+        personelInput?.focus();
+
+        return false;
+    }
+
+    return true;
+}
+
+/* =========================================
+   POPUP
+========================================= */
+
+function puantajSonucunuGoster() {
+    if (
+        !puantajFormunuDogrula()
+    ) {
+        return;
+    }
+
+    const personel =
+        String(
+            personelInput.value
+        ).trim();
+
+    const normalPuan =
+        hesaplaNormalPuan();
+
+    const ceza =
+        hesaplaCeza();
+
+    const netNormalPuan =
+        hesaplaNetNormalPuan();
+
+    const ekstraPuan =
+        ekstraXP();
+
+    const yeniXP =
+        hesaplaYeniXP();
+
+    const esCoin =
+        hesaplaEsCoin();
+
+    const esCoinRenk =
+        esCoin === 1
+            ? "#36d17c"
+            : "#ffb347";
+
+    const popupIcerik = `
+        <table class="popup-table">
+
+            <tr>
+                <td>👤 Personel</td>
+                <td>${puantajHtmlTemizle(personel)}</td>
+            </tr>
+
+            <tr>
+                <td>⭐ Normal Puan</td>
+                <td>${normalPuan} / 75 XP</td>
+            </tr>
+
+            <tr>
+                <td>⚠️ Ceza</td>
+                <td>-${ceza} XP</td>
+            </tr>
+
+            <tr>
+                <td>📊 Net Normal Puan</td>
+                <td>${netNormalPuan} XP</td>
+            </tr>
+
+            <tr>
+                <td>➕ Ekstra Puan</td>
+                <td>
+                    ${
+                        ekstraPuan >= 0
+                            ? "+"
+                            : ""
+                    }${ekstraPuan} XP
+                </td>
+            </tr>
+
+            <tr>
+                <td>📌 Mevcut XP</td>
+                <td>${mevcutXP()} XP</td>
+            </tr>
+
+            <tr>
+                <td>🏁 Yeni XP</td>
+                <td>${yeniXP} XP</td>
+            </tr>
+
+            <tr>
+                <td>🪙 Eş Coin</td>
+
+                <td
+                    style="
+                        color:${esCoinRenk};
+                        font-size:18px;
+                        font-weight:900;
+                    ">
+
+                    ${
+                        esCoin === 1
+                            ? "1 Eş Coin kazandı"
+                            : "Eş Coin kazanamadı"
+                    }
+
+                </td>
+            </tr>
+
+        </table>
+    `;
+
+    discordRaporuOlustur();
+
+    window.puantajCheckData = {
+        personnelName:
+            personel,
+
+        currentXP:
+            mevcutXP(),
+
+        normalScore:
+            normalPuan,
+
+        penalty:
+            ceza,
+
+        netNormalScore:
+            netNormalPuan,
+
+        extraScore:
+            ekstraPuan,
+
+        newXP:
+            yeniXP,
+
+        earnedEsCoin:
+            esCoin
+    };
+
+    if (
+        typeof showPopup ===
+        "function"
+    ) {
+        showPopup(
+            "Puantaj Hesaplandı",
+            popupIcerik,
+            "success",
+            "oyun"
+        );
+
+        return;
+    }
+
+    puantajMesajGoster(
+        "Puantaj hesaplandı.",
+        "success"
+    );
+}
+
+/* =========================================
+   FORM TEMİZLE
+========================================= */
+
+function puantajTemizle() {
+    if (personelInput) {
+        personelInput.value = "";
+    }
+
+    if (mevcutXPInput) {
+        mevcutXPInput.value = "";
+    }
+
+    if (ekstraXPInput) {
+        ekstraXPInput.value = "0";
+    }
 
     [
         mrInput,
@@ -553,109 +1141,44 @@ function puantajTemizle(){
         lisansInput,
         aktifInput,
         calismaInput
+    ].forEach(
+        input => {
+            if (input) {
+                input.value = "0";
+            }
+        }
+    );
 
-    ].forEach(input=>{
+    if (sureCeza) {
+        sureCeza.checked = false;
+    }
 
-        input.value=0;
+    if (ttCeza) {
+        ttCeza.checked = false;
+    }
 
-    });
+    if (lisansCeza) {
+        lisansCeza.checked = false;
+    }
 
-    sureCeza.checked=false;
-    ttCeza.checked=false;
-    lisansCeza.checked=false;
+    window.discordMesaji = "";
+    window.puantajCheckData = null;
 
     ozetYazdir();
 
+    puantajMesajGoster(
+        "Puantaj temizlendi.",
+        "success"
+    );
 }
 
+/* =========================================
+   EVENTLER
+========================================= */
 
-/*=========================================
-        KALAN XP
-=========================================*/
-
-function kalanXP(){
-
-    const kalan=hedefXP()-yeniXP();
-
-    if(kalan<0)
-        return 0;
-
-    return kalan;
-
-}
-
-
-/*=========================================
-        HEDEF TAMAMLANDI MI
-=========================================*/
-
-function hedefTamamlandi(){
-
-    return yeniXP()>=hedefXP() && hedefXP()>0;
-
-}
-
-
-/*=========================================
-        DURUM METNİ
-=========================================*/
-
-function durumMesaji(){
-
-    if(hedefXP()==0)
-        return "";
-
-    if(hedefTamamlandi()){
-
-        return "🎉 Rütbe XP hedefi tamamlandı.";
-
-    }
-
-    return `Kalan XP : ${kalanXP()} XP`;
-
-}
-
-
-/*=========================================
-        RAPOR ÖNİZLEME
-=========================================*/
-
-function raporuGoster(){
-
-    const alan=document.getElementById("discordPreview");
-
-    if(!alan)
-        return;
-
-    alan.textContent=discordRaporuOlustur();
-
-}
-
-
-/*=========================================
-        CANLI GÜNCELLE
-=========================================*/
-
-function puantajCanliGuncelle(){
-
-    ozetYazdir();
-
-    raporuGoster();
-
-    const durum=document.getElementById("hedefDurum");
-
-    if(durum){
-
-        durum.textContent=durumMesaji();
-
-    }
-
-}
-
-[
-    personelInput,
+const puantajCanliInputlar = [
     mevcutXPInput,
-    rutbeSelect,
+    ekstraXPInput,
     mrInput,
     terfiInput,
     egitimInput,
@@ -666,71 +1189,58 @@ function puantajCanliGuncelle(){
     sureCeza,
     ttCeza,
     lisansCeza
+];
 
-].forEach(eleman=>{
+puantajCanliInputlar.forEach(
+    eleman => {
+        eleman?.addEventListener(
+            "input",
+            ozetYazdir
+        );
 
-    eleman.addEventListener("input",puantajCanliGuncelle);
+        eleman?.addEventListener(
+            "change",
+            ozetYazdir
+        );
+    }
+);
 
-    eleman.addEventListener("change",puantajCanliGuncelle);
+puantajBtn?.addEventListener(
+    "click",
+    puantajSonucunuGoster
+);
 
-});
+puantajTemizleBtn?.addEventListener(
+    "click",
+    puantajTemizle
+);
 
-puantajCanliGuncelle();
+puantajPersonelAraInput
+    ?.addEventListener(
+        "input",
+        puantajPersonelAra
+    );
 
-/*=========================================
-        TEMİZLE BUTONU
-=========================================*/
+personelInput
+    ?.addEventListener(
+        "change",
+        puantajPersonelAdindanXPGetir
+    );
 
-const puantajTemizleBtn=document.getElementById("puantajTemizleBtn");
+personelInput
+    ?.addEventListener(
+        "blur",
+        puantajPersonelAdindanXPGetir
+    );
 
-if (puantajTemizleBtn) {
+/* =========================================
+   BAŞLAT
+========================================= */
 
-    puantajTemizleBtn.addEventListener("click", () => {
+window.puantajCheckData = null;
 
-        document.getElementById("puantajPersonel").value = "";
-        document.getElementById("puantajXP").value = "";
-        document.getElementById("puantajRutbe").selectedIndex = 0;
+ozetYazdir();
 
-        document.getElementById("mrSayi").value = 0;
-        document.getElementById("terfiSayi").value = 0;
-        document.getElementById("egitimSayi").value = 0;
-        document.getElementById("ttSayi").value = 0;
-        document.getElementById("lisansSayi").value = 0;
-        document.getElementById("aktifSaat").value = 0;
-        document.getElementById("calismaSaat").value = 0;
-
-        document.getElementById("cezaSure").checked = false;
-        document.getElementById("cezaTT").checked = false;
-        document.getElementById("cezaLisans").checked = false;
-
-        puantajCanliGuncelle();
-
-        showToast("Puantaj temizlendi.","success");
-
-    });
-
-}
-
-if(puantajTemizleBtn){
-
-    puantajTemizleBtn.addEventListener("click",()=>{
-
-        puantajTemizle();
-
-        raporuGoster();
-
-    });
-
-}
-
-/*=========================================
-        SAYFA AÇILIŞI
-=========================================*/
-
-window.addEventListener("load",()=>{
-
-    puantajCanliGuncelle();
-
-    raporuGoster();
-
-});
+puantajPersonelListesiniGoster(
+    puantajPersonelVerileri
+);
