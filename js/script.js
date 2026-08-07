@@ -598,7 +598,8 @@ function formatPromotionHistoryDate(
 
 function renderPromotionHistory(
     username,
-    history
+    history,
+    pagination = {}
 ) {
 
     if (
@@ -606,17 +607,34 @@ function renderPromotionHistory(
         !terfiGecmisiListesi ||
         !terfiGecmisiSayisi
     ) {
-
         return;
     }
+
+    const totalCount =
+        Math.max(
+            Number(pagination.count) || 0,
+            0
+        );
+
+    const currentPage =
+        Math.max(
+            Number(pagination.page) || 1,
+            1
+        );
+
+    const totalPages =
+        Math.max(
+            Number(pagination.totalPages) || 1,
+            1
+        );
 
     terfiGecmisiAlani.style.display =
         "block";
 
     terfiGecmisiSayisi.textContent =
-        `${history.length} kayıt`;
+        `${totalCount} kayıt`;
 
-    if (history.length === 0) {
+    if (totalCount === 0) {
 
         terfiGecmisiListesi.innerHTML = `
             <div class="promotion-history-empty">
@@ -631,7 +649,7 @@ function renderPromotionHistory(
         return;
     }
 
-    terfiGecmisiListesi.innerHTML =
+    const cardsHtml =
         history
             .map(record => {
 
@@ -641,25 +659,25 @@ function renderPromotionHistory(
                     );
 
                 const workedHours =
-    Number(
-        record.workedHours || 0
-    );
+                    Number(
+                        record.workedHours || 0
+                    );
 
-const workedMinutes =
-    Number(
-        record.workedMinutes || 0
-    );
+                const workedMinutes =
+                    Number(
+                        record.workedMinutes || 0
+                    );
 
-const hasWorkedTime =
-    record.workedHours !== null &&
-    record.workedHours !== undefined &&
-    record.workedMinutes !== null &&
-    record.workedMinutes !== undefined;
+                const hasWorkedTime =
+                    record.workedHours !== null &&
+                    record.workedHours !== undefined &&
+                    record.workedMinutes !== null &&
+                    record.workedMinutes !== undefined;
 
-const workedTimeText =
-    hasWorkedTime
-        ? `${workedHours} Saat ${workedMinutes} Dakika`
-        : "Eski kayıtta süre bulunmuyor";
+                const workedTimeText =
+                    hasWorkedTime
+                        ? `${workedHours} Saat ${workedMinutes} Dakika`
+                        : "Eski kayıtta süre bulunmuyor";
 
                 const newBadge =
                     escapePromotionHistoryHtml(
@@ -694,59 +712,117 @@ const workedTimeText =
                         </div>
 
                         <div class="promotion-history-row">
-
                             <span class="promotion-history-label">
                                 Rozet
                             </span>
-
                             <span class="promotion-history-value">
                                 ${oldBadge} → ${newBadge}
                             </span>
-
                         </div>
 
                         <div class="promotion-history-row">
+                            <span class="promotion-history-label">
+                                Rütbe
+                            </span>
+                            <span class="promotion-history-value">
+                                ${oldRank} → ${newRank}
+                            </span>
+                        </div>
 
-    <span class="promotion-history-label">
-        Rütbe
-    </span>
+                        <div class="promotion-history-row">
+                            <span class="promotion-history-label">
+                                Toplam Çalışma Süresi
+                            </span>
+                            <span class="promotion-history-value">
+                                ${workedTimeText}
+                            </span>
+                        </div>
 
-    <span class="promotion-history-value">
-        ${oldRank} → ${newRank}
-    </span>
-
-</div>
-
-<div class="promotion-history-row">
-
-    <span class="promotion-history-label">
-        Toplam Çalışma Süresi
-    </span>
-
-    <span class="promotion-history-value">
-        ${workedTimeText}
-    </span>
-
-</div>
-
-<div class="promotion-history-row">
-
-    <span class="promotion-history-label">
-        Terfiyi Veren
-    </span>
-
-    <span class="promotion-history-value">
-        ${promotedBy}
-    </span>
-
-</div>
+                        <div class="promotion-history-row">
+                            <span class="promotion-history-label">
+                                Terfiyi Veren
+                            </span>
+                            <span class="promotion-history-value">
+                                ${promotedBy}
+                            </span>
+                        </div>
                     </div>
                 `;
             })
             .join("");
+
+    let paginationHtml = "";
+
+    if (totalPages > 1) {
+
+        const pageButtons = [];
+
+        const startPage =
+            Math.max(
+                currentPage - 2,
+                1
+            );
+
+        const endPage =
+            Math.min(
+                startPage + 4,
+                totalPages
+            );
+
+        const adjustedStartPage =
+            Math.max(
+                endPage - 4,
+                1
+            );
+
+        for (
+            let page = adjustedStartPage;
+            page <= endPage;
+            page += 1
+        ) {
+
+            pageButtons.push(`
+                <button
+                    type="button"
+                    class="promotion-history-page-btn ${page === currentPage ? "active" : ""}"
+                    data-promotion-history-page="${page}"
+                    ${page === currentPage ? "disabled" : ""}>
+                    ${page}
+                </button>
+            `);
+        }
+
+        paginationHtml = `
+            <div class="promotion-history-pagination">
+
+                <button
+                    type="button"
+                    class="promotion-history-page-btn promotion-history-page-arrow"
+                    data-promotion-history-page="${currentPage - 1}"
+                    ${currentPage <= 1 ? "disabled" : ""}>
+                    ‹
+                </button>
+
+                ${pageButtons.join("")}
+
+                <button
+                    type="button"
+                    class="promotion-history-page-btn promotion-history-page-arrow"
+                    data-promotion-history-page="${currentPage + 1}"
+                    ${currentPage >= totalPages ? "disabled" : ""}>
+                    ›
+                </button>
+
+            </div>
+        `;
+    }
+
+    terfiGecmisiListesi.innerHTML =
+        cardsHtml +
+        paginationHtml;
 }
 
-async function loadPromotionHistory() {
+async function loadPromotionHistory(page = 1) {
 
     const username =
         String(
@@ -791,7 +867,7 @@ async function loadPromotionHistory() {
 
         const response =
             await fetch(
-                `/api/promotion-history/${encodeURIComponent(username)}?limit=50`,
+                `/api/promotion-history/${encodeURIComponent(username)}?page=${encodeURIComponent(page)}`,
                 {
                     headers: {
                         "Authorization":
@@ -818,7 +894,17 @@ async function loadPromotionHistory() {
             username,
             Array.isArray(data.history)
                 ? data.history
-                : []
+                : [],
+            {
+                count:
+                    Number(data.count) || 0,
+
+                page:
+                    Number(data.page) || 1,
+
+                totalPages:
+                    Number(data.totalPages) || 1
+            }
         );
 
     } catch (err) {
@@ -846,7 +932,7 @@ async function loadPromotionHistory() {
 
 terfiGecmisiBtn?.addEventListener(
     "click",
-    loadPromotionHistory
+    () => loadPromotionHistory(1)
 );
 
 personelAdiInput?.addEventListener(
@@ -859,7 +945,40 @@ personelAdiInput?.addEventListener(
 
         event.preventDefault();
 
-        loadPromotionHistory();
+        loadPromotionHistory(1);
+    }
+);
+
+terfiGecmisiListesi?.addEventListener(
+    "click",
+    event => {
+
+        const button =
+            event.target.closest(
+                "[data-promotion-history-page]"
+            );
+
+        if (
+            !button ||
+            button.disabled
+        ) {
+            return;
+        }
+
+        const page =
+            Number(
+                button.dataset
+                    .promotionHistoryPage
+            );
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            return;
+        }
+
+        loadPromotionHistory(page);
     }
 );
 
