@@ -2,9 +2,8 @@ const {
     getDiscordClient
 } = require("../discordClient");
 
-const {
-    getSalaryHistoryByDate
-} = require("../../models/salaryHistoryModel");
+const axios = require("axios");
+
 
 // ========================================
 // İSİM NORMALİZE ET
@@ -370,6 +369,81 @@ async function getAllLicenseNames() {
 }
 
 // ========================================
+// VDS'DEN GÜNLÜK MAAŞ KAYITLARINI ÇEK
+// ========================================
+
+async function fetchDailySalaryRecords(
+    reportDate = null
+) {
+
+    const apiBaseUrl =
+        String(
+            process.env.CSI_API_BASE_URL ||
+            ""
+        )
+            .trim()
+            .replace(/\/+$/, "");
+
+    const workerApiKey =
+        String(
+            process.env
+                .DISCORD_WORKER_API_KEY ||
+            ""
+        ).trim();
+
+    if (!apiBaseUrl) {
+        throw new Error(
+            "CSI_API_BASE_URL tanımlı değil."
+        );
+    }
+
+    if (!workerApiKey) {
+        throw new Error(
+            "DISCORD_WORKER_API_KEY tanımlı değil."
+        );
+    }
+
+    const params = {};
+
+    if (reportDate) {
+        params.date =
+            String(reportDate).trim();
+    }
+
+    const response =
+        await axios.get(
+            `${apiBaseUrl}/api/discord/salary-daily-report`,
+            {
+                params,
+
+                headers: {
+                    "X-Discord-Worker-Key":
+                        workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "Günlük maaş kayıtları VDS'den alınamadı."
+        );
+    }
+
+    return Array.isArray(
+        response.data.salaries
+    )
+        ? response.data.salaries
+        : [];
+}
+
+// ========================================
 // GÜNLÜK MAAŞ RAPOR VERİSİ
 // ========================================
 
@@ -382,9 +456,9 @@ async function buildDailySalaryReportData(
     // ----------------------------------------
 
     const salaryRecords =
-        await getSalaryHistoryByDate(
-            reportDate
-        );
+    await fetchDailySalaryRecords(
+        reportDate
+    );
 
     // Sadece gerçekten Discord'a işlenmiş
     // maaşları rapora dahil ediyoruz.
@@ -591,5 +665,6 @@ module.exports = {
     hasSgk,
     getLicenseNames,
     getAllLicenseNames,
+    fetchDailySalaryRecords,
     buildDailySalaryReportData
 };
