@@ -707,7 +707,7 @@ const extraResultRow =
 
             <tr>
                 <td>
-                    ⏱ Şu Anki Süre
+                    ⏱ Şu Anki Toplam Süre
                 </td>
 
                 <td>

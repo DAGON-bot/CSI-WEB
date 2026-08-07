@@ -9,7 +9,8 @@ const {
     getPendingDiscordSalaries,
     markSalaryAsDiscordSent,
     getSalaryHistoryByPersonnelName,
-    getSalaryHistoryById
+    getSalaryHistoryById,
+    getSalaryHistoryByDate
 } = require(
     "./models/salaryHistoryModel"
 );
@@ -1451,6 +1452,72 @@ app.post(
                 success: false,
                 message:
                     "Maaş Discord kuyruğuna eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - GÜNLÜK MAAŞ RAPOR VERİSİ
+// ========================================
+
+app.get(
+    "/api/discord/salary-daily-report",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const reportDate =
+                String(
+                    req.query.date || ""
+                ).trim() || null;
+
+            const salaries =
+                await getSalaryHistoryByDate(
+                    reportDate
+                );
+
+            // Sadece Discord'a gerçekten
+            // gönderilmiş maaş işlemleri.
+            const sentSalaries =
+                salaries.filter(
+                    salary =>
+                        salary.discordSent === true
+                );
+
+            return res.json({
+                success: true,
+
+                reportDate,
+
+                count:
+                    sentSalaries.length,
+
+                salaries:
+                    sentSalaries
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Günlük maaş raporu alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Günlük maaş raporu alınamadı."
             });
         }
     }
