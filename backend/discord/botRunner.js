@@ -1,6 +1,10 @@
 const path = require("path");
 const axios = require("axios");
 
+const {
+    EmbedBuilder
+} = require("discord.js");
+
 require("dotenv").config({
     path: path.join(
         __dirname,
@@ -11,7 +15,8 @@ require("dotenv").config({
 
 const {
     startDiscordClient,
-    stopDiscordClient
+    stopDiscordClient,
+    getDiscordClient
 } = require("./discordClient");
 
 const {
@@ -36,6 +41,13 @@ const {
     createAttendanceEmbed
 } = require(
     "./modules/attendanceModule"
+);
+
+const {
+    registerSalaryReportInteractionHandler,
+    registerSalaryReportCommandHandler
+} = require(
+    "./modules/salaryReportModule"
 );
 
 const POLL_INTERVAL_MS =
@@ -88,6 +100,13 @@ function getWorkerConfig() {
             promotionChannelId
         ).trim();
 
+    const registrationChannelId =
+        String(
+            process.env
+                .DISCORD_REGISTRATION_CHANNEL_ID ||
+            "1535341433375166644"
+        ).trim();
+
     if (!apiBaseUrl) {
         throw new Error(
             "CSI_API_BASE_URL tanımlı değil."
@@ -118,13 +137,229 @@ function getWorkerConfig() {
         );
     }
 
+    if (!registrationChannelId) {
+        throw new Error(
+            "DISCORD_REGISTRATION_CHANNEL_ID tanımlı değil."
+        );
+    }
+
     return {
         apiBaseUrl,
         workerApiKey,
         promotionChannelId,
         salaryChannelId,
-        attendanceChannelId
+        attendanceChannelId,
+        registrationChannelId
     };
+}
+
+async function fetchPendingRegistrations(
+    config
+) {
+
+    const response =
+        await axios.get(
+            `${config.apiBaseUrl}/api/discord/pending-registrations`,
+            {
+                params: {
+                    limit: 10
+                },
+
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+        throw new Error(
+            response.data?.message ||
+            "Bekleyen yeni kayıt bildirimleri alınamadı."
+        );
+    }
+
+    return Array.isArray(
+        response.data.registrations
+    )
+        ? response.data.registrations
+        : [];
+}
+
+async function markRegistrationAsSent(
+    config,
+    notificationId,
+    discordMessageId
+) {
+
+    const response =
+        await axios.patch(
+            `${config.apiBaseUrl}/api/discord/registrations/${notificationId}/sent`,
+            {
+                discordMessageId
+            },
+            {
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+        throw new Error(
+            response.data?.message ||
+            "Yeni kayıt bildirimi tamamlandı olarak işaretlenemedi."
+        );
+    }
+
+    return response.data.notification;
+}
+
+function normalizeRoleName(value) {
+
+    return String(value || "")
+        .trim()
+        .toLocaleLowerCase("tr-TR");
+}
+
+async function processRegistrationNotification(
+    config,
+    registration
+) {
+
+    const notificationId =
+        Number(
+            registration?.notificationId
+        );
+
+    if (
+        !Number.isInteger(notificationId) ||
+        notificationId <= 0
+    ) {
+        throw new Error(
+            "Geçersiz yeni kayıt bildirimi alındı."
+        );
+    }
+
+    const client =
+        getDiscordClient();
+
+    const channel =
+        await client.channels.fetch(
+            config.registrationChannelId
+        );
+
+    if (
+        !channel ||
+        !channel.isTextBased() ||
+        typeof channel.send !== "function"
+    ) {
+        throw new Error(
+            "Yeni kayıt bildirim kanalı bulunamadı veya mesaj gönderilemiyor."
+        );
+    }
+
+    let foundersRole = null;
+
+    if (channel.guild) {
+
+        try {
+            await channel.guild.roles.fetch();
+        } catch (_) {
+            // Cache mevcutsa onunla devam et.
+        }
+
+        foundersRole =
+            channel.guild.roles.cache.find(
+                role =>
+                    normalizeRoleName(role.name) ===
+                    "kurucular"
+            ) || null;
+    }
+
+    if (!foundersRole) {
+        console.warn(
+            "Kurucular rolü bulunamadı. Bildirim etiketsiz gönderilecek."
+        );
+    }
+
+    const username =
+        String(
+            registration.username ||
+            "Bilinmeyen kullanıcı"
+        ).trim();
+
+    const createdAt =
+        registration.notificationCreatedAt
+            ? new Date(
+                registration.notificationCreatedAt
+            )
+            : new Date();
+
+    const embed =
+        new EmbedBuilder()
+            .setTitle(
+                "🆕 Yeni Site Kaydı"
+            )
+            .setDescription(
+                `**${username}** siteye kayıt oldu ve yönetim onayı bekliyor.`
+            )
+            .addFields(
+                {
+                    name: "👤 Kullanıcı",
+                    value: username,
+                    inline: true
+                },
+                {
+                    name: "📌 Durum",
+                    value: "Onay Bekliyor",
+                    inline: true
+                }
+            )
+            .setTimestamp(createdAt);
+
+    const content =
+        foundersRole
+            ? `<@&${foundersRole.id}>`
+            : "@kurucular";
+
+    const message =
+        await channel.send({
+            content,
+            embeds: [embed],
+            allowedMentions:
+                foundersRole
+                    ? {
+                        parse: [],
+                        roles: [
+                            foundersRole.id
+                        ]
+                    }
+                    : {
+                        parse: []
+                    }
+        });
+
+    await markRegistrationAsSent(
+        config,
+        notificationId,
+        message.id
+    );
+
+    console.log(
+        `Yeni kayıt Discord bildirimi gönderildi: #${notificationId} - ${username}`
+    );
 }
 
 async function fetchPendingPromotions(
@@ -640,6 +875,33 @@ async function pollPendingPromotions() {
         const config =
             getWorkerConfig();
 
+        const registrations =
+            await fetchPendingRegistrations(
+                config
+            );
+
+        for (
+            const registration of registrations
+        ) {
+
+            try {
+
+                await processRegistrationNotification(
+                    config,
+                    registration
+                );
+
+            } catch (error) {
+
+                console.error(
+                    `Yeni kayıt bildirimi işlenemedi (#${registration?.notificationId || "?"}):`,
+                    error.response?.data ||
+                    error.message ||
+                    error
+                );
+            }
+        }
+
         const promotions =
             await fetchPendingPromotions(
                 config
@@ -795,6 +1057,9 @@ async function runDiscordBot() {
             "Discord botu başlatılamadı."
         );
     }
+
+    registerSalaryReportInteractionHandler();
+    registerSalaryReportCommandHandler();
 
     workerRunning = true;
 

@@ -642,6 +642,157 @@ async function rejectUserAccount({
     return result.rows[0] || null;
 }
 
+
+// ========================================
+// DISCORD - YENİ KAYIT BİLDİRİM KUYRUĞU
+// ========================================
+
+async function ensureRegistrationDiscordNotificationTable() {
+
+    await pool.query(
+        `CREATE TABLE IF NOT EXISTS discord_registration_notifications (
+            id SERIAL PRIMARY KEY,
+            "userId" INTEGER NOT NULL
+                REFERENCES users(id)
+                ON DELETE CASCADE,
+            "createdAt" TIMESTAMPTZ NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+            "discordSent" BOOLEAN NOT NULL
+                DEFAULT FALSE,
+            "discordMessageId" TEXT,
+            "sentAt" TIMESTAMPTZ,
+            UNIQUE ("userId")
+        )`
+    );
+}
+
+async function queueRegistrationDiscordNotification(
+    userId
+) {
+
+    const safeUserId =
+        Number(userId);
+
+    if (
+        !Number.isInteger(safeUserId) ||
+        safeUserId <= 0
+    ) {
+        throw new Error(
+            "Geçersiz kullanıcı numarası."
+        );
+    }
+
+    await ensureRegistrationDiscordNotificationTable();
+
+    const result =
+        await pool.query(
+            `INSERT INTO discord_registration_notifications (
+                "userId"
+             )
+             VALUES ($1)
+             ON CONFLICT ("userId")
+             DO NOTHING
+             RETURNING
+                id,
+                "userId",
+                "createdAt",
+                "discordSent"`,
+            [safeUserId]
+        );
+
+    return result.rows[0] || null;
+}
+
+async function getPendingRegistrationDiscordNotifications(
+    limit = 10
+) {
+
+    await ensureRegistrationDiscordNotificationTable();
+
+    const safeLimit =
+        Math.min(
+            Math.max(
+                Number(limit) || 10,
+                1
+            ),
+            50
+        );
+
+    const result =
+        await pool.query(
+            `SELECT
+                n.id AS "notificationId",
+                n."userId",
+                n."createdAt" AS "notificationCreatedAt",
+                u.username,
+                u."figureString",
+                u.motto,
+                u."approvalStatus"
+             FROM discord_registration_notifications n
+             INNER JOIN users u
+                ON u.id = n."userId"
+             WHERE n."discordSent" = FALSE
+             ORDER BY n."createdAt" ASC
+             LIMIT $1`,
+            [safeLimit]
+        );
+
+    return result.rows;
+}
+
+async function markRegistrationDiscordNotificationAsSent(
+    notificationId,
+    discordMessageId
+) {
+
+    await ensureRegistrationDiscordNotificationTable();
+
+    const safeNotificationId =
+        Number(notificationId);
+
+    const safeDiscordMessageId =
+        String(
+            discordMessageId || ""
+        ).trim();
+
+    if (
+        !Number.isInteger(safeNotificationId) ||
+        safeNotificationId <= 0
+    ) {
+        throw new Error(
+            "Geçersiz kayıt bildirim numarası."
+        );
+    }
+
+    if (!safeDiscordMessageId) {
+        throw new Error(
+            "Discord mesaj numarası gerekli."
+        );
+    }
+
+    const result =
+        await pool.query(
+            `UPDATE discord_registration_notifications
+             SET "discordSent" = TRUE,
+                 "discordMessageId" = $1,
+                 "sentAt" = CURRENT_TIMESTAMP
+             WHERE id = $2
+             RETURNING
+                id,
+                "userId",
+                "discordSent",
+                "discordMessageId",
+                "sentAt"`,
+            [
+                safeDiscordMessageId,
+                safeNotificationId
+            ]
+        );
+
+    return result.rows[0] || null;
+}
+
+
 module.exports = {
     getUser,
     getUserRoles,
@@ -668,5 +819,8 @@ module.exports = {
     completePasswordReset,
     getPendingApprovals,
     approveUserAccount,
-    rejectUserAccount
+    rejectUserAccount,
+    queueRegistrationDiscordNotification,
+    getPendingRegistrationDiscordNotifications,
+    markRegistrationDiscordNotificationAsSent
 };
