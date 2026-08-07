@@ -270,12 +270,14 @@ async function markSalaryAsDiscordSent({
 }
 
 // ========================================
-// PERSONELE GÖRE MAAŞ GEÇMİŞİ
+// PERSONELE GÖRE GÜNLÜK MAAŞ GEÇMİŞİ
 // ========================================
 
 async function getSalaryHistoryByPersonnelName(
     personnelName,
-    limit = 20
+    limit = 20,
+    reportDate = null,
+    timezone = "Europe/Istanbul"
 ) {
 
     const cleanPersonnelName =
@@ -295,6 +297,17 @@ async function getSalaryHistoryByPersonnelName(
             ),
             100
         );
+
+    const cleanReportDate =
+        reportDate
+            ? String(reportDate).trim()
+            : null;
+
+    const cleanTimezone =
+        String(
+            timezone ||
+            "Europe/Istanbul"
+        ).trim();
 
     const result =
         await pool.query(
@@ -321,6 +334,20 @@ async function getSalaryHistoryByPersonnelName(
                 LOWER("personnelName") =
                 LOWER($1)
 
+                AND
+                (
+                    "createdAt"
+                    AT TIME ZONE $3
+                )::date
+                =
+                COALESCE(
+                    $4::date,
+                    (
+                        CURRENT_TIMESTAMP
+                        AT TIME ZONE $3
+                    )::date
+                )
+
             ORDER BY
                 "createdAt" DESC,
                 id DESC
@@ -329,7 +356,9 @@ async function getSalaryHistoryByPersonnelName(
             `,
             [
                 cleanPersonnelName,
-                safeLimit
+                safeLimit,
+                cleanTimezone,
+                cleanReportDate
             ]
         );
 
