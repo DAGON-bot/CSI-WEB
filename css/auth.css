@@ -434,3 +434,34 @@
     border-color:#f0c419;
     box-shadow:0 0 15px rgba(240,196,25,.20);
 }
+
+/* ===============================
+   KAYIT SONUÇ / HATA BİLDİRİMİ
+================================== */
+
+.auth-register-feedback {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 12px 0 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.auth-register-feedback.error {
+    display: block;
+    color: #ff9a9a;
+    background: rgba(255, 65, 65, 0.10);
+    border: 1px solid rgba(255, 65, 65, 0.42);
+}
+
+.auth-register-feedback.success {
+    display: block;
+    color: #a9f5ba;
+    background: rgba(74, 205, 112, 0.11);
+    border: 1px solid rgba(74, 205, 112, 0.42);
+}
