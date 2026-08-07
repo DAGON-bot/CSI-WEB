@@ -3969,6 +3969,109 @@ app.patch(
     }
 );
 
+
+// ===============================
+// HESAP ONAYLARI - REDDET
+// ===============================
+
+app.patch(
+    "/api/account-approvals/:userId/reject",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getAuthorizedApprovalUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            const userId =
+                Number(
+                    req.params.userId
+                );
+
+            if (
+                !Number.isInteger(userId) ||
+                userId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz kullanıcı bilgisi."
+                });
+            }
+
+            const rejectedUser =
+                await rejectUserAccount({
+                    userId,
+                    approvedByUserId:
+                        authorization.user.id
+                });
+
+            if (!rejectedUser) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Bu hesap daha önce işleme alınmış veya bulunamadı."
+                });
+            }
+
+            await createAdminLog({
+                performedBy:
+                    authorization.user.username,
+
+                targetUsername:
+                    rejectedUser.username,
+
+                actionType:
+                    "account_rejected",
+
+                oldValue:
+                    "pending",
+
+                newValue:
+                    "rejected"
+            });
+
+            return res.json({
+                success: true,
+                message:
+                    "Hesap başvurusu reddedildi.",
+                user:
+                    rejectedUser
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Hesap reddetme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Hesap başvurusu reddedilemedi."
+            });
+        }
+    }
+);
+
 function validateNewsPayload(body) {
 
     const title =
