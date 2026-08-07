@@ -381,10 +381,81 @@ async function getSalaryHistoryById(
     );
 }
 
+// ========================================
+// TARİHE GÖRE MAAŞ KAYITLARI
+// ========================================
+
+async function getSalaryHistoryByDate(
+    reportDate = null,
+    timezone = "Europe/Istanbul"
+) {
+
+    const cleanReportDate =
+        reportDate
+            ? String(reportDate).trim()
+            : null;
+
+    const cleanTimezone =
+        String(
+            timezone ||
+            "Europe/Istanbul"
+        ).trim();
+
+    const result =
+        await pool.query(
+            `
+            SELECT
+                id,
+                "personnelName",
+                "salaryOfficerName",
+                badge,
+                credit,
+                "requiredMinutes",
+                "previousHours",
+                "previousMinutes",
+                "currentHours",
+                "currentMinutes",
+                "workedMinutes",
+                "discordSent",
+                "discordMessageId",
+                "createdAt"
+
+            FROM salary_history
+
+            WHERE
+                (
+                    "createdAt"
+                    AT TIME ZONE $1
+                )::date
+                =
+                COALESCE(
+                    $2::date,
+                    (
+                        CURRENT_TIMESTAMP
+                        AT TIME ZONE $1
+                    )::date
+                )
+
+            ORDER BY
+                "createdAt" ASC,
+                id ASC
+            `,
+            [
+                cleanTimezone,
+                cleanReportDate
+            ]
+        );
+
+    return result.rows.map(
+        formatSalaryHistoryRow
+    );
+}
+
 module.exports = {
     createSalaryHistory,
     getPendingDiscordSalaries,
     markSalaryAsDiscordSent,
     getSalaryHistoryByPersonnelName,
-    getSalaryHistoryById
+    getSalaryHistoryById,
+    getSalaryHistoryByDate
 };
