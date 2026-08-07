@@ -972,18 +972,25 @@ const isGuest = selectedRegisterType === "guest";
 
         if (data.pendingApproval) {
 
-    showDialog(
-        "Onay Bekleniyor",
-        data.message ||
-        "Kaydınız oluşturuldu. Hesabınızın yönetim tarafından onaylanması bekleniyor.",
-        "success",
-        () => {
+            // Kayıt backend tarafında tamamlandı.
+            // Önce kayıt popup'ını kapat; başarı dialogu
+            // auth ekranının arkasında kalmasın.
             closeAuthPopup();
-        }
-    );
 
-    return;
-}
+            showDialog(
+                "Onay Bekleniyor",
+                data.message ||
+                "Kaydınız oluşturuldu. Hesabınızın yönetim tarafından onaylanması bekleniyor.",
+                "success",
+                () => {
+                    // Bekleyen kullanıcı / bildirim listeleri
+                    // güncel veriyi alsın.
+                    location.reload();
+                }
+            );
+
+            return;
+        }
 
 if (data.token) {
     localStorage.setItem(
