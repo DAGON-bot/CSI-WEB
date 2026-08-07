@@ -593,6 +593,8 @@ passwordResetToken = "";
 
     if(authMode === "register"){
 
+        resetRegisterCompletionView();
+
         registerPassword.value = "";
         registerPassword2.value = "";
 
@@ -635,6 +637,8 @@ passwordResetToken = "";
 
 // Popup Kapat
 function closeAuthPopup(){
+
+    resetRegisterCompletionView();
 
     authOverlay.classList.remove("active");
 
@@ -892,9 +896,123 @@ loginSubmitBtn?.addEventListener("click", async () => {
 
 });
 
+
+// ===============================
+// KAYIT EKRANI BİLDİRİMİ
+// ===============================
+
+function getRegisterFeedbackBox() {
+
+    let box =
+        document.getElementById(
+            "registerFeedback"
+        );
+
+    if (box) {
+        return box;
+    }
+
+    if (!passwordArea) {
+        return null;
+    }
+
+    box = document.createElement("div");
+    box.id = "registerFeedback";
+    box.className = "auth-register-feedback";
+
+    const button =
+        document.getElementById(
+            "savePasswordBtn"
+        );
+
+    if (button) {
+        passwordArea.insertBefore(
+            box,
+            button
+        );
+    } else {
+        passwordArea.appendChild(box);
+    }
+
+    return box;
+}
+
+function setRegisterFeedback(
+    message = "",
+    type = "error"
+) {
+
+    const box =
+        getRegisterFeedbackBox();
+
+    if (!box) {
+        return;
+    }
+
+    const cleanMessage =
+        String(message || "").trim();
+
+    if (!cleanMessage) {
+        box.textContent = "";
+        box.className =
+            "auth-register-feedback";
+        return;
+    }
+
+    box.textContent = cleanMessage;
+    box.className =
+        `auth-register-feedback ${type}`;
+}
+
+function resetRegisterCompletionView() {
+
+    setRegisterFeedback("");
+
+    if (registerPassword) {
+        registerPassword.style.display = "";
+    }
+
+    if (registerPassword2) {
+        registerPassword2.style.display = "";
+    }
+
+    const registerTypeArea =
+        registerType?.closest(
+            ".auth-register-type"
+        );
+
+    if (registerTypeArea) {
+        registerTypeArea.style.display = "";
+    }
+
+    if (staffRegisterFields) {
+        staffRegisterFields.style.display = "";
+    }
+
+    if (savePasswordBtn) {
+        savePasswordBtn.textContent =
+            "Hesabı Oluştur";
+
+        delete savePasswordBtn.dataset
+            .registrationComplete;
+    }
+}
+
 savePasswordBtn?.addEventListener("click", async (e) => {
 
     e.preventDefault();
+
+    if (
+        savePasswordBtn.dataset
+            .registrationComplete === "true"
+    ) {
+
+        closeAuthPopup();
+        location.reload();
+        return;
+    }
+
+    setRegisterFeedback("");
 
     const username = document
         .getElementById("habboUsername")
@@ -908,6 +1026,11 @@ const isGuest = selectedRegisterType === "guest";
 
     if (!password || !passwordAgain) {
 
+        setRegisterFeedback(
+            "Lütfen iki şifre alanını da doldurun.",
+            "error"
+        );
+
         showDialog(
             "Eksik Bilgi",
             "Şifre alanlarını doldur.",
@@ -919,6 +1042,11 @@ const isGuest = selectedRegisterType === "guest";
 
     if (password.length < 6) {
 
+        setRegisterFeedback(
+            "Şifre en az 6 karakter olmalıdır.",
+            "error"
+        );
+
         showDialog(
             "Geçersiz Şifre",
             "Şifre en az 6 karakter olmalı.",
@@ -929,6 +1057,14 @@ const isGuest = selectedRegisterType === "guest";
     }
 
     if (password !== passwordAgain) {
+
+        setRegisterFeedback(
+            "Şifreler birbiriyle eşleşmiyor. Lütfen tekrar deneyin.",
+            "error"
+        );
+
+        registerPassword2.value = "";
+        registerPassword2.focus();
 
         showDialog(
             "Şifre Hatası",
@@ -961,6 +1097,12 @@ const isGuest = selectedRegisterType === "guest";
 
         if (!data.success) {
 
+            setRegisterFeedback(
+                data.message ||
+                "Hesap oluşturulamadı.",
+                "error"
+            );
+
             showDialog(
                 "Hesap Oluşturulamadı",
                 data.message || "Bir hata oluştu.",
@@ -972,22 +1114,68 @@ const isGuest = selectedRegisterType === "guest";
 
         if (data.pendingApproval) {
 
-            // Kayıt backend tarafında tamamlandı.
-            // Önce kayıt popup'ını kapat; başarı dialogu
-            // auth ekranının arkasında kalmasın.
-            closeAuthPopup();
+            const title =
+                document.getElementById(
+                    "authTitle"
+                );
 
-            showDialog(
-                "Onay Bekleniyor",
+            const subtitle =
+                document.getElementById(
+                    "authSubtitle"
+                );
+
+            if (title) {
+                title.textContent =
+                    "Kayıt Tamamlandı";
+            }
+
+            if (subtitle) {
+                subtitle.textContent =
+                    "Hesabınız yönetim onayına gönderildi.";
+
+                subtitle.style.color =
+                    "#7fe39b";
+
+                subtitle.style.fontWeight =
+                    "800";
+            }
+
+            setRegisterFeedback(
                 data.message ||
-                "Kaydınız oluşturuldu. Hesabınızın yönetim tarafından onaylanması bekleniyor.",
-                "success",
-                () => {
-                    // Bekleyen kullanıcı / bildirim listeleri
-                    // güncel veriyi alsın.
-                    location.reload();
-                }
+                "Hesabınız başarıyla oluşturuldu. Yönetim ekibinin onayından sonra giriş yapabilirsiniz.",
+                "success"
             );
+
+            registerPassword.value = "";
+            registerPassword2.value = "";
+
+            registerPassword.style.display =
+                "none";
+
+            registerPassword2.style.display =
+                "none";
+
+            const registerTypeArea =
+                registerType?.closest(
+                    ".auth-register-type"
+                );
+
+            if (registerTypeArea) {
+                registerTypeArea.style.display =
+                    "none";
+            }
+
+            if (staffRegisterFields) {
+                staffRegisterFields.style.display =
+                    "none";
+            }
+
+            savePasswordBtn.textContent =
+                "Kapat";
+
+            savePasswordBtn.dataset
+                .registrationComplete =
+                "true";
 
             return;
         }
@@ -1013,6 +1201,11 @@ showDialog(
     } catch (err) {
 
         console.error(err);
+
+        setRegisterFeedback(
+            "Sunucuya bağlanılamadı. Lütfen tekrar deneyin.",
+            "error"
+        );
 
         showDialog(
             "Bağlantı Hatası",
