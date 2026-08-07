@@ -212,7 +212,7 @@ function createSalaryEmbed(
         inline: false
     },
     {
-        name: "⏱️ Şu Anki Toplam Süre",
+        name: "⏱️ Şu Anki Süre",
         value: `\`\`\`\n${formatSalaryMinutes(currentTotalMinutes)}\n\`\`\``,
         inline: false
     },
