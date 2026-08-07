@@ -92,7 +92,8 @@ const {
     getPendingDiscordPromotions,
     markPromotionAsDiscordSent,
     getPromotionHistoryById,
-    getPromotionHistoryByUsername
+    getPromotionHistoryByUsername,
+    getPromotionHistoryCountByUsername
 } = require(
     "./models/promotionHistoryModel"
 );
@@ -326,25 +327,50 @@ app.get(
                 });
             }
 
-            const requestedLimit =
-                Number(
-                    req.query.limit || 20
+            const perPage = 5;
+
+            const requestedPage =
+                Math.max(
+                    Number(req.query.page) || 1,
+                    1
                 );
+
+            const totalCount =
+                await getPromotionHistoryCountByUsername(
+                    username
+                );
+
+            const totalPages =
+                Math.max(
+                    Math.ceil(
+                        totalCount / perPage
+                    ),
+                    1
+                );
+
+            const page =
+                Math.min(
+                    requestedPage,
+                    totalPages
+                );
+
+            const offset =
+                (page - 1) * perPage;
 
             const history =
                 await getPromotionHistoryByUsername(
                     username,
-                    requestedLimit
+                    perPage,
+                    offset
                 );
 
             return res.json({
                 success: true,
-
                 username,
-
-                count:
-                    history.length,
-
+                count: totalCount,
+                page,
+                perPage,
+                totalPages,
                 history
             });
 

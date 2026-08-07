@@ -219,7 +219,8 @@ note,
 
 async function getPromotionHistoryByUsername(
     username,
-    limit = 20
+    limit = 5,
+    offset = 0
 ) {
 
     const cleanUsername =
@@ -228,10 +229,16 @@ async function getPromotionHistoryByUsername(
     const safeLimit =
         Math.min(
             Math.max(
-                Number(limit) || 20,
+                Number(limit) || 5,
                 1
             ),
             100
+        );
+
+    const safeOffset =
+        Math.max(
+            Number(offset) || 0,
+            0
         );
 
     if (!cleanUsername) {
@@ -243,15 +250,15 @@ async function getPromotionHistoryByUsername(
             `SELECT
                 id,
                 username,
-"oldBadge",
-"oldRank",
-"newBadge",
-"newRank",
-"promotedBy",
-"workedHours",
-"workedMinutes",
-note,
-"discordSent",
+                "oldBadge",
+                "oldRank",
+                "newBadge",
+                "newRank",
+                "promotedBy",
+                "workedHours",
+                "workedMinutes",
+                note,
+                "discordSent",
                 "discordMessageId",
                 "createdAt"
 
@@ -265,15 +272,45 @@ note,
                 "createdAt" DESC,
                 id DESC
 
-            LIMIT $2`,
+            LIMIT $2
+            OFFSET $3`,
             [
                 cleanUsername,
-                safeLimit
+                safeLimit,
+                safeOffset
             ]
         );
 
     return result.rows.map(
         formatPromotionHistoryRow
+    );
+}
+
+async function getPromotionHistoryCountByUsername(
+    username
+) {
+
+    const cleanUsername =
+        String(username || "").trim();
+
+    if (!cleanUsername) {
+        return 0;
+    }
+
+    const result =
+        await pool.query(
+            `SELECT COUNT(*)::int AS count
+
+            FROM promotion_history
+
+            WHERE
+                LOWER(username) =
+                LOWER($1)`,
+            [cleanUsername]
+        );
+
+    return Number(
+        result.rows[0]?.count || 0
     );
 }
 
@@ -318,5 +355,6 @@ module.exports = {
     getPendingDiscordPromotions,
     markPromotionAsDiscordSent,
     getPromotionHistoryByUsername,
+    getPromotionHistoryCountByUsername,
     getPromotionHistoryById
 };
