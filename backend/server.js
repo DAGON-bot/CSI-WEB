@@ -55,7 +55,10 @@ const {
     completePasswordReset,
     getPendingApprovals,
     approveUserAccount,
-    rejectUserAccount
+    rejectUserAccount,
+    queueRegistrationDiscordNotification,
+    getPendingRegistrationDiscordNotifications,
+    markRegistrationDiscordNotificationAsSent
 } = require("./models/userModel");
 
 const {
@@ -1043,6 +1046,144 @@ if (
                 success: false,
                 message:
                     "Terfi Discord kuyruğuna eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - BEKLEYEN YENİ KAYIT BİLDİRİMLERİ
+// ========================================
+
+app.get(
+    "/api/discord/pending-registrations",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const requestedLimit =
+                Number(
+                    req.query.limit || 10
+                );
+
+            const registrations =
+                await getPendingRegistrationDiscordNotifications(
+                    requestedLimit
+                );
+
+            return res.json({
+                success: true,
+                count:
+                    registrations.length,
+                registrations
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bekleyen yeni kayıt Discord bildirimleri alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bekleyen yeni kayıt bildirimleri alınamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - YENİ KAYIT BİLDİRİMİNİ TAMAMLA
+// ========================================
+
+app.patch(
+    "/api/discord/registrations/:notificationId/sent",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const notificationId =
+                Number(
+                    req.params.notificationId
+                );
+
+            const discordMessageId =
+                String(
+                    req.body?.discordMessageId ||
+                    ""
+                ).trim();
+
+            if (
+                !Number.isInteger(notificationId) ||
+                notificationId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz kayıt bildirim numarası."
+                });
+            }
+
+            if (!discordMessageId) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Discord mesaj numarası gereklidir."
+                });
+            }
+
+            const notification =
+                await markRegistrationDiscordNotificationAsSent(
+                    notificationId,
+                    discordMessageId
+                );
+
+            if (!notification) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Kayıt bildirimi bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                notification
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Yeni kayıt Discord bildirimi tamamlanamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Yeni kayıt bildirimi tamamlanamadı."
             });
         }
     }
@@ -5683,6 +5824,23 @@ app.post("/api/register/password", async (req, res) => {
             registeredUser.approvalStatus ===
             "pending"
         ) {
+
+            try {
+
+                await queueRegistrationDiscordNotification(
+                    registeredUser.id
+                );
+
+            } catch (notificationError) {
+
+                // Discord bildirimi kayıt işlemini bozmasın.
+                // Worker daha sonra tekrar denenebilsin diye
+                // hata sadece loglanır.
+                console.error(
+                    "Yeni kayıt Discord bildirim kuyruğu hatası:",
+                    notificationError
+                );
+            }
 
             return res.json({
                 success: true,
