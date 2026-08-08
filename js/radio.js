@@ -6,12 +6,8 @@
         window.location.origin;
 
     const STORAGE_KEY =
-        "csi_radio_preferences_v2";
+        "csi_radio_preferences_v3";
 
-    /*
-        Türkiye radyolarını sonraki adımda bu listeye
-        doğrulanmış resmi stream URL'leri ile ekleyeceğiz.
-    */
     const stations = [];
 
     const root =
@@ -25,60 +21,44 @@
 
     const audio =
         document.getElementById("csiRadioAudio");
-
     const miniButton =
         document.getElementById("csiRadioMini");
-
     const panel =
         document.getElementById("csiRadioPanel");
-
     const collapseButton =
         document.getElementById("csiRadioCollapse");
-
     const playButton =
         document.getElementById("csiRadioPlay");
-
     const muteButton =
         document.getElementById("csiRadioMute");
-
     const volumeInput =
         document.getElementById("csiRadioVolume");
-
     const volumeValue =
         document.getElementById("csiRadioVolumeValue");
-
     const stationSelect =
         document.getElementById("csiRadioStation");
-
     const stationName =
         document.getElementById("csiRadioStationName");
-
     const stationMeta =
         document.getElementById("csiRadioStationMeta");
-
     const miniStatus =
         document.getElementById("csiRadioMiniStatus");
-
     const miniVolume =
         document.getElementById("csiRadioMiniVolume");
-
     const message =
         document.getElementById("csiRadioMessage");
-
     const adminPanel =
         document.getElementById("csiRadioAdmin");
-
     const djNameInput =
         document.getElementById("csiRadioDjName");
-
     const djUrlInput =
         document.getElementById("csiRadioDjUrl");
-
     const djStartButton =
         document.getElementById("csiRadioDjStart");
-
     const djStopButton =
         document.getElementById("csiRadioDjStop");
+    const youtubeWrap =
+        document.getElementById("csiRadioYoutubeWrap");
 
     const state = {
         stationId: "",
@@ -91,8 +71,18 @@
             stationId: "",
             stationName: "",
             streamUrl: "",
+            youtubeVideoId: "",
+            youtubeUrl: "",
+            startedAt: null,
             djName: "",
             updatedAt: null
+        },
+        youtube: {
+            apiReady: false,
+            playerReady: false,
+            player: null,
+            pendingVideoId: "",
+            pendingStartSeconds: 0
         }
     };
 
@@ -136,9 +126,7 @@
                     saved.stationId || ""
                 );
 
-        } catch (_) {
-            // Varsayılan değerlerle devam.
-        }
+        } catch (_) {}
     }
 
     function savePreferences() {
@@ -191,25 +179,41 @@
             state.stationId;
     }
 
-    function getActiveSource() {
+    function isYoutubeDjMode() {
 
-        if (
+        return (
             state.globalRadio.mode === "dj" &&
-            state.globalRadio.streamUrl
-        ) {
-            return {
-                id: "csi-dj",
-                name: "CSI DJ",
-                meta:
-                    state.globalRadio.djName
-                        ? `🔴 CANLI • DJ: ${state.globalRadio.djName}`
-                        : "🔴 CSI DJ CANLI",
-                url:
-                    state.globalRadio.streamUrl
-            };
-        }
+            Boolean(
+                state.globalRadio.youtubeVideoId
+            )
+        );
+    }
+
+    function getSelectedStationSource() {
 
         return getSelectedStation();
+    }
+
+    function getYoutubeElapsedSeconds() {
+
+        const startedAt =
+            state.globalRadio.startedAt
+                ? new Date(
+                    state.globalRadio.startedAt
+                ).getTime()
+                : NaN;
+
+        if (!Number.isFinite(startedAt)) {
+            return 0;
+        }
+
+        return Math.max(
+            0,
+            Math.floor(
+                (Date.now() - startedAt) /
+                1000
+            )
+        );
     }
 
     function updateVolumeUI() {
@@ -226,6 +230,29 @@
         volumeValue.textContent =
             `${state.volume}%`;
 
+        if (
+            state.youtube.playerReady &&
+            state.youtube.player
+        ) {
+
+            try {
+
+                state.youtube.player.setVolume(
+                    state.volume
+                );
+
+                if (
+                    state.muted ||
+                    state.volume === 0
+                ) {
+                    state.youtube.player.mute();
+                } else {
+                    state.youtube.player.unMute();
+                }
+
+            } catch (_) {}
+        }
+
         const iconClass =
             state.muted ||
             state.volume === 0
@@ -241,11 +268,37 @@
             `<i class="fa-solid ${iconClass}"></i>`;
     }
 
+    function isCurrentlyPlaying() {
+
+        if (
+            isYoutubeDjMode() &&
+            state.youtube.playerReady &&
+            state.youtube.player &&
+            window.YT
+        ) {
+
+            try {
+
+                return (
+                    state.youtube.player.getPlayerState() ===
+                    window.YT.PlayerState.PLAYING
+                );
+
+            } catch (_) {
+                return false;
+            }
+        }
+
+        return (
+            !audio.paused &&
+            Boolean(audio.src)
+        );
+    }
+
     function updatePlayUI() {
 
         const playing =
-            !audio.paused &&
-            Boolean(audio.src);
+            isCurrentlyPlaying();
 
         playButton.innerHTML =
             playing
@@ -262,10 +315,28 @@
 
     function updateStationUI() {
 
-        const source =
-            getActiveSource();
+        if (isYoutubeDjMode()) {
 
-        if (!source) {
+            stationName.textContent =
+                "CSI DJ";
+
+            stationMeta.textContent =
+                state.globalRadio.djName
+                    ? `🔴 CANLI • DJ: ${state.globalRadio.djName}`
+                    : "🔴 CSI DJ";
+
+            miniStatus.textContent =
+                state.globalRadio.djName
+                    ? `CSI DJ • ${state.globalRadio.djName}`
+                    : "CSI DJ • YouTube";
+
+            return;
+        }
+
+        const station =
+            getSelectedStation();
+
+        if (!station) {
 
             stationName.textContent =
                 "Yayın bekleniyor";
@@ -280,34 +351,289 @@
         }
 
         stationName.textContent =
-            source.name;
+            station.name;
 
         stationMeta.textContent =
-            source.meta ||
+            station.meta ||
             "Canlı Yayın";
 
         miniStatus.textContent =
-            state.globalRadio.mode === "dj"
-                ? (
-                    state.globalRadio.djName
-                        ? `CSI DJ • ${state.globalRadio.djName}`
-                        : "CSI DJ • Canlı"
-                )
-                : source.name;
+            station.name;
+    }
+
+    function loadYoutubeApi() {
+
+        if (
+            window.YT &&
+            window.YT.Player
+        ) {
+            state.youtube.apiReady = true;
+            createYoutubePlayer();
+            return;
+        }
+
+        if (
+            document.querySelector(
+                'script[data-csi-youtube-api="1"]'
+            )
+        ) {
+            return;
+        }
+
+        const script =
+            document.createElement(
+                "script"
+            );
+
+        script.src =
+            "https://www.youtube.com/iframe_api";
+
+        script.async = true;
+
+        script.dataset.csiYoutubeApi =
+            "1";
+
+        document.head.appendChild(
+            script
+        );
+    }
+
+    const previousYoutubeReady =
+        window.onYouTubeIframeAPIReady;
+
+    window.onYouTubeIframeAPIReady =
+        function () {
+
+            if (
+                typeof previousYoutubeReady ===
+                "function"
+            ) {
+                try {
+                    previousYoutubeReady();
+                } catch (_) {}
+            }
+
+            state.youtube.apiReady =
+                true;
+
+            createYoutubePlayer();
+        };
+
+    function createYoutubePlayer() {
+
+        if (
+            !state.youtube.apiReady ||
+            state.youtube.player
+        ) {
+            return;
+        }
+
+        state.youtube.player =
+            new window.YT.Player(
+                "csiRadioYoutubePlayer",
+                {
+                    width: "100%",
+                    height: "200",
+
+                    playerVars: {
+                        autoplay: 0,
+                        controls: 1,
+                        playsinline: 1,
+                        rel: 0,
+                        origin:
+                            window.location.origin
+                    },
+
+                    events: {
+
+                        onReady:
+                            event => {
+
+                                state.youtube.playerReady =
+                                    true;
+
+                                event.target.setVolume(
+                                    state.volume
+                                );
+
+                                if (
+                                    state.muted ||
+                                    state.volume === 0
+                                ) {
+                                    event.target.mute();
+                                }
+
+                                if (
+                                    state.youtube.pendingVideoId
+                                ) {
+                                    loadYoutubeVideo(
+                                        false
+                                    );
+                                }
+
+                                updatePlayUI();
+                            },
+
+                        onStateChange:
+                            () => {
+                                updatePlayUI();
+                            },
+
+                        onAutoplayBlocked:
+                            () => {
+
+                                state.userPaused =
+                                    true;
+
+                                message.textContent =
+                                    "Tarayıcı YouTube otomatik oynatmayı engelledi. Oynat tuşuna basın.";
+
+                                updatePlayUI();
+                            },
+
+                        onError:
+                            () => {
+
+                                message.textContent =
+                                    "YouTube videosu oynatılamadı. Video embed'e kapalı olabilir.";
+
+                                updatePlayUI();
+                            }
+                    }
+                }
+            );
+    }
+
+    function prepareYoutubeVideo() {
+
+        if (!isYoutubeDjMode()) {
+            youtubeWrap.hidden = true;
+            return;
+        }
+
+        youtubeWrap.hidden = false;
+
+        state.youtube.pendingVideoId =
+            state.globalRadio.youtubeVideoId;
+
+        state.youtube.pendingStartSeconds =
+            getYoutubeElapsedSeconds();
+
+        loadYoutubeApi();
+
+        if (
+            state.youtube.playerReady
+        ) {
+            loadYoutubeVideo(
+                false
+            );
+        }
+    }
+
+    function loadYoutubeVideo(
+        autoplay
+    ) {
+
+        if (
+            !state.youtube.playerReady ||
+            !state.youtube.player ||
+            !state.youtube.pendingVideoId
+        ) {
+            return;
+        }
+
+        const options = {
+            videoId:
+                state.youtube.pendingVideoId,
+
+            startSeconds:
+                state.youtube.pendingStartSeconds
+        };
+
+        try {
+
+            if (autoplay) {
+
+                state.youtube.player.loadVideoById(
+                    options
+                );
+
+            } else {
+
+                state.youtube.player.cueVideoById(
+                    options
+                );
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "YouTube video yüklenemedi:",
+                error
+            );
+        }
     }
 
     async function playActiveSource() {
 
-        const source =
-            getActiveSource();
+        if (isYoutubeDjMode()) {
+
+            if (!root.classList.contains(
+                "is-open"
+            )) {
+
+                openPanel();
+            }
+
+            youtubeWrap.hidden =
+                false;
+
+            state.youtube.pendingVideoId =
+                state.globalRadio.youtubeVideoId;
+
+            state.youtube.pendingStartSeconds =
+                getYoutubeElapsedSeconds();
+
+            loadYoutubeApi();
+
+            if (
+                !state.youtube.playerReady
+            ) {
+
+                message.textContent =
+                    "YouTube oynatıcı hazırlanıyor. Birkaç saniye sonra tekrar Oynat'a basın.";
+
+                return;
+            }
+
+            try {
+
+                loadYoutubeVideo(
+                    true
+                );
+
+                state.userPaused =
+                    false;
+
+                message.textContent =
+                    "CSI DJ YouTube yayını çalıyor.";
+
+            } catch (_) {}
+
+            updatePlayUI();
+            return;
+        }
+
+        const station =
+            getSelectedStationSource();
 
         if (
-            !source ||
-            !source.url
+            !station ||
+            !station.url
         ) {
 
             message.textContent =
-                "Aktif bir yayın adresi bulunmuyor.";
+                "Aktif bir radyo yayını bulunmuyor.";
 
             updatePlayUI();
             return;
@@ -315,15 +641,16 @@
 
         const absoluteUrl =
             new URL(
-                source.url,
+                station.url,
                 window.location.href
             ).href;
 
         if (
-            audio.src !== absoluteUrl
+            audio.src !==
+            absoluteUrl
         ) {
             audio.src =
-                source.url;
+                station.url;
 
             audio.load();
         }
@@ -336,9 +663,7 @@
                 false;
 
             message.textContent =
-                state.globalRadio.mode === "dj"
-                    ? "CSI DJ canlı yayını çalıyor."
-                    : `${source.name} canlı yayını çalıyor.`;
+                `${station.name} canlı yayını çalıyor.`;
 
         } catch (error) {
 
@@ -361,41 +686,42 @@
 
         audio.pause();
 
+        if (
+            state.youtube.playerReady &&
+            state.youtube.player
+        ) {
+            try {
+                state.youtube.player.pauseVideo();
+            } catch (_) {}
+        }
+
         state.userPaused =
             true;
 
         updatePlayUI();
     }
 
-    function switchSourceWithoutForcingPlayback() {
-
-        const source =
-            getActiveSource();
-
-        const wasPlaying =
-            !audio.paused &&
-            Boolean(audio.src);
-
-        const shouldResume =
-            wasPlaying ||
-            state.userPaused === false;
+    function stopAllSources() {
 
         audio.pause();
         audio.removeAttribute("src");
         audio.load();
 
-        updateStationUI();
-        updatePlayUI();
-
         if (
-            source?.url &&
-            shouldResume
+            state.youtube.playerReady &&
+            state.youtube.player
         ) {
-            playActiveSource();
+            try {
+                state.youtube.player.stopVideo();
+            } catch (_) {}
         }
+
+        updatePlayUI();
     }
 
-    function setStation(stationId) {
+    function setStation(
+        stationId
+    ) {
 
         state.stationId =
             String(
@@ -405,9 +731,11 @@
         savePreferences();
 
         if (
-            state.globalRadio.mode !== "dj"
+            state.globalRadio.mode !==
+            "dj"
         ) {
-            switchSourceWithoutForcingPlayback();
+            stopAllSources();
+            updateStationUI();
         }
     }
 
@@ -424,9 +752,22 @@
             "aria-expanded",
             "true"
         );
+
+        if (isYoutubeDjMode()) {
+            prepareYoutubeVideo();
+        }
     }
 
     function closePanel() {
+
+        /*
+            YouTube resmi embed oynatıcısı gizlenmiş durumda
+            arka plan player'ı gibi kullanılmamalı.
+            DJ modunda panel küçültülünce playback durur.
+        */
+        if (isYoutubeDjMode()) {
+            pauseRadio();
+        }
 
         root.classList.remove(
             "is-open"
@@ -488,9 +829,7 @@
                     ];
 
             state.isAdmin =
-                roles.includes(
-                    "admin"
-                );
+                roles.includes("admin");
 
             adminPanel.hidden =
                 !state.isAdmin;
@@ -556,10 +895,11 @@
         incoming
     ) {
 
-        const previousSignature =
-            JSON.stringify(
-                state.globalRadio
-            );
+        const previousMode =
+            state.globalRadio.mode;
+
+        const previousVideoId =
+            state.globalRadio.youtubeVideoId;
 
         state.globalRadio = {
             mode:
@@ -582,6 +922,20 @@
                     incoming.streamUrl || ""
                 ),
 
+            youtubeVideoId:
+                String(
+                    incoming.youtubeVideoId || ""
+                ),
+
+            youtubeUrl:
+                String(
+                    incoming.youtubeUrl || ""
+                ),
+
+            startedAt:
+                incoming.startedAt ||
+                null,
+
             djName:
                 String(
                     incoming.djName || ""
@@ -592,31 +946,50 @@
                 null
         };
 
-        const nextSignature =
-            JSON.stringify(
-                state.globalRadio
-            );
+        const sourceChanged =
+            previousMode !==
+                state.globalRadio.mode ||
+            previousVideoId !==
+                state.globalRadio.youtubeVideoId;
 
-        if (
-            previousSignature !==
-            nextSignature
-        ) {
+        updateStationUI();
+
+        if (isYoutubeDjMode()) {
+
+            stopAllSources();
 
             if (
-                state.globalRadio.mode === "dj"
+                root.classList.contains(
+                    "is-open"
+                )
             ) {
-                message.textContent =
-                    state.globalRadio.djName
-                        ? `${state.globalRadio.djName} DJ yayını aktif.`
-                        : "CSI DJ yayını aktif.";
+                prepareYoutubeVideo();
             } else {
-                message.textContent =
-                    "Normal radyo modu aktif.";
+                youtubeWrap.hidden = true;
             }
 
-            switchSourceWithoutForcingPlayback();
+            message.textContent =
+                state.globalRadio.djName
+                    ? `${state.globalRadio.djName} YouTube DJ modu aktif.`
+                    : "CSI DJ YouTube modu aktif.";
+
         } else {
-            updateStationUI();
+
+            youtubeWrap.hidden =
+                true;
+
+            if (
+                sourceChanged &&
+                state.youtube.playerReady &&
+                state.youtube.player
+            ) {
+                try {
+                    state.youtube.player.stopVideo();
+                } catch (_) {}
+            }
+
+            message.textContent =
+                "Normal radyo modu aktif.";
         }
     }
 
@@ -629,7 +1002,7 @@
         const token =
             getToken();
 
-        const streamUrl =
+        const youtubeUrl =
             String(
                 djUrlInput.value || ""
             ).trim();
@@ -639,14 +1012,17 @@
                 djNameInput.value || ""
             ).trim();
 
-        if (!streamUrl) {
+        if (!youtubeUrl) {
+
             message.textContent =
-                "DJ yayın linkini girin.";
+                "YouTube şarkı linkini girin.";
+
             djUrlInput.focus();
             return;
         }
 
-        djStartButton.disabled = true;
+        djStartButton.disabled =
+            true;
 
         try {
 
@@ -666,7 +1042,7 @@
 
                         body:
                             JSON.stringify({
-                                streamUrl,
+                                youtubeUrl,
                                 djName
                             })
                     }
@@ -681,7 +1057,7 @@
             ) {
                 throw new Error(
                     data.message ||
-                    "DJ yayını başlatılamadı."
+                    "YouTube DJ modu başlatılamadı."
                 );
             }
 
@@ -689,14 +1065,16 @@
                 data.radio || {}
             );
 
+            openPanel();
+
             message.textContent =
-                "DJ yayını aktif edildi.";
+                "YouTube şarkısı yayına alındı. Oynat tuşuna basın.";
 
         } catch (error) {
 
             message.textContent =
                 error.message ||
-                "DJ yayını başlatılamadı.";
+                "YouTube DJ modu başlatılamadı.";
 
         } finally {
 
@@ -714,7 +1092,8 @@
         const token =
             getToken();
 
-        djStopButton.disabled = true;
+        djStopButton.disabled =
+            true;
 
         try {
 
@@ -740,7 +1119,7 @@
             ) {
                 throw new Error(
                     data.message ||
-                    "DJ yayını kapatılamadı."
+                    "DJ modu kapatılamadı."
                 );
             }
 
@@ -749,13 +1128,13 @@
             );
 
             message.textContent =
-                "DJ yayını kapatıldı.";
+                "DJ modu kapatıldı.";
 
         } catch (error) {
 
             message.textContent =
                 error.message ||
-                "DJ yayını kapatılamadı.";
+                "DJ modu kapatılamadı.";
 
         } finally {
 
@@ -769,6 +1148,7 @@
     updateVolumeUI();
     updateStationUI();
     updatePlayUI();
+    loadYoutubeApi();
 
     miniButton.addEventListener(
         "click",
@@ -784,7 +1164,9 @@
         "click",
         () => {
 
-            if (!audio.paused) {
+            if (
+                isCurrentlyPlaying()
+            ) {
                 pauseRadio();
                 return;
             }
@@ -862,17 +1244,12 @@
         () => {
 
             message.textContent =
-                "Radyo yayınına bağlanılamadı. Yayın linkini kontrol edin.";
+                "Radyo yayınına bağlanılamadı.";
 
             updatePlayUI();
         }
     );
 
-    /*
-        Socket.IO zaten projede mevcut.
-        Varsa DJ modu değişikliklerini anlık alır.
-        Yoksa 5 saniyelik polling yedek olarak çalışır.
-    */
     if (
         typeof window.io ===
         "function"
@@ -892,9 +1269,7 @@
                 }
             );
 
-        } catch (_) {
-            // Polling yedek olarak devam eder.
-        }
+        } catch (_) {}
     }
 
     Promise.all([

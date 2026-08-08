@@ -372,3 +372,31 @@
 .csi-radio-admin-btn:hover {
     filter: brightness(1.1);
 }
+
+
+/* =========================================
+   CSI RADIO - YOUTUBE DJ PLAYER
+========================================= */
+
+.csi-radio-youtube-wrap {
+    margin: 0 18px 16px;
+    min-height: 200px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #090b10;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.csi-radio-youtube-wrap[hidden] {
+    display: none !important;
+}
+
+.csi-radio-youtube-player,
+.csi-radio-youtube-player iframe {
+    display: block;
+    width: 100% !important;
+    min-width: 200px;
+    height: 200px !important;
+    min-height: 200px;
+    border: 0;
+}

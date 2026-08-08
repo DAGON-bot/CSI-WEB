@@ -123,7 +123,7 @@ const { Server } = require("socket.io");
 const bcrypt = require("bcrypt");
 const {
     getRadioSettings,
-    setDjRadio,
+    setYoutubeDjRadio,
     stopDjRadio
 } = require("./models/radioModel");
 
@@ -6216,6 +6216,85 @@ function isRadioAdmin(
     );
 }
 
+
+function extractYoutubeVideoId(
+    rawUrl
+) {
+
+    const value =
+        String(
+            rawUrl || ""
+        ).trim();
+
+    if (!value) {
+        return "";
+    }
+
+    // Direkt 11 karakter YouTube video ID girilirse.
+    if (/^[A-Za-z0-9_-]{11}$/.test(value)) {
+        return value;
+    }
+
+    let parsed;
+
+    try {
+        parsed = new URL(value);
+    } catch (_) {
+        return "";
+    }
+
+    const host =
+        parsed.hostname
+            .toLocaleLowerCase("tr-TR")
+            .replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+
+        const id =
+            parsed.pathname
+                .split("/")
+                .filter(Boolean)[0] ||
+            "";
+
+        return /^[A-Za-z0-9_-]{11}$/.test(id)
+            ? id
+            : "";
+    }
+
+    if (
+        host === "youtube.com" ||
+        host === "m.youtube.com" ||
+        host === "music.youtube.com"
+    ) {
+
+        const watchId =
+            parsed.searchParams.get("v");
+
+        if (
+            watchId &&
+            /^[A-Za-z0-9_-]{11}$/.test(watchId)
+        ) {
+            return watchId;
+        }
+
+        const parts =
+            parsed.pathname
+                .split("/")
+                .filter(Boolean);
+
+        if (
+            ["embed", "shorts", "live"]
+                .includes(parts[0]) &&
+            parts[1] &&
+            /^[A-Za-z0-9_-]{11}$/.test(parts[1])
+        ) {
+            return parts[1];
+        }
+    }
+
+    return "";
+}
+
 // ===============================
 // CSI RADIO - AKTİF YAYIN
 // ===============================
@@ -6247,6 +6326,18 @@ app.get(
                     streamUrl:
                         radio?.streamUrl ||
                         "",
+
+                    youtubeVideoId:
+                        radio?.youtubeVideoId ||
+                        "",
+
+                    youtubeUrl:
+                        radio?.youtubeUrl ||
+                        "",
+
+                    startedAt:
+                        radio?.startedAt ||
+                        null,
 
                     djName:
                         radio?.djName ||
@@ -6316,9 +6407,9 @@ app.post(
                 });
             }
 
-            const streamUrl =
+            const youtubeUrl =
                 String(
-                    req.body?.streamUrl ||
+                    req.body?.youtubeUrl ||
                     ""
                 ).trim();
 
@@ -6329,50 +6420,33 @@ app.post(
                     "Admin"
                 ).trim();
 
-            if (!streamUrl) {
+            if (!youtubeUrl) {
 
                 return res.status(400).json({
                     success: false,
                     message:
-                        "DJ yayın linki gereklidir."
+                        "YouTube şarkı linki gereklidir."
                 });
             }
 
-            let parsedUrl;
+            const youtubeVideoId =
+                extractYoutubeVideoId(
+                    youtubeUrl
+                );
 
-            try {
-
-                parsedUrl =
-                    new URL(
-                        streamUrl
-                    );
-
-            } catch (_) {
+            if (!youtubeVideoId) {
 
                 return res.status(400).json({
                     success: false,
                     message:
-                        "Geçerli bir yayın linki girin."
-                });
-            }
-
-            if (
-                !["http:", "https:"]
-                    .includes(
-                        parsedUrl.protocol
-                    )
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Yayın linki HTTP veya HTTPS olmalıdır."
+                        "Geçerli bir YouTube video linki girin."
                 });
             }
 
             const radio =
-                await setDjRadio({
-                    streamUrl,
+                await setYoutubeDjRadio({
+                    youtubeVideoId,
+                    youtubeUrl,
                     djName,
                     updatedBy:
                         authorization.user.username
@@ -6396,6 +6470,18 @@ app.post(
                     streamUrl:
                         radio?.streamUrl ||
                         "",
+
+                    youtubeVideoId:
+                        radio?.youtubeVideoId ||
+                        "",
+
+                    youtubeUrl:
+                        radio?.youtubeUrl ||
+                        "",
+
+                    startedAt:
+                        radio?.startedAt ||
+                        null,
 
                     djName:
                         radio?.djName ||
@@ -6494,6 +6580,15 @@ app.post(
 
                     streamUrl:
                         "",
+
+                    youtubeVideoId:
+                        "",
+
+                    youtubeUrl:
+                        "",
+
+                    startedAt:
+                        null,
 
                     djName:
                         "",
