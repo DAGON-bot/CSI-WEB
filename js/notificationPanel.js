@@ -75,6 +75,21 @@ function canManageNotifications(user) {
     );
 }
 
+function canManageFeedbackNotifications(
+    user
+) {
+
+    const roles =
+        getNotificationUserRoles(
+            user
+        );
+
+    return (
+        roles.includes("admin") ||
+        roles.includes("moderator")
+    );
+}
+
 function openNotificationPanel() {
 
     if (!notificationPanel) {
@@ -646,6 +661,182 @@ rejectButton?.addEventListener(
     return card;
 }
 
+function getFeedbackStatusText(
+    status
+) {
+
+    if (status === "reviewing") {
+        return "İnceleniyor";
+    }
+
+    return "Yeni";
+}
+
+function createFeedbackNotificationCard(
+    feedback
+) {
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+    card.className =
+        "notification-feedback-card";
+
+    card.innerHTML = `
+        <div class="notification-feedback-summary">
+
+            <div>
+                <strong>
+                    #${feedback.id} • ${feedback.title}
+                </strong>
+
+                <span>
+                    ${feedback.username} •
+                    ${feedback.category} •
+                    ${formatNotificationDate(feedback.createdAt)}
+                </span>
+            </div>
+
+            <div class="notification-status">
+                ${getFeedbackStatusText(feedback.status)}
+            </div>
+
+        </div>
+
+        <div class="notification-feedback-detail">
+
+            <p>
+                ${String(feedback.message || "")
+                    .replaceAll("&","&amp;")
+                    .replaceAll("<","&lt;")
+                    .replaceAll(">","&gt;")}
+            </p>
+
+            <div class="notification-feedback-actions">
+
+                <button
+                    type="button"
+                    class="notification-feedback-review">
+                    İnceleniyor
+                </button>
+
+                <button
+                    type="button"
+                    class="notification-feedback-resolve">
+                    Çözüldü
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    card.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.closest(
+                    "button"
+                )
+            ) {
+                return;
+            }
+
+            card.classList.toggle(
+                "open"
+            );
+        }
+    );
+
+    async function updateStatus(
+        status
+    ) {
+
+        const token =
+            getNotificationToken();
+
+        try {
+
+            const response =
+                await fetch(
+                    `${NOTIFICATION_API_URL}/api/feedback/${feedback.id}/status`,
+                    {
+                        method: "PATCH",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "Authorization":
+                                `Bearer ${token}`
+                        },
+
+                        body:
+                            JSON.stringify({
+                                status
+                            })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Geri bildirim durumu güncellenemedi."
+                );
+            }
+
+            await loadPendingApprovals(
+                false
+            );
+
+        } catch (err) {
+
+            showDialog(
+                "İşlem Hatası",
+                err.message ||
+                "Geri bildirim durumu güncellenemedi.",
+                "error"
+            );
+        }
+    }
+
+    card
+        .querySelector(
+            ".notification-feedback-review"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                updateStatus(
+                    "reviewing"
+                )
+        );
+
+    card
+        .querySelector(
+            ".notification-feedback-resolve"
+        )
+        ?.addEventListener(
+            "click",
+            () =>
+                updateStatus(
+                    "resolved"
+                )
+        );
+
+    return card;
+}
+
 async function loadPendingApprovals(
     showLoading = false
 ) {
@@ -670,8 +861,8 @@ async function loadPendingApprovals(
 
     try {
 
-        const response =
-            await fetch(
+        const approvalRequest =
+            fetch(
                 `${NOTIFICATION_API_URL}/api/account-approvals`,
                 {
                     method: "GET",
@@ -681,59 +872,182 @@ async function loadPendingApprovals(
                             `Bearer ${token}`
                     }
                 }
-            );
+            )
+                .then(
+                    async response => ({
+                        response,
+                        data:
+                            await response.json()
+                    })
+                );
 
-        const data =
-            await response.json();
+        const feedbackRequest =
+            canManageFeedbackNotifications(
+                notificationCurrentUser
+            )
+                ? fetch(
+                    `${NOTIFICATION_API_URL}/api/feedback/manage`,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                ).then(
+                    async response => ({
+                        response,
+                        data:
+                            await response.json()
+                    })
+                )
+                : Promise.resolve({
+                    response: {
+                        ok: true
+                    },
+                    data: {
+                        success: true,
+                        feedbacks: []
+                    }
+                });
+
+        const [
+            approvalResult,
+            feedbackResult
+        ] =
+            await Promise.all([
+                approvalRequest,
+                feedbackRequest
+            ]);
 
         if (
-            !response.ok ||
-            !data.success
+            !approvalResult.response.ok ||
+            !approvalResult.data.success
         ) {
 
             throw new Error(
-                data.message ||
-                "Bildirimler yüklenemedi."
+                approvalResult.data.message ||
+                "Hesap bildirimleri yüklenemedi."
+            );
+        }
+
+        if (
+            !feedbackResult.response.ok ||
+            !feedbackResult.data.success
+        ) {
+
+            throw new Error(
+                feedbackResult.data.message ||
+                "Geri bildirimler yüklenemedi."
             );
         }
 
         const approvals =
-            Array.isArray(data.approvals)
-                ? data.approvals
+            Array.isArray(
+                approvalResult.data.approvals
+            )
+                ? approvalResult.data.approvals
+                : [];
+
+        const feedbacks =
+            Array.isArray(
+                feedbackResult.data.feedbacks
+            )
+                ? feedbackResult.data.feedbacks
                 : [];
 
         updateNotificationCount(
-            approvals.length
+            approvals.length +
+            feedbacks.length
         );
 
-        if (approvals.length === 0) {
-            showNotificationEmpty();
+        if (
+            approvals.length === 0 &&
+            feedbacks.length === 0
+        ) {
+
+            notificationPanelBody.innerHTML = `
+                <div class="notification-empty">
+                    Bekleyen bildirim bulunmuyor.
+                </div>
+            `;
+
             return;
         }
 
         notificationPanelBody.innerHTML =
-    "";
+            "";
 
-approvals.forEach(approval => {
+        if (feedbacks.length > 0) {
 
-    const card =
-        createApprovalCard(
-            approval
-        );
+            const title =
+                document.createElement(
+                    "div"
+                );
 
-    notificationPanelBody.appendChild(
-        card
-    );
-});
+            title.className =
+                "notification-section-title";
+
+            title.textContent =
+                "Geri Bildirimler";
+
+            notificationPanelBody.appendChild(
+                title
+            );
+
+            feedbacks.forEach(
+                feedback => {
+
+                    notificationPanelBody.appendChild(
+                        createFeedbackNotificationCard(
+                            feedback
+                        )
+                    );
+                }
+            );
+        }
+
+        if (approvals.length > 0) {
+
+            const title =
+                document.createElement(
+                    "div"
+                );
+
+            title.className =
+                "notification-section-title";
+
+            title.textContent =
+                "Hesap Onayları";
+
+            notificationPanelBody.appendChild(
+                title
+            );
+
+            approvals.forEach(
+                approval => {
+
+                    notificationPanelBody.appendChild(
+                        createApprovalCard(
+                            approval
+                        )
+                    );
+                }
+            );
+        }
 
     } catch (err) {
 
         console.error(
-            "Bekleyen hesapları yükleme hatası:",
+            "Bildirimleri yükleme hatası:",
             err
         );
 
-        if (showLoading && notificationPanelBody) {
+        if (
+            showLoading &&
+            notificationPanelBody
+        ) {
 
             notificationPanelBody.innerHTML = `
                 <div class="notification-empty">

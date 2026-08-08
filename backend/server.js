@@ -119,6 +119,14 @@ const {
 );
 
 const {
+    createFeedback,
+    getOpenFeedbacks,
+    updateFeedbackStatus
+} = require(
+    "./models/feedbackModel"
+);
+
+const {
     pool,
     initDatabase
 } = require("./database/db");
@@ -4055,6 +4063,295 @@ async function getAuthorizedApprovalUser(req) {
         };
     }
 }
+
+// ===============================
+// GERİ BİLDİRİM SİSTEMİ
+// ===============================
+
+const FEEDBACK_CATEGORIES = [
+    "Hata Bildirimi",
+    "Öneri / İstek",
+    "Bug / Debug",
+    "Yetki / Hesap Sorunu",
+    "Diğer"
+];
+
+function canManageFeedbacks(user) {
+
+    return hasAnyRole(
+        user,
+        [
+            "admin",
+            "moderator"
+        ]
+    );
+}
+
+app.post(
+    "/api/feedback",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const category =
+                String(
+                    req.body?.category ||
+                    ""
+                ).trim();
+
+            const title =
+                String(
+                    req.body?.title ||
+                    ""
+                ).trim();
+
+            const message =
+                String(
+                    req.body?.message ||
+                    ""
+                ).trim();
+
+            if (
+                !FEEDBACK_CATEGORIES.includes(
+                    category
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçerli bir geri bildirim kategorisi seçin."
+                });
+            }
+
+            if (
+                title.length < 3 ||
+                title.length > 100
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Başlık 3 ile 100 karakter arasında olmalıdır."
+                });
+            }
+
+            if (
+                message.length < 10 ||
+                message.length > 2000
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Açıklama 10 ile 2000 karakter arasında olmalıdır."
+                });
+            }
+
+            const feedback =
+                await createFeedback({
+                    userId:
+                        user.id,
+                    username:
+                        user.username,
+                    category,
+                    title,
+                    message
+                });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    "Geri bildiriminiz gönderildi.",
+                feedback
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Geri bildirim gönderme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Geri bildirim gönderilemedi."
+            });
+        }
+    }
+);
+
+app.get(
+    "/api/feedback/manage",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !canManageFeedbacks(
+                    user
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Geri bildirimleri görüntüleme yetkiniz yok."
+                });
+            }
+
+            const feedbacks =
+                await getOpenFeedbacks();
+
+            return res.json({
+                success: true,
+                count:
+                    feedbacks.length,
+                feedbacks
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Geri bildirimleri yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Geri bildirimler yüklenemedi."
+            });
+        }
+    }
+);
+
+app.patch(
+    "/api/feedback/:feedbackId/status",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !canManageFeedbacks(
+                    user
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Geri bildirim yönetme yetkiniz yok."
+                });
+            }
+
+            const feedbackId =
+                Number(
+                    req.params.feedbackId
+                );
+
+            const status =
+                String(
+                    req.body?.status ||
+                    ""
+                ).trim();
+
+            if (
+                !Number.isInteger(
+                    feedbackId
+                ) ||
+                feedbackId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz geri bildirim."
+                });
+            }
+
+            if (
+                ![
+                    "reviewing",
+                    "resolved"
+                ].includes(status)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz geri bildirim durumu."
+                });
+            }
+
+            const feedback =
+                await updateFeedbackStatus({
+                    feedbackId,
+                    status,
+                    handledBy:
+                        user.username
+                });
+
+            if (!feedback) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Geri bildirim bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                feedback
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Geri bildirim durum güncelleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Geri bildirim durumu güncellenemedi."
+            });
+        }
+    }
+);
 
 // ===============================
 // HESAP ONAYLARI - BEKLEYENLER
