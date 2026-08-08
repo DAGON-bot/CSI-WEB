@@ -34,6 +34,16 @@ async function ensureRadioSettingsTable() {
     );
 
     await pool.query(
+        `ALTER TABLE radio_settings
+         ADD COLUMN IF NOT EXISTS "youtubePositionSeconds" DOUBLE PRECISION NOT NULL DEFAULT 0`
+    );
+
+    await pool.query(
+        `ALTER TABLE radio_settings
+         ADD COLUMN IF NOT EXISTS "positionUpdatedAt" TIMESTAMPTZ`
+    );
+
+    await pool.query(
         `INSERT INTO radio_settings (
             id,
             mode
@@ -59,6 +69,8 @@ async function getRadioSettings() {
                 "youtubeVideoId",
                 "youtubeUrl",
                 "startedAt",
+                "youtubePositionSeconds",
+                "positionUpdatedAt",
                 "djName",
                 "updatedBy",
                 "updatedAt"
@@ -88,7 +100,9 @@ async function setYoutubeDjRadio({
                  "streamUrl" = NULL,
                  "youtubeVideoId" = $1,
                  "youtubeUrl" = $2,
-                 "startedAt" = CURRENT_TIMESTAMP,
+                 "startedAt" = NULL,
+                 "youtubePositionSeconds" = 0,
+                 "positionUpdatedAt" = NULL,
                  "djName" = $3,
                  "updatedBy" = $4,
                  "updatedAt" = CURRENT_TIMESTAMP
@@ -102,6 +116,8 @@ async function setYoutubeDjRadio({
                 "youtubeVideoId",
                 "youtubeUrl",
                 "startedAt",
+                "youtubePositionSeconds",
+                "positionUpdatedAt",
                 "djName",
                 "updatedBy",
                 "updatedAt"`,
@@ -115,6 +131,93 @@ async function setYoutubeDjRadio({
 
     return result.rows[0] || null;
 }
+
+
+async function startYoutubeDjPlaybackClock({
+    updatedBy
+}) {
+
+    await ensureRadioSettingsTable();
+
+    const result =
+        await pool.query(
+            `UPDATE radio_settings
+             SET "startedAt" = CURRENT_TIMESTAMP,
+                 "updatedBy" = COALESCE($1, "updatedBy"),
+                 "updatedAt" = CURRENT_TIMESTAMP
+             WHERE id = 1
+               AND mode = 'dj'
+               AND "youtubeVideoId" IS NOT NULL
+             RETURNING
+                id,
+                mode,
+                "stationId",
+                "stationName",
+                "streamUrl",
+                "youtubeVideoId",
+                "youtubeUrl",
+                "startedAt",
+                "youtubePositionSeconds",
+                "positionUpdatedAt",
+                "djName",
+                "updatedBy",
+                "updatedAt"`,
+            [
+                updatedBy || null
+            ]
+        );
+
+    return result.rows[0] || null;
+}
+
+
+
+async function updateYoutubeDjPosition({
+    positionSeconds,
+    updatedBy
+}) {
+
+    await ensureRadioSettingsTable();
+
+    const safePosition =
+        Math.max(
+            0,
+            Number(positionSeconds) || 0
+        );
+
+    const result =
+        await pool.query(
+            `UPDATE radio_settings
+             SET "youtubePositionSeconds" = $1,
+                 "positionUpdatedAt" = CURRENT_TIMESTAMP,
+                 "updatedBy" = COALESCE($2, "updatedBy"),
+                 "updatedAt" = CURRENT_TIMESTAMP
+             WHERE id = 1
+               AND mode = 'dj'
+               AND "youtubeVideoId" IS NOT NULL
+             RETURNING
+                id,
+                mode,
+                "stationId",
+                "stationName",
+                "streamUrl",
+                "youtubeVideoId",
+                "youtubeUrl",
+                "startedAt",
+                "youtubePositionSeconds",
+                "positionUpdatedAt",
+                "djName",
+                "updatedBy",
+                "updatedAt"`,
+            [
+                safePosition,
+                updatedBy || null
+            ]
+        );
+
+    return result.rows[0] || null;
+}
+
 
 async function stopDjRadio({
     updatedBy
@@ -130,6 +233,8 @@ async function stopDjRadio({
                  "youtubeVideoId" = NULL,
                  "youtubeUrl" = NULL,
                  "startedAt" = NULL,
+                 "youtubePositionSeconds" = 0,
+                 "positionUpdatedAt" = NULL,
                  "djName" = NULL,
                  "updatedBy" = $1,
                  "updatedAt" = CURRENT_TIMESTAMP
@@ -143,6 +248,8 @@ async function stopDjRadio({
                 "youtubeVideoId",
                 "youtubeUrl",
                 "startedAt",
+                "youtubePositionSeconds",
+                "positionUpdatedAt",
                 "djName",
                 "updatedBy",
                 "updatedAt"`,
@@ -158,5 +265,7 @@ module.exports = {
     ensureRadioSettingsTable,
     getRadioSettings,
     setYoutubeDjRadio,
+    startYoutubeDjPlaybackClock,
+    updateYoutubeDjPosition,
     stopDjRadio
 };
