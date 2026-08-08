@@ -111,6 +111,14 @@ const {
 );
 
 const {
+    createTtAnnouncement,
+    getPendingTtAnnouncements,
+    markTtAnnouncementAsSent
+} = require(
+    "./models/ttAnnouncementModel"
+);
+
+const {
     pool,
     initDatabase
 } = require("./database/db");
@@ -2162,6 +2170,263 @@ app.patch(
             return res.status(500).json({
                 success: false,
                 message: "Puantaj kaydı tamamlanamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD - TOPLU TERFİ DUYURUSU OLUŞTUR
+// ========================================
+
+app.post(
+    "/api/discord/tt-announcements",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            if (
+                !hasPanelPermission(
+                    user,
+                    "bulkPromotion"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Toplu terfi duyurusu için yetkiniz bulunmuyor."
+                });
+            }
+
+            const time =
+                String(
+                    req.body?.time ||
+                    ""
+                ).trim();
+
+            const allowedTimes =
+                [
+                    "13:00",
+                    "15:00",
+                    "18:00",
+                    "20:00",
+                    "22:00"
+                ];
+
+            if (
+                !allowedTimes.includes(
+                    time
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçerli bir toplu terfi saati seçin."
+                });
+            }
+
+            const message =
+                `${time} TOPLU TERFİ İÇİN SIRAYAAA @everyone`;
+
+            const announcement =
+                await createTtAnnouncement({
+                    announcementTime:
+                        time,
+                    message,
+                    createdBy:
+                        user.username
+                });
+
+            await createAdminLog({
+                performedBy:
+                    user.username,
+
+                targetUsername:
+                    "Toplu Terfi Duyurusu",
+
+                actionType:
+                    "tt_announcement_queued",
+
+                oldValue:
+                    null,
+
+                newValue:
+                    message
+            });
+
+            return res.status(201).json({
+                success: true,
+                message:
+                    "Toplu terfi duyurusu Discord kuyruğuna eklendi.",
+                announcement
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Toplu terfi duyuru kayıt hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Toplu terfi duyurusu kuyruğa eklenemedi."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - BEKLEYEN TT DUYURULARI
+// ========================================
+
+app.get(
+    "/api/discord/pending-tt-announcements",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const announcements =
+                await getPendingTtAnnouncements(
+                    Number(
+                        req.query.limit ||
+                        10
+                    )
+                );
+
+            return res.json({
+                success: true,
+                count:
+                    announcements.length,
+                announcements
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bekleyen TT duyuruları alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bekleyen TT duyuruları alınamadı."
+            });
+        }
+    }
+);
+
+// ========================================
+// DISCORD BOT - TT DUYURUSUNU TAMAMLA
+// ========================================
+
+app.patch(
+    "/api/discord/tt-announcements/:announcementId/sent",
+    async (req, res) => {
+
+        try {
+
+            const authorized =
+                requireDiscordWorkerKey(
+                    req,
+                    res
+                );
+
+            if (!authorized) {
+                return;
+            }
+
+            const announcementId =
+                Number(
+                    req.params
+                        .announcementId
+                );
+
+            const discordMessageId =
+                String(
+                    req.body
+                        ?.discordMessageId ||
+                    ""
+                ).trim();
+
+            if (
+                !Number.isInteger(
+                    announcementId
+                ) ||
+                announcementId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz duyuru kayıt numarası."
+                });
+            }
+
+            if (!discordMessageId) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Discord mesaj numarası gereklidir."
+                });
+            }
+
+            const announcement =
+                await markTtAnnouncementAsSent({
+                    announcementId,
+                    discordMessageId
+                });
+
+            if (!announcement) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Duyuru daha önce gönderilmiş veya bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                announcement
+            });
+
+        } catch (err) {
+
+            console.error(
+                "TT duyuru tamamlama hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "TT duyurusu tamamlanamadı."
             });
         }
     }
