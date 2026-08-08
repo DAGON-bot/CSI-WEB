@@ -43,6 +43,20 @@ function getNotificationToken() {
     ) || "";
 }
 
+function syncNotificationBellVisibility() {
+
+    if (!notificationPanelNav) {
+        return;
+    }
+
+    notificationPanelNav.style.display =
+        getNotificationToken()
+            ? "inline-flex"
+            : "none";
+}
+
+syncNotificationBellVisibility();
+
 function getNotificationUserRoles(user) {
 
     if (!user) {
@@ -1352,16 +1366,29 @@ document.addEventListener(
     }
 );
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
+async function initializeNotificationSystem() {
 
-        await loadNotificationCurrentUser();
+    await loadNotificationCurrentUser();
 
-        startNotificationAutoRefresh();
+    startNotificationAutoRefresh();
+}
 
-    }
-);
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeNotificationSystem,
+        {
+            once: true
+        }
+    );
+
+} else {
+
+    initializeNotificationSystem();
+}
 
 document.addEventListener(
     "visibilitychange",

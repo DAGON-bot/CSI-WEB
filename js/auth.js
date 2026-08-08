@@ -387,6 +387,12 @@ function showUserNavbar(username) {
             : "Profil";
     }
 
+    // Bildirim zili bütün giriş yapmış üyelerde görünür.
+    if (authNotificationPanelNav) {
+        authNotificationPanelNav.style.display =
+            "inline-flex";
+    }
+
     if (managementPanel) {
         managementPanel.style.display = "block";
     }
