@@ -14,6 +14,7 @@
     <link
     rel="stylesheet"
     href="css/notificationPanel.css">
+<link rel="stylesheet" href="css/feedback.css?v=1">
     <link rel="stylesheet" href="css/dialog.css">
     <link rel="stylesheet" href="css/chat.css">
     <link rel="stylesheet" href="css/newsPanel.css">
@@ -157,6 +158,16 @@
 
             <span>⚙️</span>
             Ayarlar
+
+        </button>
+
+        <button
+            type="button"
+            id="feedbackOpenBtn"
+            class="profile-dropdown-item">
+
+            <span>💬</span>
+            Geri Bildirim
 
         </button>
 
@@ -2811,6 +2822,100 @@ Admin
 
 
 
+
+<!-- ================= GERİ BİLDİRİM POPUP ================= -->
+<div
+    id="feedbackOverlay"
+    class="feedback-overlay">
+
+    <div class="feedback-popup">
+
+        <button
+            type="button"
+            id="feedbackClose"
+            class="feedback-close">
+            ✕
+        </button>
+
+        <div class="feedback-head">
+            <span class="feedback-kicker">
+                CSI GERİ BİLDİRİM
+            </span>
+
+            <h2>
+                Bize Bildirin
+            </h2>
+
+            <p>
+                Kategori seçin ve geri bildiriminizi detaylı şekilde yazın.
+            </p>
+        </div>
+
+        <div
+            id="feedbackCategories"
+            class="feedback-categories">
+
+            <button type="button" data-feedback-category="Hata Bildirimi">
+                Hata Bildirimi
+            </button>
+
+            <button type="button" data-feedback-category="Öneri / İstek">
+                Öneri / İstek
+            </button>
+
+            <button type="button" data-feedback-category="Bug / Debug">
+                Bug / Debug
+            </button>
+
+            <button type="button" data-feedback-category="Yetki / Hesap Sorunu">
+                Yetki / Hesap Sorunu
+            </button>
+
+            <button type="button" data-feedback-category="Diğer">
+                Diğer
+            </button>
+
+        </div>
+
+        <label class="feedback-label">
+            Başlık
+        </label>
+
+        <input
+            type="text"
+            id="feedbackTitle"
+            class="feedback-input"
+            maxlength="100"
+            placeholder="Kısa bir başlık yazın">
+
+        <label class="feedback-label">
+            Açıklama
+        </label>
+
+        <textarea
+            id="feedbackMessage"
+            class="feedback-textarea"
+            maxlength="2000"
+            placeholder="Sorunu, önerinizi veya isteğinizi detaylı olarak açıklayın...">
+        </textarea>
+
+        <div
+            id="feedbackStatus"
+            class="feedback-status">
+        </div>
+
+        <button
+            type="button"
+            id="feedbackSubmit"
+            class="feedback-submit">
+            Geri Bildirimi Gönder
+        </button>
+
+    </div>
+
+</div>
+
+
 <!-- ================= PROFİL POPUP ================= -->
 
 <div id="profileOverlay" class="profile-overlay">
@@ -3481,7 +3586,8 @@ Admin
 <script src="js/news.js?v=1"></script>
 <script src="js/announcements.js?v=1"></script>
 <script src="js/newsPanel.js?v=3"></script>
-<script src="js/notificationPanel.js"></script>
+<script src="js/notificationPanel.js?v=2"></script>
+<script src="js/feedback.js?v=1"></script>
 <script src="js/radio.js?v=1"></script>
 
 <script src="/socket.io/socket.io.js"></script>
