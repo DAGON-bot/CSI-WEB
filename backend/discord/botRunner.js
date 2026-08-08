@@ -50,6 +50,12 @@ const {
     "./modules/salaryReportModule"
 );
 
+const {
+    registerDailyAttendanceReportCommandHandler
+} = require(
+    "./modules/dailyAttendanceActivityReportModule"
+);
+
 const POLL_INTERVAL_MS =
     Math.max(
         Number(
@@ -1575,6 +1581,7 @@ async function runDiscordBot() {
 
     registerSalaryReportInteractionHandler();
     registerSalaryReportCommandHandler();
+    registerDailyAttendanceReportCommandHandler();
 
     workerRunning = true;
 
