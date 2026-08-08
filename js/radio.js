@@ -8,7 +8,50 @@
     const STORAGE_KEY =
         "csi_radio_preferences_v3";
 
-    const stations = [];
+    const stations = [
+        {
+            id: "powerturk",
+            name: "PowerTürk",
+            meta: "Türkiye • Türkçe Pop",
+            url: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio"
+        },
+        {
+            id: "fenomen",
+            name: "Radyo Fenomen",
+            meta: "Türkiye • Hit Müzik",
+            url: "https://live.radyofenomen.com/fenomen/128/icecast.audio"
+        },
+        {
+            id: "metro-fm",
+            name: "Metro FM",
+            meta: "Türkiye • Yabancı Hit",
+            url: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC"
+        },
+        {
+            id: "joyturk",
+            name: "JoyTürk",
+            meta: "Türkiye • Türkçe Slow",
+            url: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_TURK_SC"
+        },
+        {
+            id: "virgin-radio",
+            name: "Virgin Radio Türkiye",
+            meta: "Türkiye • Rap / Hip-Hop / R&B",
+            url: "https://playerservices.streamtheworld.com/api/livestream-redirect/VIRGIN_RADIO_SC"
+        },
+        {
+            id: "number1-fm",
+            name: "Number1 FM",
+            meta: "Türkiye • Yabancı Hit",
+            url: "https://playerservices.streamtheworld.com/api/livestream-redirect/NUMBER1FMAAC.aac"
+        },
+        {
+            id: "number1-turk",
+            name: "Number1 Türk",
+            meta: "Türkiye • Türkçe Pop",
+            url: "https://playerservices.streamtheworld.com/api/livestream-redirect/NUMBER1TURK_FMAAC.aac"
+        }
+    ];
 
     const root =
         document.getElementById(
@@ -129,6 +172,10 @@
                 );
 
         } catch (_) {}
+
+        if (!state.stationId) {
+            state.stationId = "powerturk";
+        }
     }
 
     function savePreferences() {
@@ -1704,7 +1751,16 @@
     Promise.all([
         loadCurrentUser(),
         fetchRadioState()
-    ]);
+    ]).then(
+        () => {
+
+            if (
+                state.globalRadio.mode !== "dj"
+            ) {
+                tryAutoStartCurrentBroadcast();
+            }
+        }
+    );
 
     setInterval(
         syncAdminYoutubePosition,
