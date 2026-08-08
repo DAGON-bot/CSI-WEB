@@ -121,6 +121,12 @@ const axios = require("axios");
 const http = require("http");
 const { Server } = require("socket.io");
 const bcrypt = require("bcrypt");
+const {
+    getRadioSettings,
+    setDjRadio,
+    stopDjRadio
+} = require("./models/radioModel");
+
 const ADMIN_USERNAME = "canart0";
 const PANEL_PERMISSIONS = {
 
@@ -6097,6 +6103,429 @@ if (!passwordCorrect) {
     }
 
 });
+
+// ===============================
+// CSI RADIO - YETKİLİ KULLANICI
+// ===============================
+
+async function getRadioAuthorizedUser(
+    req
+) {
+
+    const auth =
+        String(
+            req.headers.authorization || ""
+        ).trim();
+
+    if (
+        !auth ||
+        !auth.startsWith("Bearer ")
+    ) {
+        return {
+            user: null,
+            error: {
+                status: 401,
+                message:
+                    "Oturum açmanız gerekiyor."
+            }
+        };
+    }
+
+    const token =
+        auth.replace(
+            "Bearer ",
+            ""
+        ).trim();
+
+    try {
+
+        const tokenUser =
+            require("./services/jwtService")
+                .verifyToken(token);
+
+        const username =
+            tokenUser.username ||
+            tokenUser.name ||
+            tokenUser.user ||
+            tokenUser.sub;
+
+        if (!username) {
+            return {
+                user: null,
+                error: {
+                    status: 401,
+                    message:
+                        "Geçersiz oturum."
+                }
+            };
+        }
+
+        const user =
+            await getUser(
+                username
+            );
+
+        if (!user) {
+            return {
+                user: null,
+                error: {
+                    status: 404,
+                    message:
+                        "Kullanıcı bulunamadı."
+                }
+            };
+        }
+
+        return {
+            user,
+            error: null
+        };
+
+    } catch (_) {
+
+        return {
+            user: null,
+            error: {
+                status: 401,
+                message:
+                    "Geçersiz oturum."
+            }
+        };
+    }
+}
+
+function isRadioAdmin(
+    user
+) {
+
+    if (!user) {
+        return false;
+    }
+
+    return (
+        hasRole(
+            user,
+            "admin"
+        ) ||
+        String(
+            user.username || ""
+        ).toLocaleLowerCase("tr-TR") ===
+            String(
+                ADMIN_USERNAME || ""
+            ).toLocaleLowerCase("tr-TR")
+    );
+}
+
+// ===============================
+// CSI RADIO - AKTİF YAYIN
+// ===============================
+
+app.get(
+    "/api/radio/state",
+    async (req, res) => {
+
+        try {
+
+            const radio =
+                await getRadioSettings();
+
+            return res.json({
+                success: true,
+                radio: {
+                    mode:
+                        radio?.mode ||
+                        "station",
+
+                    stationId:
+                        radio?.stationId ||
+                        "",
+
+                    stationName:
+                        radio?.stationName ||
+                        "",
+
+                    streamUrl:
+                        radio?.streamUrl ||
+                        "",
+
+                    djName:
+                        radio?.djName ||
+                        "",
+
+                    updatedAt:
+                        radio?.updatedAt ||
+                        null
+                }
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Radyo durumu alınamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Radyo durumu alınamadı."
+            });
+        }
+    }
+);
+
+// ===============================
+// CSI RADIO - DJ YAYININI BAŞLAT
+// SADECE ADMIN
+// ===============================
+
+app.post(
+    "/api/radio/dj/start",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getRadioAuthorizedUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            if (
+                !isRadioAdmin(
+                    authorization.user
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "DJ yönetimi yalnızca Admin hesabına açıktır."
+                });
+            }
+
+            const streamUrl =
+                String(
+                    req.body?.streamUrl ||
+                    ""
+                ).trim();
+
+            const djName =
+                String(
+                    req.body?.djName ||
+                    authorization.user.username ||
+                    "Admin"
+                ).trim();
+
+            if (!streamUrl) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "DJ yayın linki gereklidir."
+                });
+            }
+
+            let parsedUrl;
+
+            try {
+
+                parsedUrl =
+                    new URL(
+                        streamUrl
+                    );
+
+            } catch (_) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçerli bir yayın linki girin."
+                });
+            }
+
+            if (
+                !["http:", "https:"]
+                    .includes(
+                        parsedUrl.protocol
+                    )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Yayın linki HTTP veya HTTPS olmalıdır."
+                });
+            }
+
+            const radio =
+                await setDjRadio({
+                    streamUrl,
+                    djName,
+                    updatedBy:
+                        authorization.user.username
+                });
+
+            io.emit(
+                "radioStateChanged",
+                {
+                    mode:
+                        radio?.mode ||
+                        "dj",
+
+                    stationId:
+                        radio?.stationId ||
+                        "",
+
+                    stationName:
+                        radio?.stationName ||
+                        "CSI DJ",
+
+                    streamUrl:
+                        radio?.streamUrl ||
+                        "",
+
+                    djName:
+                        radio?.djName ||
+                        djName,
+
+                    updatedAt:
+                        radio?.updatedAt ||
+                        new Date()
+                }
+            );
+
+            return res.json({
+                success: true,
+                message:
+                    "DJ yayını aktif edildi.",
+                radio
+            });
+
+        } catch (err) {
+
+            console.error(
+                "DJ yayını başlatılamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "DJ yayını başlatılamadı."
+            });
+        }
+    }
+);
+
+// ===============================
+// CSI RADIO - DJ YAYININI KAPAT
+// SADECE ADMIN
+// ===============================
+
+app.post(
+    "/api/radio/dj/stop",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getRadioAuthorizedUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            if (
+                !isRadioAdmin(
+                    authorization.user
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "DJ yönetimi yalnızca Admin hesabına açıktır."
+                });
+            }
+
+            const radio =
+                await stopDjRadio({
+                    updatedBy:
+                        authorization.user.username
+                });
+
+            io.emit(
+                "radioStateChanged",
+                {
+                    mode:
+                        "station",
+
+                    stationId:
+                        radio?.stationId ||
+                        "",
+
+                    stationName:
+                        radio?.stationName ||
+                        "",
+
+                    streamUrl:
+                        "",
+
+                    djName:
+                        "",
+
+                    updatedAt:
+                        radio?.updatedAt ||
+                        new Date()
+                }
+            );
+
+            return res.json({
+                success: true,
+                message:
+                    "DJ yayını kapatıldı.",
+                radio
+            });
+
+        } catch (err) {
+
+            console.error(
+                "DJ yayını kapatılamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "DJ yayını kapatılamadı."
+            });
+        }
+    }
+);
 
 // ===============================
 // OTURUMDAKİ KULLANICI BİLGİLERİ

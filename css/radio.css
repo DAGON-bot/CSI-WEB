@@ -1,0 +1,374 @@
+
+/* =========================================
+   CSI RADIO
+========================================= */
+
+.csi-radio {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 99999;
+    width: min(340px, calc(100vw - 28px));
+    font-family: inherit;
+}
+
+.csi-radio-mini,
+.csi-radio-panel {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 22, 29, 0.98),
+            rgba(9, 11, 16, 0.98)
+        );
+    box-shadow:
+        0 18px 55px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px);
+}
+
+.csi-radio-mini {
+    width: 100%;
+    min-height: 68px;
+    border-radius: 17px;
+    padding: 10px 13px;
+    display: grid;
+    grid-template-columns: 42px 1fr 34px 22px;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.csi-radio-mini:hover {
+    border-color: rgba(255, 196, 64, 0.38);
+    transform: translateY(-1px);
+}
+
+.csi-radio-mini-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 198, 67, 0.18),
+            rgba(255, 151, 28, 0.08)
+        );
+    color: #ffc443;
+    font-size: 18px;
+}
+
+.csi-radio-mini-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.csi-radio-mini-info strong {
+    font-size: 13px;
+    letter-spacing: 0.9px;
+}
+
+.csi-radio-mini-info small {
+    color: #aeb4c2;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.csi-radio-mini-volume,
+.csi-radio-mini-chevron {
+    display: grid;
+    place-items: center;
+    color: #b9bfcc;
+}
+
+.csi-radio-panel {
+    border-radius: 20px;
+    overflow: hidden;
+    color: #fff;
+}
+
+.csi-radio-panel[hidden] {
+    display: none !important;
+}
+
+.csi-radio-header {
+    min-height: 58px;
+    padding: 0 14px 0 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.csi-radio-header > div {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    letter-spacing: 0.8px;
+    font-size: 13px;
+}
+
+.csi-radio-live-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ff4d5d;
+    box-shadow: 0 0 12px rgba(255, 77, 93, 0.7);
+}
+
+.csi-radio-now {
+    padding: 22px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.csi-radio-kicker {
+    color: #ffc443;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.csi-radio-now strong {
+    font-size: 20px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.csi-radio-now > span:last-child {
+    color: #9fa7b6;
+    font-size: 12px;
+}
+
+.csi-radio-controls {
+    margin: 0 18px;
+    padding: 14px;
+    border-radius: 15px;
+    display: grid;
+    grid-template-columns: 44px 38px 1fr;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.csi-radio-play,
+.csi-radio-icon-btn {
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+.csi-radio-play {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ffc94f, #ff9f1c);
+    color: #17120a;
+    font-size: 15px;
+    box-shadow: 0 9px 22px rgba(255, 169, 35, 0.18);
+}
+
+.csi-radio-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.csi-radio-play:hover,
+.csi-radio-icon-btn:hover {
+    filter: brightness(1.08);
+}
+
+.csi-radio-volume-wrap {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 1fr 40px;
+    align-items: center;
+    gap: 8px;
+}
+
+.csi-radio-volume-wrap input {
+    width: 100%;
+    accent-color: #ffc443;
+}
+
+.csi-radio-volume-wrap span {
+    color: #bac0cc;
+    font-size: 11px;
+    text-align: right;
+}
+
+.csi-radio-select-label {
+    display: block;
+    margin: 18px 18px 7px;
+    color: #bfc5d1;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.csi-radio-select {
+    width: calc(100% - 36px);
+    margin: 0 18px;
+    min-height: 42px;
+    border-radius: 11px;
+    padding: 0 12px;
+    background: #11141b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+}
+
+.csi-radio-select:focus {
+    border-color: rgba(255, 196, 67, 0.55);
+}
+
+.csi-radio-message {
+    margin: 12px 18px 18px;
+    padding: 10px 11px;
+    border-radius: 10px;
+    color: #979fac;
+    background: rgba(255, 255, 255, 0.035);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.csi-radio.is-open .csi-radio-mini {
+    display: none;
+}
+
+.csi-radio:not(.is-open) .csi-radio-panel {
+    display: none;
+}
+
+@media (max-width: 600px) {
+
+    .csi-radio {
+        right: 12px;
+        bottom: 12px;
+        width: calc(100vw - 24px);
+    }
+
+    .csi-radio-mini {
+        min-height: 62px;
+        border-radius: 15px;
+    }
+
+    .csi-radio-panel {
+        border-radius: 17px;
+    }
+}
+
+
+/* =========================================
+   CSI RADIO - ADMIN DJ YÖNETİMİ
+========================================= */
+
+.csi-radio-admin {
+    margin: 16px 18px 0;
+    padding: 14px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 196, 67, 0.16);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 196, 67, 0.055),
+            rgba(255, 255, 255, 0.025)
+        );
+}
+
+.csi-radio-admin[hidden] {
+    display: none !important;
+}
+
+.csi-radio-admin-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.csi-radio-admin-title span {
+    color: #ffc443;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.csi-radio-admin-title small {
+    padding: 4px 7px;
+    border-radius: 7px;
+    background: rgba(255, 196, 67, 0.1);
+    color: #ffc443;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.csi-radio-input {
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #11141b;
+    color: #fff;
+    padding: 0 11px;
+    outline: none;
+}
+
+.csi-radio-input:focus {
+    border-color: rgba(255, 196, 67, 0.55);
+}
+
+.csi-radio-admin .csi-radio-select-label {
+    margin: 11px 0 7px;
+}
+
+.csi-radio-admin-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.csi-radio-admin-btn {
+    min-height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.055);
+    color: #d7dbe4;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 11px;
+}
+
+.csi-radio-admin-btn i {
+    margin-right: 6px;
+}
+
+.csi-radio-admin-btn-primary {
+    border-color: rgba(255, 196, 67, 0.22);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 196, 67, 0.18),
+            rgba(255, 151, 28, 0.10)
+        );
+    color: #ffd36a;
+}
+
+.csi-radio-admin-btn:hover {
+    filter: brightness(1.1);
+}
