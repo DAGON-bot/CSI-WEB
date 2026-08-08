@@ -165,20 +165,14 @@ async function loadNotificationCurrentUser() {
         notificationCurrentUser =
             data.user || null;
 
-        if (
-    canManageNotifications(
-        notificationCurrentUser
-    )
-) {
+        if (notificationPanelNav) {
+            notificationPanelNav.style.display =
+                "inline-flex";
+        }
 
-    if (notificationPanelNav) {
-        notificationPanelNav.style.display =
-            "inline-flex";
-    }
-
-    await loadPendingApprovals(false);
-
-}
+        await loadPendingApprovals(
+            false
+        );
 
     } catch (err) {
 
@@ -837,6 +831,155 @@ function createFeedbackNotificationCard(
     return card;
 }
 
+function escapeNotificationHtml(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
+
+function createPersonalNotificationCard(
+    notification
+) {
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+    card.className =
+        "notification-personal-card" +
+        (
+            notification.isRead
+                ? " is-read"
+                : " is-unread"
+        );
+
+    card.innerHTML = `
+        <div class="notification-personal-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <div class="notification-personal-content">
+
+            <strong>
+                ${escapeNotificationHtml(
+                    notification.title
+                )}
+            </strong>
+
+            <p>
+                ${escapeNotificationHtml(
+                    notification.message
+                )}
+            </p>
+
+            <span>
+                ${formatNotificationDate(
+                    notification.createdAt
+                )}
+                ${
+                    notification.isRead
+                        ? " • Okundu"
+                        : " • Yeni"
+                }
+            </span>
+
+        </div>
+    `;
+
+    card.addEventListener(
+        "click",
+        async () => {
+
+            card.classList.toggle(
+                "open"
+            );
+
+            if (
+                notification.isRead
+            ) {
+                return;
+            }
+
+            const token =
+                getNotificationToken();
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${NOTIFICATION_API_URL}/api/notifications/${notification.id}/read`,
+                        {
+                            method:
+                                "PATCH",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            }
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    response.ok &&
+                    data.success
+                ) {
+
+                    notification.isRead =
+                        true;
+
+                    card.classList.remove(
+                        "is-unread"
+                    );
+
+                    card.classList.add(
+                        "is-read"
+                    );
+
+                    await loadPendingApprovals(
+                        false
+                    );
+                }
+
+            } catch (err) {
+
+                console.error(
+                    "Bildirim okundu işaretlenemedi:",
+                    err
+                );
+            }
+        }
+    );
+
+    return card;
+}
+
 async function loadPendingApprovals(
     showLoading = false
 ) {
@@ -846,12 +989,13 @@ async function loadPendingApprovals(
 
     if (
         !token ||
-        !canManageNotifications(
-            notificationCurrentUser
-        )
+        !notificationCurrentUser
     ) {
 
-        updateNotificationCount(0);
+        updateNotificationCount(
+            0
+        );
+
         return;
     }
 
@@ -861,11 +1005,12 @@ async function loadPendingApprovals(
 
     try {
 
-        const approvalRequest =
+        const personalRequest =
             fetch(
-                `${NOTIFICATION_API_URL}/api/account-approvals`,
+                `${NOTIFICATION_API_URL}/api/notifications`,
                 {
-                    method: "GET",
+                    method:
+                        "GET",
 
                     headers: {
                         "Authorization":
@@ -881,14 +1026,15 @@ async function loadPendingApprovals(
                     })
                 );
 
-        const feedbackRequest =
-            canManageFeedbackNotifications(
+        const approvalRequest =
+            canManageNotifications(
                 notificationCurrentUser
             )
                 ? fetch(
-                    `${NOTIFICATION_API_URL}/api/feedback/manage`,
+                    `${NOTIFICATION_API_URL}/api/account-approvals`,
                     {
-                        method: "GET",
+                        method:
+                            "GET",
 
                         headers: {
                             "Authorization":
@@ -906,6 +1052,40 @@ async function loadPendingApprovals(
                     response: {
                         ok: true
                     },
+
+                    data: {
+                        success: true,
+                        approvals: []
+                    }
+                });
+
+        const feedbackRequest =
+            canManageFeedbackNotifications(
+                notificationCurrentUser
+            )
+                ? fetch(
+                    `${NOTIFICATION_API_URL}/api/feedback/manage`,
+                    {
+                        method:
+                            "GET",
+
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                ).then(
+                    async response => ({
+                        response,
+                        data:
+                            await response.json()
+                    })
+                )
+                : Promise.resolve({
+                    response: {
+                        ok: true
+                    },
+
                     data: {
                         success: true,
                         feedbacks: []
@@ -913,13 +1093,26 @@ async function loadPendingApprovals(
                 });
 
         const [
+            personalResult,
             approvalResult,
             feedbackResult
         ] =
             await Promise.all([
+                personalRequest,
                 approvalRequest,
                 feedbackRequest
             ]);
+
+        if (
+            !personalResult.response.ok ||
+            !personalResult.data.success
+        ) {
+
+            throw new Error(
+                personalResult.data.message ||
+                "Kişisel bildirimler yüklenemedi."
+            );
+        }
 
         if (
             !approvalResult.response.ok ||
@@ -939,9 +1132,16 @@ async function loadPendingApprovals(
 
             throw new Error(
                 feedbackResult.data.message ||
-                "Geri bildirimler yüklenemedi."
+                "Hata bildirimleri yüklenemedi."
             );
         }
+
+        const personalNotifications =
+            Array.isArray(
+                personalResult.data.notifications
+            )
+                ? personalResult.data.notifications
+                : [];
 
         const approvals =
             Array.isArray(
@@ -957,19 +1157,27 @@ async function loadPendingApprovals(
                 ? feedbackResult.data.feedbacks
                 : [];
 
+        const unreadPersonal =
+            personalNotifications.filter(
+                item =>
+                    !item.isRead
+            ).length;
+
         updateNotificationCount(
+            unreadPersonal +
             approvals.length +
             feedbacks.length
         );
 
         if (
+            personalNotifications.length === 0 &&
             approvals.length === 0 &&
             feedbacks.length === 0
         ) {
 
             notificationPanelBody.innerHTML = `
                 <div class="notification-empty">
-                    Bekleyen bildirim bulunmuyor.
+                    Bildirim bulunmuyor.
                 </div>
             `;
 
@@ -978,6 +1186,38 @@ async function loadPendingApprovals(
 
         notificationPanelBody.innerHTML =
             "";
+
+        if (
+            personalNotifications.length >
+            0
+        ) {
+
+            const title =
+                document.createElement(
+                    "div"
+                );
+
+            title.className =
+                "notification-section-title";
+
+            title.textContent =
+                "Bildirimler";
+
+            notificationPanelBody.appendChild(
+                title
+            );
+
+            personalNotifications.forEach(
+                notification => {
+
+                    notificationPanelBody.appendChild(
+                        createPersonalNotificationCard(
+                            notification
+                        )
+                    );
+                }
+            );
+        }
 
         if (feedbacks.length > 0) {
 
@@ -990,7 +1230,7 @@ async function loadPendingApprovals(
                 "notification-section-title";
 
             title.textContent =
-                "Geri Bildirimler";
+                "Hata Bildirimleri";
 
             notificationPanelBody.appendChild(
                 title
@@ -1129,9 +1369,7 @@ document.addEventListener(
 
         if (
             document.hidden ||
-            !canManageNotifications(
-                notificationCurrentUser
-            )
+            !notificationCurrentUser
         ) {
             return;
         }
@@ -1158,9 +1396,7 @@ function startNotificationAutoRefresh() {
 
                 if (
                     document.hidden ||
-                    !canManageNotifications(
-                        notificationCurrentUser
-                    )
+                    !notificationCurrentUser
                 ) {
                     return;
                 }
