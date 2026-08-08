@@ -17,6 +17,22 @@ async function ensureRadioSettingsTable() {
         )`
     );
 
+    // Daha önceki radyo tablosu varsa YouTube alanlarını güvenli şekilde ekle.
+    await pool.query(
+        `ALTER TABLE radio_settings
+         ADD COLUMN IF NOT EXISTS "youtubeVideoId" TEXT`
+    );
+
+    await pool.query(
+        `ALTER TABLE radio_settings
+         ADD COLUMN IF NOT EXISTS "youtubeUrl" TEXT`
+    );
+
+    await pool.query(
+        `ALTER TABLE radio_settings
+         ADD COLUMN IF NOT EXISTS "startedAt" TIMESTAMPTZ`
+    );
+
     await pool.query(
         `INSERT INTO radio_settings (
             id,
@@ -40,6 +56,9 @@ async function getRadioSettings() {
                 "stationId",
                 "stationName",
                 "streamUrl",
+                "youtubeVideoId",
+                "youtubeUrl",
+                "startedAt",
                 "djName",
                 "updatedBy",
                 "updatedAt"
@@ -51,8 +70,9 @@ async function getRadioSettings() {
     return result.rows[0] || null;
 }
 
-async function setDjRadio({
-    streamUrl,
+async function setYoutubeDjRadio({
+    youtubeVideoId,
+    youtubeUrl,
     djName,
     updatedBy
 }) {
@@ -65,9 +85,12 @@ async function setDjRadio({
              SET mode = 'dj',
                  "stationId" = NULL,
                  "stationName" = 'CSI DJ',
-                 "streamUrl" = $1,
-                 "djName" = $2,
-                 "updatedBy" = $3,
+                 "streamUrl" = NULL,
+                 "youtubeVideoId" = $1,
+                 "youtubeUrl" = $2,
+                 "startedAt" = CURRENT_TIMESTAMP,
+                 "djName" = $3,
+                 "updatedBy" = $4,
                  "updatedAt" = CURRENT_TIMESTAMP
              WHERE id = 1
              RETURNING
@@ -76,11 +99,15 @@ async function setDjRadio({
                 "stationId",
                 "stationName",
                 "streamUrl",
+                "youtubeVideoId",
+                "youtubeUrl",
+                "startedAt",
                 "djName",
                 "updatedBy",
                 "updatedAt"`,
             [
-                streamUrl,
+                youtubeVideoId,
+                youtubeUrl,
                 djName || null,
                 updatedBy || null
             ]
@@ -100,6 +127,9 @@ async function stopDjRadio({
             `UPDATE radio_settings
              SET mode = 'station',
                  "streamUrl" = NULL,
+                 "youtubeVideoId" = NULL,
+                 "youtubeUrl" = NULL,
+                 "startedAt" = NULL,
                  "djName" = NULL,
                  "updatedBy" = $1,
                  "updatedAt" = CURRENT_TIMESTAMP
@@ -110,6 +140,9 @@ async function stopDjRadio({
                 "stationId",
                 "stationName",
                 "streamUrl",
+                "youtubeVideoId",
+                "youtubeUrl",
+                "startedAt",
                 "djName",
                 "updatedBy",
                 "updatedAt"`,
@@ -124,6 +157,6 @@ async function stopDjRadio({
 module.exports = {
     ensureRadioSettingsTable,
     getRadioSettings,
-    setDjRadio,
+    setYoutubeDjRadio,
     stopDjRadio
 };
