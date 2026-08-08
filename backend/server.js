@@ -124,6 +124,7 @@ const bcrypt = require("bcrypt");
 const {
     getRadioSettings,
     setYoutubeDjRadio,
+    startYoutubeDjPlaybackClock,
     stopDjRadio
 } = require("./models/radioModel");
 
@@ -6511,6 +6512,123 @@ app.post(
                 success: false,
                 message:
                     "DJ yayını başlatılamadı."
+            });
+        }
+    }
+);
+
+// ===============================
+// CSI RADIO - YOUTUBE OYNATMAYI BAŞLAT
+// SADECE ADMIN
+// ===============================
+
+app.post(
+    "/api/radio/dj/play-start",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getRadioAuthorizedUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            if (
+                !isRadioAdmin(
+                    authorization.user
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "DJ yönetimi yalnızca Admin hesabına açıktır."
+                });
+            }
+
+            const radio =
+                await startYoutubeDjPlaybackClock({
+                    updatedBy:
+                        authorization.user.username
+                });
+
+            if (!radio) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Aktif bir YouTube DJ yayını bulunamadı."
+                });
+            }
+
+            io.emit(
+                "radioStateChanged",
+                {
+                    mode:
+                        radio.mode,
+
+                    stationId:
+                        radio.stationId ||
+                        "",
+
+                    stationName:
+                        radio.stationName ||
+                        "CSI DJ",
+
+                    streamUrl:
+                        "",
+
+                    youtubeVideoId:
+                        radio.youtubeVideoId ||
+                        "",
+
+                    youtubeUrl:
+                        radio.youtubeUrl ||
+                        "",
+
+                    startedAt:
+                        radio.startedAt,
+
+                    djName:
+                        radio.djName ||
+                        "",
+
+                    updatedAt:
+                        radio.updatedAt
+                }
+            );
+
+            return res.json({
+                success: true,
+                message:
+                    "YouTube DJ oynatma başlangıcı kaydedildi.",
+                radio
+            });
+
+        } catch (err) {
+
+            console.error(
+                "DJ oynatma başlangıcı kaydedilemedi:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "DJ oynatma başlangıcı kaydedilemedi."
             });
         }
     }

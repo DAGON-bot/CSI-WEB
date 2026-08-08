@@ -574,6 +574,55 @@
         }
     }
 
+    async function ensureYoutubePlaybackStarted() {
+
+        if (
+            !state.isAdmin ||
+            state.globalRadio.startedAt
+        ) {
+            return;
+        }
+
+        const token =
+            getToken();
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/api/radio/dj/play-start`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            Authorization:
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (
+                response.ok &&
+                data.success &&
+                data.radio
+            ) {
+                state.globalRadio.startedAt =
+                    data.radio.startedAt ||
+                    new Date().toISOString();
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "YouTube DJ başlangıç saati kaydedilemedi:",
+                error
+            );
+        }
+    }
+
     async function playActiveSource() {
 
         if (isYoutubeDjMode()) {
@@ -591,8 +640,21 @@
             state.youtube.pendingVideoId =
                 state.globalRadio.youtubeVideoId;
 
-            state.youtube.pendingStartSeconds =
-                getYoutubeElapsedSeconds();
+            if (
+                state.isAdmin &&
+                !state.globalRadio.startedAt
+            ) {
+
+                state.youtube.pendingStartSeconds =
+                    0;
+
+                await ensureYoutubePlaybackStarted();
+
+            } else {
+
+                state.youtube.pendingStartSeconds =
+                    getYoutubeElapsedSeconds();
+            }
 
             loadYoutubeApi();
 
@@ -956,16 +1018,21 @@
 
         if (isYoutubeDjMode()) {
 
-            stopAllSources();
+            // Aynı şarkının 5 saniyelik durum kontrolü
+            // oynatıcıyı durdurmamalı / yeniden yüklememeli.
+            if (sourceChanged) {
 
-            if (
-                root.classList.contains(
-                    "is-open"
-                )
-            ) {
-                prepareYoutubeVideo();
-            } else {
-                youtubeWrap.hidden = true;
+                stopAllSources();
+
+                if (
+                    root.classList.contains(
+                        "is-open"
+                    )
+                ) {
+                    prepareYoutubeVideo();
+                } else {
+                    youtubeWrap.hidden = true;
+                }
             }
 
             message.textContent =
@@ -1068,7 +1135,7 @@
             openPanel();
 
             message.textContent =
-                "YouTube şarkısı yayına alındı. Oynat tuşuna basın.";
+                "YouTube şarkısı hazır. Oynat dediğinizde 0:00’dan başlayacak.";
 
         } catch (error) {
 
