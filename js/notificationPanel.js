@@ -751,22 +751,22 @@ function createFeedbackNotificationCard(
     `;
 
     card.addEventListener(
-        "click",
-        event => {
+    "click",
+    event => {
 
-            if (
-                event.target.closest(
-                    "button"
-                )
-            ) {
-                return;
-            }
-
-            card.classList.toggle(
-                "open"
-            );
+        if (
+            event.target.closest(
+                "button, textarea, input, select, label"
+            )
+        ) {
+            return;
         }
-    );
+
+        card.classList.toggle(
+            "open"
+        );
+    }
+);
 
     async function updateStatus(
         status
