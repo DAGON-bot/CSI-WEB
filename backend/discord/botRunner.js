@@ -118,7 +118,7 @@ function getWorkerConfig() {
         String(
             process.env
                 .DISCORD_TT_ANNOUNCEMENT_CHANNEL_ID ||
-            ""
+            "1509559681377632336"
         ).trim();
 
     if (!apiBaseUrl) {
