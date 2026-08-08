@@ -83,7 +83,14 @@ function getWorkerConfig() {
         String(
             process.env
                 .DISCORD_PROMOTION_CHANNEL_ID ||
-            ""
+            "1510418999605985350"
+        ).trim();
+
+    const bulkPromotionChannelId =
+        String(
+            process.env
+                .DISCORD_BULK_PROMOTION_CHANNEL_ID ||
+            "1510420979908612126"
         ).trim();
 
     const salaryChannelId =
@@ -125,6 +132,12 @@ function getWorkerConfig() {
         );
     }
 
+    if (!bulkPromotionChannelId) {
+        throw new Error(
+            "DISCORD_BULK_PROMOTION_CHANNEL_ID tanımlı değil."
+        );
+    }
+
     if (!salaryChannelId) {
         throw new Error(
             "DISCORD_SALARY_CHANNEL_ID tanımlı değil."
@@ -147,6 +160,7 @@ function getWorkerConfig() {
         apiBaseUrl,
         workerApiKey,
         promotionChannelId,
+        bulkPromotionChannelId,
         salaryChannelId,
         attendanceChannelId,
         registrationChannelId
@@ -643,6 +657,134 @@ async function markAttendanceAsSent(
     return response.data.attendance;
 }
 
+function normalizeAttendanceChannelName(
+    value
+) {
+
+    return String(value || "")
+        .trim()
+        .toLocaleLowerCase("tr-TR")
+        .replace(/ı/g, "i")
+        .replace(/ğ/g, "g")
+        .replace(/ü/g, "u")
+        .replace(/ş/g, "s")
+        .replace(/ö/g, "o")
+        .replace(/ç/g, "c")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "");
+}
+
+async function findAttendancePersonnelChannel(
+    config,
+    personnelName
+) {
+
+    const client =
+        getDiscordClient();
+
+    if (
+        !client ||
+        !client.isReady()
+    ) {
+        throw new Error(
+            "Discord botu hazır değil."
+        );
+    }
+
+    const anchorChannel =
+        await client.channels.fetch(
+            config.attendanceChannelId
+        );
+
+    if (
+        !anchorChannel ||
+        !anchorChannel.guild
+    ) {
+        throw new Error(
+            "Puantaj Discord sunucusu bulunamadı."
+        );
+    }
+
+    const targetName =
+        normalizeAttendanceChannelName(
+            personnelName
+        );
+
+    if (!targetName) {
+        throw new Error(
+            "Personel adı Discord kanal eşleştirmesi için geçersiz."
+        );
+    }
+
+    const guildChannels =
+        await anchorChannel.guild.channels.fetch();
+
+    const allMatches =
+        Array.from(
+            guildChannels.values()
+        ).filter(
+            channel => {
+
+                if (
+                    !channel ||
+                    !channel.isTextBased() ||
+                    typeof channel.send !==
+                        "function"
+                ) {
+                    return false;
+                }
+
+                return (
+                    normalizeAttendanceChannelName(
+                        channel.name
+                    ) === targetName
+                );
+            }
+        );
+
+    // Aynı isim başka kategorilerde de varsa,
+    // önce "puantaj" kategorisindeki kanalı tercih et.
+    const puantajMatches =
+        allMatches.filter(
+            channel => {
+
+                const parentName =
+                    normalizeAttendanceChannelName(
+                        channel.parent?.name || ""
+                    );
+
+                return parentName.includes(
+                    "puantaj"
+                );
+            }
+        );
+
+    if (puantajMatches.length === 1) {
+        return puantajMatches[0];
+    }
+
+    if (puantajMatches.length > 1) {
+        throw new Error(
+            `"${personnelName}" için birden fazla Puantaj Discord kanalı bulundu.`
+        );
+    }
+
+    if (allMatches.length === 1) {
+        return allMatches[0];
+    }
+
+    if (allMatches.length > 1) {
+        throw new Error(
+            `"${personnelName}" için birden fazla Discord kanalı bulundu.`
+        );
+    }
+
+    throw new Error(
+        `"${personnelName}" isimli personelin Discord puantaj kanalı bulunamadı.`
+    );
+}
+
 async function processAttendance(config, attendance) {
 
     const attendanceId = Number(attendance?.id);
@@ -651,12 +793,22 @@ async function processAttendance(config, attendance) {
         throw new Error("Geçersiz puantaj kaydı alındı.");
     }
 
-    const embed = createAttendanceEmbed(attendance);
+    const embed =
+        createAttendanceEmbed(
+            attendance
+        );
 
-    const message = await sendDiscordEmbed(
-        config.attendanceChannelId,
-        embed
-    );
+    const personnelChannel =
+        await findAttendancePersonnelChannel(
+            config,
+            attendance.personnelName
+        );
+
+    const message =
+        await sendDiscordEmbed(
+            personnelChannel.id,
+            embed
+        );
 
     await markAttendanceAsSent(
         config,
@@ -665,7 +817,7 @@ async function processAttendance(config, attendance) {
     );
 
     console.log(
-        `Puantaj Discord'a işlendi: #${attendanceId} - ${attendance.personnelName}`
+        `Puantaj Discord'a işlendi: #${attendanceId} - ${attendance.personnelName} -> #${personnelChannel.name}`
     );
 }
 
@@ -714,7 +866,7 @@ async function processBulkPromotion(
 
     const message =
         await sendDiscordEmbed(
-            config.promotionChannelId,
+            config.bulkPromotionChannelId,
             embed
         );
 
@@ -726,6 +878,176 @@ async function processBulkPromotion(
 
     console.log(
         `Toplu terfi Discord'a işlendi: #${bulkPromotionId} - ${bulkPromotion.promotions.length} personel`
+    );
+}
+
+function getSalaryBadgeChannelCandidates(
+    badge
+) {
+
+    const normalized =
+        String(badge || "")
+            .trim()
+            .toLocaleLowerCase("tr-TR")
+            .replace(/ı/g, "i")
+            .replace(/ğ/g, "g")
+            .replace(/ü/g, "u")
+            .replace(/ş/g, "s")
+            .replace(/ö/g, "o")
+            .replace(/ç/g, "c")
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]/g, "");
+
+    const map = {
+        bronzmaas: [
+            "bronzmaaslistesi"
+        ],
+        demirmaas: [
+            "demirmaaslistesi"
+        ],
+        gumusmaas: [
+            "gumusmaaslistesi"
+        ],
+        altinmaas: [
+            "altinmaaslistesi"
+        ],
+        platmaas: [
+            "platmaaslistesi"
+        ],
+        elmasmaas: [
+            "elmasmaaslistesi"
+        ],
+        zumrutmaas: [
+            "zumrutmaaslistesi"
+        ],
+        ekmaas1: [
+            "ekmaas1"
+        ],
+        ekmaas2: [
+            "ekmaas2"
+        ],
+        ekmaas3: [
+            "ekmaas3"
+        ]
+    };
+
+    return map[normalized] || [];
+}
+
+async function findSalaryBadgeChannel(
+    config,
+    badge
+) {
+
+    const client =
+        getDiscordClient();
+
+    if (
+        !client ||
+        !client.isReady()
+    ) {
+        throw new Error(
+            "Discord botu hazır değil."
+        );
+    }
+
+    const anchorChannel =
+        await client.channels.fetch(
+            config.salaryChannelId
+        );
+
+    if (
+        !anchorChannel ||
+        !anchorChannel.guild
+    ) {
+        throw new Error(
+            "Maaş Discord sunucusu bulunamadı."
+        );
+    }
+
+    const candidates =
+        getSalaryBadgeChannelCandidates(
+            badge
+        );
+
+    if (candidates.length === 0) {
+        throw new Error(
+            `"${badge}" maaş rozeti için Discord kanal eşleştirmesi tanımlı değil.`
+        );
+    }
+
+    const guildChannels =
+        await anchorChannel.guild.channels.fetch();
+
+    const matches =
+        Array.from(
+            guildChannels.values()
+        ).filter(
+            channel => {
+
+                if (
+                    !channel ||
+                    !channel.isTextBased() ||
+                    typeof channel.send !==
+                        "function"
+                ) {
+                    return false;
+                }
+
+                const channelName =
+                    normalizeAttendanceChannelName(
+                        channel.name
+                    );
+
+                return candidates.includes(
+                    channelName
+                );
+            }
+        );
+
+    const salaryCategoryMatches =
+        matches.filter(
+            channel => {
+
+                const parentName =
+                    normalizeAttendanceChannelName(
+                        channel.parent?.name || ""
+                    );
+
+                return (
+                    parentName.includes("maas") &&
+                    parentName.includes("rozet")
+                );
+            }
+        );
+
+    if (
+        salaryCategoryMatches.length === 1
+    ) {
+        return salaryCategoryMatches[0];
+    }
+
+    if (
+        salaryCategoryMatches.length > 1
+    ) {
+        throw new Error(
+            `"${badge}" için Maaş Rozetleri kategorisinde birden fazla Discord kanalı bulundu.`
+        );
+    }
+
+    if (matches.length === 1) {
+        return matches[0];
+    }
+
+    if (matches.length > 1) {
+        throw new Error(
+            `"${badge}" için birden fazla Discord kanalı bulundu.`
+        );
+    }
+
+    throw new Error(
+        `"${badge}" maaş rozeti için Discord kanalı bulunamadı.`
     );
 }
 
@@ -780,9 +1102,15 @@ async function processSalary(
                 salary.workedMinutes
         });
 
+    const salaryChannel =
+        await findSalaryBadgeChannel(
+            config,
+            salary.badge
+        );
+
     const message =
         await sendDiscordEmbed(
-            config.salaryChannelId,
+            salaryChannel.id,
             embed
         );
 
@@ -793,7 +1121,7 @@ async function processSalary(
     );
 
     console.log(
-        `Maaş Discord'a işlendi: #${salaryId} - ${salary.personnelName}`
+        `Maaş Discord'a işlendi: #${salaryId} - ${salary.personnelName} - ${salary.badge} -> #${salaryChannel.name}`
     );
 }
 
