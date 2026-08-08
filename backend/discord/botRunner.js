@@ -114,6 +114,13 @@ function getWorkerConfig() {
             "1535341433375166644"
         ).trim();
 
+    const ttAnnouncementChannelId =
+        String(
+            process.env
+                .DISCORD_TT_ANNOUNCEMENT_CHANNEL_ID ||
+            ""
+        ).trim();
+
     if (!apiBaseUrl) {
         throw new Error(
             "CSI_API_BASE_URL tanımlı değil."
@@ -163,7 +170,8 @@ function getWorkerConfig() {
         bulkPromotionChannelId,
         salaryChannelId,
         attendanceChannelId,
-        registrationChannelId
+        registrationChannelId,
+        ttAnnouncementChannelId
     };
 }
 
@@ -413,6 +421,81 @@ async function fetchPendingPromotions(
     )
         ? response.data.promotions
         : [];
+}
+
+async function fetchPendingTtAnnouncements(
+    config
+) {
+
+    const response =
+        await axios.get(
+            `${config.apiBaseUrl}/api/discord/pending-tt-announcements`,
+            {
+                params: {
+                    limit: 10
+                },
+
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "Bekleyen TT duyuruları alınamadı."
+        );
+    }
+
+    return Array.isArray(
+        response.data.announcements
+    )
+        ? response.data.announcements
+        : [];
+}
+
+async function markTtAnnouncementAsSent(
+    config,
+    announcementId,
+    discordMessageId
+) {
+
+    const response =
+        await axios.patch(
+            `${config.apiBaseUrl}/api/discord/tt-announcements/${announcementId}/sent`,
+            {
+                discordMessageId
+            },
+            {
+                headers: {
+                    "X-Discord-Worker-Key":
+                        config.workerApiKey
+                },
+
+                timeout: 15000
+            }
+        );
+
+    if (
+        !response.data ||
+        response.data.success !== true
+    ) {
+
+        throw new Error(
+            response.data?.message ||
+            "TT duyurusu tamamlandı olarak işaretlenemedi."
+        );
+    }
+
+    return response.data.announcement;
 }
 
 async function fetchPendingBulkPromotions(
@@ -818,6 +901,83 @@ async function processAttendance(config, attendance) {
 
     console.log(
         `Puantaj Discord'a işlendi: #${attendanceId} - ${attendance.personnelName} -> #${personnelChannel.name}`
+    );
+}
+
+async function processTtAnnouncement(
+    config,
+    announcement
+) {
+
+    const announcementId =
+        Number(
+            announcement?.id
+        );
+
+    if (
+        !Number.isInteger(
+            announcementId
+        ) ||
+        announcementId <= 0
+    ) {
+
+        throw new Error(
+            "Geçersiz TT duyuru kaydı alındı."
+        );
+    }
+
+    if (
+        !config.ttAnnouncementChannelId
+    ) {
+
+        throw new Error(
+            "DISCORD_TT_ANNOUNCEMENT_CHANNEL_ID tanımlı değil."
+        );
+    }
+
+    const client =
+        getDiscordClient();
+
+    const channel =
+        await client.channels.fetch(
+            config.ttAnnouncementChannelId
+        );
+
+    if (
+        !channel ||
+        !channel.isTextBased() ||
+        typeof channel.send !==
+            "function"
+    ) {
+
+        throw new Error(
+            "TT duyuru kanalı bulunamadı veya mesaj gönderilemiyor."
+        );
+    }
+
+    const message =
+        await channel.send({
+            content:
+                String(
+                    announcement.message ||
+                    ""
+                ),
+
+            allowedMentions: {
+                parse: [
+                    "everyone"
+                ]
+            }
+        });
+
+    await markTtAnnouncementAsSent(
+        config,
+        announcementId,
+        message.id
+    );
+
+    console.log(
+        `TT duyurusu Discord'a gönderildi: #${announcementId} - ${announcement.announcementTime}`
     );
 }
 
@@ -1283,6 +1443,33 @@ for (
         );
     }
 }
+
+        const ttAnnouncements =
+            await fetchPendingTtAnnouncements(
+                config
+            );
+
+        for (
+            const announcement of ttAnnouncements
+        ) {
+
+            try {
+
+                await processTtAnnouncement(
+                    config,
+                    announcement
+                );
+
+            } catch (error) {
+
+                console.error(
+                    `TT duyurusu işlenemedi (#${announcement?.id || "?"}):`,
+                    error.response?.data ||
+                    error.message ||
+                    error
+                );
+            }
+        }
 
         const salaries =
             await fetchPendingSalaries(

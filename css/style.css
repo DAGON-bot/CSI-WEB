@@ -3143,7 +3143,7 @@ flex-direction:column;
     }
 }
 
-@media (max-width: 900px){
+@media (max-width: 1280px){
 
     .menu-toggle{
         display:block;
@@ -5874,4 +5874,87 @@ img {
     color: #36d17c;
     font-size: 12px;
     font-weight: 800;
+}
+
+/* =========================================
+   YÖNETİM PANELİ - ÜST TEMİZLE BUTONLARI
+========================================= */
+
+#panel .panel.tab-content {
+    position: relative;
+}
+
+.panel-top-clear-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 0 13px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.055);
+    color: #d6d8de;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.panel-top-clear-btn:hover {
+    background: rgba(244, 49, 71, 0.12);
+    border-color: rgba(244, 49, 71, 0.32);
+    color: #ff6576;
+    transform: translateY(-1px);
+}
+
+.tt-announcement-btn {
+    margin-top: 12px;
+    background:
+        linear-gradient(
+            135deg,
+            #22262f,
+            #171a21
+        );
+    border: 1px solid rgba(240, 196, 25, 0.28);
+    color: #f0c419;
+}
+
+.tt-announcement-btn:hover {
+    border-color: rgba(240, 196, 25, 0.55);
+}
+
+.tt-announcement-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.tt-announcement-status {
+    min-height: 18px;
+    margin-top: 8px;
+    text-align: center;
+    color: #aeb3be;
+    font-size: 11px;
+}
+
+@media (max-width: 700px) {
+
+    .panel-top-clear-btn {
+        top: 12px;
+        right: 12px;
+        min-height: 32px;
+        padding: 0 10px;
+    }
+
+    .panel-top-clear-btn span {
+        display: none;
+    }
 }

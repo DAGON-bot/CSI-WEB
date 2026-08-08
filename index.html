@@ -547,6 +547,14 @@
     <!-- TERFİ KONTROL -->
     <div class="panel tab-content active" id="terfi">
 
+        <button
+            type="button"
+            id="terfiTemizleBtn"
+            class="panel-top-clear-btn">
+            <i class="fa-solid fa-broom"></i>
+            Temizle
+        </button>
+
         <div class="page-logo">
     <img src="assets/logo.png" alt="CSI Logo">
 </div>
@@ -669,6 +677,14 @@
 
 <div class="panel tab-content" id="toplu">
 
+    <button
+        type="button"
+        id="ttTemizleBtn"
+        class="panel-top-clear-btn">
+        <i class="fa-solid fa-broom"></i>
+        Temizle
+    </button>
+
     <div class="page-logo">
     <img src="assets/logo.png" alt="CSI Logo">
 </div>
@@ -689,10 +705,6 @@ class="main-btn">
 + Personel Ekle
 
 </button>
-
-    <button id="ttTemizleBtn" class="tt-reset-btn">
-    🗑 Temizle
-    </button>
 
     
 
@@ -765,11 +777,33 @@ class="main-btn">
         TT Hesapla
     </button>
 
+    <button
+        id="ttDuyuruBtn"
+        class="main-btn tt-announcement-btn"
+        type="button">
+        <i class="fa-solid fa-bullhorn"></i>
+        Toplu Terfi Duyurusu Gönder
+    </button>
+
+    <div
+        id="ttDuyuruDurum"
+        class="tt-announcement-status"
+        aria-live="polite">
+    </div>
+
 </div>
 
 <div
     class="panel tab-content"
     id="maas">
+
+    <button
+        type="button"
+        id="maasTemizleBtn"
+        class="panel-top-clear-btn">
+        <i class="fa-solid fa-broom"></i>
+        Temizle
+    </button>
 
     <div class="page-logo">
         <img
@@ -965,6 +999,14 @@ class="main-btn">
 
 <div class="panel tab-content" id="payban">
 
+    <button
+        type="button"
+        id="paybanTemizleBtn"
+        class="panel-top-clear-btn">
+        <i class="fa-solid fa-broom"></i>
+        Temizle
+    </button>
+
     <div class="page-logo">
     <img src="assets/logo.png" alt="CSI Logo">
 </div>
@@ -1024,20 +1066,18 @@ class="main-btn">
 
     </button>
 
-
-    <button
-        id="paybanTemizleBtn"
-        class="reset-btn"
-    >
-
-        ↻ Sıfırla
-
-    </button>
-
 </div>
 <!-- ================= PUANTAJ ================= -->
 
 <div class="panel tab-content" id="puantaj">
+
+    <button
+        type="button"
+        id="puantajTemizleBtn"
+        class="panel-top-clear-btn">
+        <i class="fa-solid fa-broom"></i>
+        Temizle
+    </button>
 
     <div class="page-logo">
         <img src="assets/logo.png" alt="CSI Logo">
@@ -1320,15 +1360,6 @@ class="main-btn">
     class="main-btn">
 
     Puantaj Hesapla
-
-</button>
-
-<button
-    type="button"
-    id="puantajTemizleBtn"
-    class="secondary-btn">
-
-    Temizle
 
 </button>
 
@@ -3438,6 +3469,7 @@ Admin
 <script src="js/ttPopup.js"></script>
 
 <script src="js/ranks.js"></script>
+<script src="js/panelControls.js?v=1"></script>
 <script src="js/script.js"></script>
 <script src="js/maas.js"></script>
 <script src="js/puantaj.js"></script>
