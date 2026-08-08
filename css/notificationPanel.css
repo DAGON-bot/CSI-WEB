@@ -489,3 +489,64 @@
 .notification-personal-card.is-read {
     opacity: .72;
 }
+
+
+/* =========================================
+   ÇÖZÜM NOTU + BİLDİRİM SİLME
+========================================= */
+
+.notification-resolution-label {
+    display: block;
+    margin: 13px 0 6px;
+    color: #f0c419;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.notification-resolution-note {
+    width: 100%;
+    min-height: 74px;
+    box-sizing: border-box;
+    padding: 10px 11px;
+    resize: vertical;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 9px;
+    outline: none;
+    background: #11151c;
+    color: #f2f3f5;
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.notification-resolution-note:focus {
+    border-color: rgba(240,196,25,0.48);
+}
+
+.notification-personal-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.notification-personal-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 27px;
+    padding: 0 9px;
+    border: 1px solid rgba(240,70,80,0.20);
+    border-radius: 7px;
+    background: rgba(240,70,80,0.07);
+    color: #ef6973;
+    font-size: 9px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.notification-personal-delete:hover {
+    border-color: rgba(240,70,80,0.40);
+    background: rgba(240,70,80,0.12);
+}
