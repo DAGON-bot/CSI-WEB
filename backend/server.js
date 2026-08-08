@@ -129,7 +129,8 @@ const {
 const {
     createUserNotification,
     getUserNotifications,
-    markUserNotificationRead
+    markUserNotificationRead,
+    deleteUserNotification
 } = require(
     "./models/notificationModel"
 );
@@ -4200,6 +4201,77 @@ app.patch(
     }
 );
 
+app.delete(
+    "/api/notifications/:notificationId",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const notificationId =
+                Number(
+                    req.params.notificationId
+                );
+
+            if (
+                !Number.isInteger(
+                    notificationId
+                ) ||
+                notificationId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz bildirim."
+                });
+            }
+
+            const notification =
+                await deleteUserNotification({
+                    notificationId,
+                    recipientUserId:
+                        user.id
+                });
+
+            if (!notification) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Bildirim bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bildirim silme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bildirim silinemedi."
+            });
+        }
+    }
+);
+
 // ===============================
 // GERİ BİLDİRİM SİSTEMİ
 // ===============================
@@ -4423,6 +4495,12 @@ app.patch(
                     ""
                 ).trim();
 
+            const resolutionNote =
+                String(
+                    req.body?.resolutionNote ||
+                    ""
+                ).trim();
+
             if (
                 !Number.isInteger(
                     feedbackId
@@ -4451,12 +4529,31 @@ app.patch(
                 });
             }
 
+            if (
+                status === "resolved" &&
+                (
+                    resolutionNote.length < 3 ||
+                    resolutionNote.length > 500
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Çözüm notu 3 ile 500 karakter arasında olmalıdır."
+                });
+            }
+
             const feedback =
                 await updateFeedbackStatus({
                     feedbackId,
                     status,
                     handledBy:
-                        user.username
+                        user.username,
+                    resolutionNote:
+                        status === "resolved"
+                            ? resolutionNote
+                            : null
                 });
 
             if (!feedback) {
@@ -4485,7 +4582,8 @@ app.patch(
 
                     message:
                         `#${feedback.id} • ${feedback.title}\n` +
-                        `Bildirimin ${user.username} tarafından çözüldü olarak işaretlendi.`,
+                        `Bildirimin ${user.username} tarafından çözüldü olarak işaretlendi.\n\n` +
+                        `Çözüm Notu: ${feedback.resolutionNote || resolutionNote}`,
 
                     sourceType:
                         "feedback",

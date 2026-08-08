@@ -189,8 +189,33 @@ async function markUserNotificationRead({
     );
 }
 
+async function deleteUserNotification({
+    notificationId,
+    recipientUserId
+}) {
+
+    await ensureUserNotificationsTable();
+
+    const result =
+        await pool.query(
+            `DELETE FROM user_notifications
+             WHERE id = $1
+               AND "recipientUserId" = $2
+             RETURNING *`,
+            [
+                notificationId,
+                recipientUserId
+            ]
+        );
+
+    return formatNotificationRow(
+        result.rows[0]
+    );
+}
+
 module.exports = {
     createUserNotification,
     getUserNotifications,
-    markUserNotificationRead
+    markUserNotificationRead,
+    deleteUserNotification
 };

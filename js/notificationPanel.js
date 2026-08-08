@@ -722,6 +722,15 @@ function createFeedbackNotificationCard(
                     .replaceAll(">","&gt;")}
             </p>
 
+            <label class="notification-resolution-label">
+                Çözüm Notu
+            </label>
+
+            <textarea
+                class="notification-resolution-note"
+                maxlength="500"
+                placeholder="Kullanıcıya gidecek çözüm notunu yazın..."></textarea>
+
             <div class="notification-feedback-actions">
 
                 <button
@@ -763,6 +772,30 @@ function createFeedbackNotificationCard(
         status
     ) {
 
+        const resolutionNote =
+            String(
+                card
+                    .querySelector(
+                        ".notification-resolution-note"
+                    )
+                    ?.value ||
+                ""
+            ).trim();
+
+        if (
+            status === "resolved" &&
+            resolutionNote.length < 3
+        ) {
+
+            showDialog(
+                "Çözüm Notu Gerekli",
+                "Çözüldü demeden önce kullanıcıya gidecek kısa bir çözüm notu yazın.",
+                "warning"
+            );
+
+            return;
+        }
+
         const token =
             getNotificationToken();
 
@@ -784,7 +817,11 @@ function createFeedbackNotificationCard(
 
                         body:
                             JSON.stringify({
-                                status
+                                status,
+                                resolutionNote:
+                                    status === "resolved"
+                                        ? resolutionNote
+                                        : ""
                             })
                     }
                 );
@@ -910,23 +947,43 @@ function createPersonalNotificationCard(
                 )}
             </p>
 
-            <span>
-                ${formatNotificationDate(
-                    notification.createdAt
-                )}
-                ${
-                    notification.isRead
-                        ? " • Okundu"
-                        : " • Yeni"
-                }
-            </span>
+            <div class="notification-personal-bottom">
+
+                <span>
+                    ${formatNotificationDate(
+                        notification.createdAt
+                    )}
+                    ${
+                        notification.isRead
+                            ? " • Okundu"
+                            : " • Yeni"
+                    }
+                </span>
+
+                <button
+                    type="button"
+                    class="notification-personal-delete"
+                    title="Bildirimi sil">
+                    <i class="fa-solid fa-trash"></i>
+                    Sil
+                </button>
+
+            </div>
 
         </div>
     `;
 
     card.addEventListener(
         "click",
-        async () => {
+        async event => {
+
+            if (
+                event.target.closest(
+                    ".notification-personal-delete"
+                )
+            ) {
+                return;
+            }
 
             card.classList.toggle(
                 "open"
@@ -990,6 +1047,65 @@ function createPersonalNotificationCard(
             }
         }
     );
+
+    card
+        .querySelector(
+            ".notification-personal-delete"
+        )
+        ?.addEventListener(
+            "click",
+            async event => {
+
+                event.stopPropagation();
+
+                const token =
+                    getNotificationToken();
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${NOTIFICATION_API_URL}/api/notifications/${notification.id}`,
+                            {
+                                method:
+                                    "DELETE",
+
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${token}`
+                                }
+                            }
+                        );
+
+                    const data =
+                        await response.json();
+
+                    if (
+                        !response.ok ||
+                        !data.success
+                    ) {
+
+                        throw new Error(
+                            data.message ||
+                            "Bildirim silinemedi."
+                        );
+                    }
+
+                    await loadPendingApprovals(
+                        false
+                    );
+
+                } catch (err) {
+
+                    showDialog(
+                        "Silme Hatası",
+                        err.message ||
+                        "Bildirim silinemedi.",
+                        "error"
+                    );
+                }
+            }
+        );
 
     return card;
 }

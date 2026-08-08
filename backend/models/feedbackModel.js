@@ -12,11 +12,17 @@ async function ensureFeedbackTable() {
             message TEXT NOT NULL,
             status TEXT NOT NULL DEFAULT 'new',
             "handledBy" TEXT,
+            "resolutionNote" TEXT,
             "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT feedback_status_check
                 CHECK (status IN ('new','reviewing','resolved'))
         )`
+    );
+
+    await pool.query(
+        `ALTER TABLE feedbacks
+         ADD COLUMN IF NOT EXISTS "resolutionNote" TEXT`
     );
 
     await pool.query(
@@ -57,6 +63,9 @@ function formatFeedbackRow(row) {
 
         handledBy:
             row.handledBy || null,
+
+        resolutionNote:
+            row.resolutionNote || null,
 
         createdAt:
             row.createdAt,
@@ -127,7 +136,8 @@ async function getOpenFeedbacks() {
 async function updateFeedbackStatus({
     feedbackId,
     status,
-    handledBy
+    handledBy,
+    resolutionNote = null
 }) {
 
     await ensureFeedbackTable();
@@ -137,12 +147,18 @@ async function updateFeedbackStatus({
             `UPDATE feedbacks
              SET status = $1,
                  "handledBy" = $2,
+                 "resolutionNote" = CASE
+                    WHEN $1 = 'resolved'
+                        THEN $3
+                    ELSE "resolutionNote"
+                 END,
                  "updatedAt" = CURRENT_TIMESTAMP
-             WHERE id = $3
+             WHERE id = $4
              RETURNING *`,
             [
                 status,
                 handledBy || null,
+                resolutionNote || null,
                 feedbackId
             ]
         );
