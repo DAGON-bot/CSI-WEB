@@ -466,17 +466,61 @@
                                 if (
                                     state.youtube.pendingVideoId
                                 ) {
-                                    loadYoutubeVideo(
-                                        false
-                                    );
+
+                                    if (
+                                        isYoutubeDjMode() &&
+                                        state.globalRadio.startedAt
+                                    ) {
+
+                                        state.youtube.pendingStartSeconds =
+                                            getYoutubeElapsedSeconds();
+
+                                        try {
+
+                                            event.target.loadVideoById({
+                                                videoId:
+                                                    state.youtube.pendingVideoId,
+
+                                                startSeconds:
+                                                    state.youtube.pendingStartSeconds
+                                            });
+
+                                        } catch (_) {
+
+                                            loadYoutubeVideo(
+                                                false
+                                            );
+                                        }
+
+                                    } else {
+
+                                        loadYoutubeVideo(
+                                            false
+                                        );
+                                    }
                                 }
 
                                 updatePlayUI();
                             },
 
                         onStateChange:
-                            () => {
+                            async event => {
+
                                 updatePlayUI();
+
+                                if (
+                                    event.data ===
+                                        window.YT.PlayerState.PLAYING &&
+                                    state.isAdmin &&
+                                    isYoutubeDjMode() &&
+                                    !state.globalRadio.startedAt
+                                ) {
+
+                                    await ensureYoutubePlaybackStarted();
+
+                                    state.youtube.pendingStartSeconds =
+                                        0;
+                                }
                             },
 
                         onAutoplayBlocked:
@@ -918,6 +962,114 @@
         }
     }
 
+    async function tryAutoStartCurrentBroadcast() {
+
+        if (isYoutubeDjMode()) {
+
+            // YouTube player görünür kalmalı; DJ aktifse paneli aç.
+            if (
+                !root.classList.contains(
+                    "is-open"
+                )
+            ) {
+                openPanel();
+            }
+
+            prepareYoutubeVideo();
+
+            // Player hazırsa yayının mevcut saniyesinden başlatmayı dene.
+            if (
+                state.youtube.playerReady &&
+                state.youtube.player &&
+                state.globalRadio.startedAt
+            ) {
+
+                state.youtube.pendingVideoId =
+                    state.globalRadio.youtubeVideoId;
+
+                state.youtube.pendingStartSeconds =
+                    getYoutubeElapsedSeconds();
+
+                try {
+
+                    state.youtube.player.loadVideoById({
+                        videoId:
+                            state.youtube.pendingVideoId,
+
+                        startSeconds:
+                            state.youtube.pendingStartSeconds
+                    });
+
+                    state.userPaused =
+                        false;
+
+                    message.textContent =
+                        "CSI DJ yayını otomatik başlatılıyor...";
+
+                } catch (error) {
+
+                    console.warn(
+                        "YouTube otomatik başlatılamadı:",
+                        error
+                    );
+                }
+            }
+
+            return;
+        }
+
+        const station =
+            getSelectedStationSource();
+
+        if (
+            !station ||
+            !station.url
+        ) {
+            return;
+        }
+
+        try {
+
+            const absoluteUrl =
+                new URL(
+                    station.url,
+                    window.location.href
+                ).href;
+
+            if (
+                audio.src !==
+                absoluteUrl
+            ) {
+
+                audio.src =
+                    station.url;
+
+                audio.load();
+            }
+
+            await audio.play();
+
+            state.userPaused =
+                false;
+
+            message.textContent =
+                `${station.name} otomatik olarak çalıyor.`;
+
+            updatePlayUI();
+
+        } catch (error) {
+
+            // Tarayıcı sesli autoplay'i engellerse kullanıcı tek tıkla başlatır.
+            state.userPaused =
+                true;
+
+            message.textContent =
+                "Tarayıcı otomatik sesi engelledi. Oynat tuşuna bir kez basın.";
+
+            updatePlayUI();
+        }
+    }
+
     async function fetchRadioState() {
 
         try {
@@ -1040,6 +1192,14 @@
                     ? `${state.globalRadio.djName} YouTube DJ modu aktif.`
                     : "CSI DJ YouTube modu aktif.";
 
+            if (sourceChanged) {
+
+                setTimeout(
+                    tryAutoStartCurrentBroadcast,
+                    250
+                );
+            }
+
         } else {
 
             youtubeWrap.hidden =
@@ -1057,6 +1217,14 @@
 
             message.textContent =
                 "Normal radyo modu aktif.";
+
+            if (sourceChanged) {
+
+                setTimeout(
+                    tryAutoStartCurrentBroadcast,
+                    250
+                );
+            }
         }
     }
 
