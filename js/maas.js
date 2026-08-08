@@ -60,12 +60,12 @@ const salaryBadgeData = {
     },
 
     "Ek-Maaş 2": {
-        requiredMinutes: 120,
+        requiredMinutes: 60,
         credit: 2
     },
 
     "Ek-Maaş 3": {
-        requiredMinutes: 180,
+        requiredMinutes: 60,
         credit: 3
     }
 };
@@ -519,8 +519,21 @@ function calculateSalaryEligibility(
         currentTotalMinutes -
         previousTotalMinutes;
 
+    const isExtraSalary =
+        /^Ek-Maaş\s+[123]$/i.test(
+            String(
+                formData.badge || ""
+            ).trim()
+        );
+
+    // Ek-Maaş 1, 2 ve 3 arasında daima
+    // yalnızca 1 saat (60 dakika) vardır.
+    // Ek1 -> Ek2 = 60 dk
+    // Ek2 -> Ek3 = 60 dk
     const requiredMinutes =
-        salaryBadge.requiredMinutes;
+        isExtraSalary
+            ? 60
+            : salaryBadge.requiredMinutes;
 
     const remainingMinutes =
         Math.max(
