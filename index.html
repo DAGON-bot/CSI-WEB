@@ -14,7 +14,7 @@
     <link
     rel="stylesheet"
     href="css/notificationPanel.css">
-<link rel="stylesheet" href="css/feedback.css?v=1">
+<link rel="stylesheet" href="css/feedback.css?v=2">
     <link rel="stylesheet" href="css/dialog.css">
     <link rel="stylesheet" href="css/chat.css">
     <link rel="stylesheet" href="css/newsPanel.css">
@@ -160,18 +160,7 @@
             Ayarlar
 
         </button>
-
-        <button
-            type="button"
-            id="feedbackOpenBtn"
-            class="profile-dropdown-item">
-
-            <span>💬</span>
-            Geri Bildirim
-
-        </button>
-
-        <div class="profile-dropdown-divider"></div>
+<div class="profile-dropdown-divider"></div>
 
         <button
             type="button"
@@ -2823,7 +2812,7 @@ Admin
 
 
 
-<!-- ================= GERİ BİLDİRİM POPUP ================= -->
+<!-- ================= HATA BİLDİRİM POPUP ================= -->
 <div
     id="feedbackOverlay"
     class="feedback-overlay">
@@ -2839,15 +2828,15 @@ Admin
 
         <div class="feedback-head">
             <span class="feedback-kicker">
-                CSI GERİ BİLDİRİM
+                CSI HATA BİLDİRİM
             </span>
 
             <h2>
-                Bize Bildirin
+                Hata Bildirim
             </h2>
 
             <p>
-                Kategori seçin ve geri bildiriminizi detaylı şekilde yazın.
+                Kategori seçin ve bildiriminizi detaylı şekilde yazın.
             </p>
         </div>
 
@@ -2908,7 +2897,7 @@ Admin
             type="button"
             id="feedbackSubmit"
             class="feedback-submit">
-            Geri Bildirimi Gönder
+            Bildirimi Gönder
         </button>
 
     </div>
@@ -3266,6 +3255,17 @@ Admin
 
 
 
+
+<!-- ================= HATA BİLDİRİM SABİT BUTONU ================= -->
+<button type="button" id="feedbackOpenBtn" class="csi-feedback-float" aria-label="Hata Bildirim panelini aç">
+    <span class="csi-feedback-float-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+    <span class="csi-feedback-float-info">
+        <strong>HATA BİLDİRİM</strong>
+        <small>Sorun mu buldun?</small>
+    </span>
+    <span class="csi-feedback-float-chevron"><i class="fa-solid fa-chevron-up"></i></span>
+</button>
+
 <!--=========================================
         CSI RADIO
 ==========================================-->
@@ -3587,7 +3587,7 @@ Admin
 <script src="js/announcements.js?v=1"></script>
 <script src="js/newsPanel.js?v=3"></script>
 <script src="js/notificationPanel.js?v=2"></script>
-<script src="js/feedback.js?v=1"></script>
+<script src="js/feedback.js?v=2"></script>
 <script src="js/radio.js?v=1"></script>
 
 <script src="/socket.io/socket.io.js"></script>
