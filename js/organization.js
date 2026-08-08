@@ -113,7 +113,7 @@ const organizationMembers = [
 {
     name: "Hertabe",
     role: "Founder",
-    avatar: "assets/logo.png",
+    avatar: "assets/founders/hertabe.png",
     position: "eliteFounder"
 },
 
@@ -127,9 +127,9 @@ const organizationMembers = [
 },
 
 {
-    name: "!Eyrie.",
+    name: "Boş",
     role: "Hak Sahibi",
-    avatar: "assets/founders/!Eyrie..png",
+    avatar: "assets/logo.png",
     position: "rightsOwner"
 },
 
