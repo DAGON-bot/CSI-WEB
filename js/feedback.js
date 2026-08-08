@@ -275,8 +275,8 @@ feedbackSubmit?.addEventListener(
             }
 
             showDialog(
-                "Geri Bildirim Gönderildi",
-                "Geri bildiriminiz Admin ve Moderatör ekibine iletildi.",
+                "Hata Bildirimi Gönderildi",
+                "Bildiriminiz Admin ve Moderatör ekibine iletildi.",
                 "success"
             );
 
