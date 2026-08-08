@@ -74,6 +74,8 @@
             youtubeVideoId: "",
             youtubeUrl: "",
             startedAt: null,
+            youtubePositionSeconds: 0,
+            positionUpdatedAt: null,
             djName: "",
             updatedAt: null
         },
@@ -196,23 +198,45 @@
 
     function getYoutubeElapsedSeconds() {
 
-        const startedAt =
-            state.globalRadio.startedAt
-                ? new Date(
-                    state.globalRadio.startedAt
-                ).getTime()
-                : NaN;
+        const basePosition =
+            Math.max(
+                0,
+                Number(
+                    state.globalRadio
+                        .youtubePositionSeconds
+                ) || 0
+            );
 
-        if (!Number.isFinite(startedAt)) {
-            return 0;
+        const positionUpdatedAt =
+            state.globalRadio
+                .positionUpdatedAt
+                    ? new Date(
+                        state.globalRadio
+                            .positionUpdatedAt
+                    ).getTime()
+                    : NaN;
+
+        if (
+            !Number.isFinite(
+                positionUpdatedAt
+            )
+        ) {
+            return basePosition;
         }
+
+        const extraSeconds =
+            Math.max(
+                0,
+                (
+                    Date.now() -
+                    positionUpdatedAt
+                ) / 1000
+            );
 
         return Math.max(
             0,
-            Math.floor(
-                (Date.now() - startedAt) /
-                1000
-            )
+            basePosition +
+            extraSeconds
         );
     }
 
@@ -520,6 +544,8 @@
 
                                     state.youtube.pendingStartSeconds =
                                         0;
+
+                                    await syncAdminYoutubePosition();
                                 }
                             },
 
@@ -613,6 +639,109 @@
 
             console.warn(
                 "YouTube video yüklenemedi:",
+                error
+            );
+        }
+    }
+
+    async function syncAdminYoutubePosition() {
+
+        if (
+            !state.isAdmin ||
+            !isYoutubeDjMode() ||
+            !state.youtube.playerReady ||
+            !state.youtube.player
+        ) {
+            return;
+        }
+
+        let playerState;
+        let positionSeconds;
+
+        try {
+
+            playerState =
+                state.youtube.player
+                    .getPlayerState();
+
+            if (
+                !window.YT ||
+                playerState !==
+                    window.YT.PlayerState.PLAYING
+            ) {
+                return;
+            }
+
+            positionSeconds =
+                Number(
+                    state.youtube.player
+                        .getCurrentTime()
+                );
+
+        } catch (_) {
+            return;
+        }
+
+        if (
+            !Number.isFinite(
+                positionSeconds
+            ) ||
+            positionSeconds < 0
+        ) {
+            return;
+        }
+
+        const token =
+            getToken();
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API_URL}/api/radio/dj/sync-position`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            Authorization:
+                                `Bearer ${token}`
+                        },
+
+                        body:
+                            JSON.stringify({
+                                positionSeconds
+                            })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (
+                response.ok &&
+                data.success
+            ) {
+
+                state.globalRadio
+                    .youtubePositionSeconds =
+                        Number(
+                            data.positionSeconds
+                        ) || positionSeconds;
+
+                state.globalRadio
+                    .positionUpdatedAt =
+                        data.positionUpdatedAt ||
+                        new Date()
+                            .toISOString();
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "DJ konum senkronu başarısız:",
                 error
             );
         }
@@ -1070,6 +1199,57 @@
         }
     }
 
+    function correctYoutubeListenerDrift() {
+
+        if (
+            state.isAdmin ||
+            !isYoutubeDjMode() ||
+            !state.youtube.playerReady ||
+            !state.youtube.player ||
+            !window.YT
+        ) {
+            return;
+        }
+
+        try {
+
+            const playerState =
+                state.youtube.player
+                    .getPlayerState();
+
+            if (
+                playerState !==
+                window.YT.PlayerState.PLAYING
+            ) {
+                return;
+            }
+
+            const current =
+                Number(
+                    state.youtube.player
+                        .getCurrentTime()
+                );
+
+            const target =
+                getYoutubeElapsedSeconds();
+
+            if (
+                Number.isFinite(current) &&
+                Number.isFinite(target) &&
+                Math.abs(
+                    current - target
+                ) > 4
+            ) {
+
+                state.youtube.player.seekTo(
+                    target,
+                    true
+                );
+            }
+
+        } catch (_) {}
+    }
+
     async function fetchRadioState() {
 
         try {
@@ -1095,6 +1275,8 @@
             applyGlobalRadioState(
                 data.radio || {}
             );
+
+            correctYoutubeListenerDrift();
 
         } catch (error) {
 
@@ -1148,6 +1330,18 @@
 
             startedAt:
                 incoming.startedAt ||
+                null,
+
+            youtubePositionSeconds:
+                Math.max(
+                    0,
+                    Number(
+                        incoming.youtubePositionSeconds
+                    ) || 0
+                ),
+
+            positionUpdatedAt:
+                incoming.positionUpdatedAt ||
                 null,
 
             djName:
@@ -1511,6 +1705,11 @@
         loadCurrentUser(),
         fetchRadioState()
     ]);
+
+    setInterval(
+        syncAdminYoutubePosition,
+        2000
+    );
 
     setInterval(
         fetchRadioState,

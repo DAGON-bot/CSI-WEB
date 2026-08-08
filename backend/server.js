@@ -125,6 +125,7 @@ const {
     getRadioSettings,
     setYoutubeDjRadio,
     startYoutubeDjPlaybackClock,
+    updateYoutubeDjPosition,
     stopDjRadio
 } = require("./models/radioModel");
 
@@ -6340,6 +6341,15 @@ app.get(
                         radio?.startedAt ||
                         null,
 
+                    youtubePositionSeconds:
+                        Number(
+                            radio?.youtubePositionSeconds
+                        ) || 0,
+
+                    positionUpdatedAt:
+                        radio?.positionUpdatedAt ||
+                        null,
+
                     djName:
                         radio?.djName ||
                         "",
@@ -6518,6 +6528,108 @@ app.post(
 );
 
 // ===============================
+// CSI RADIO - YOUTUBE KONUM SENKRONU
+// SADECE ADMIN
+// ===============================
+
+app.post(
+    "/api/radio/dj/sync-position",
+    async (req, res) => {
+
+        try {
+
+            const authorization =
+                await getRadioAuthorizedUser(
+                    req
+                );
+
+            if (authorization.error) {
+
+                return res
+                    .status(
+                        authorization.error.status
+                    )
+                    .json({
+                        success: false,
+                        message:
+                            authorization.error.message
+                    });
+            }
+
+            if (
+                !isRadioAdmin(
+                    authorization.user
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "DJ yönetimi yalnızca Admin hesabına açıktır."
+                });
+            }
+
+            const positionSeconds =
+                Number(
+                    req.body?.positionSeconds
+                );
+
+            if (
+                !Number.isFinite(positionSeconds) ||
+                positionSeconds < 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz oynatma konumu."
+                });
+            }
+
+            const radio =
+                await updateYoutubeDjPosition({
+                    positionSeconds,
+                    updatedBy:
+                        authorization.user.username
+                });
+
+            if (!radio) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Aktif bir YouTube DJ yayını bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                positionSeconds:
+                    Number(
+                        radio.youtubePositionSeconds
+                    ) || 0,
+
+                positionUpdatedAt:
+                    radio.positionUpdatedAt
+            });
+
+        } catch (err) {
+
+            console.error(
+                "DJ YouTube konumu senkronlanamadı:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "DJ YouTube konumu senkronlanamadı."
+            });
+        }
+    }
+);
+
+// ===============================
 // CSI RADIO - YOUTUBE OYNATMAYI BAŞLAT
 // SADECE ADMIN
 // ===============================
@@ -6601,6 +6713,15 @@ app.post(
 
                     startedAt:
                         radio.startedAt,
+
+                    youtubePositionSeconds:
+                        Number(
+                            radio.youtubePositionSeconds
+                        ) || 0,
+
+                    positionUpdatedAt:
+                        radio.positionUpdatedAt ||
+                        null,
 
                     djName:
                         radio.djName ||
@@ -6706,6 +6827,12 @@ app.post(
                         "",
 
                     startedAt:
+                        null,
+
+                    youtubePositionSeconds:
+                        0,
+
+                    positionUpdatedAt:
                         null,
 
                     djName:
