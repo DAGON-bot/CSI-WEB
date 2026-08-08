@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/dialog.css">
     <link rel="stylesheet" href="css/chat.css">
     <link rel="stylesheet" href="css/newsPanel.css">
+    <link rel="stylesheet" href="css/radio.css?v=1">
     <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -3128,6 +3129,232 @@ Admin
 </div> <!-- authOverlay -->
 
 
+
+<!--=========================================
+        CSI RADIO
+==========================================-->
+
+<div
+    id="csiRadio"
+    class="csi-radio"
+    aria-live="polite">
+
+    <audio
+        id="csiRadioAudio"
+        preload="none">
+    </audio>
+
+    <button
+        type="button"
+        id="csiRadioMini"
+        class="csi-radio-mini"
+        aria-expanded="false"
+        aria-controls="csiRadioPanel">
+
+        <span class="csi-radio-mini-icon">
+            <i class="fa-solid fa-radio"></i>
+        </span>
+
+        <span class="csi-radio-mini-info">
+
+            <strong>CSI RADIO</strong>
+
+            <small
+                id="csiRadioMiniStatus">
+                Yayın bekleniyor
+            </small>
+
+        </span>
+
+        <span
+            id="csiRadioMiniVolume"
+            class="csi-radio-mini-volume">
+
+            <i class="fa-solid fa-volume-high"></i>
+
+        </span>
+
+        <span class="csi-radio-mini-chevron">
+            <i class="fa-solid fa-chevron-up"></i>
+        </span>
+
+    </button>
+
+    <div
+        id="csiRadioPanel"
+        class="csi-radio-panel"
+        hidden>
+
+        <div class="csi-radio-header">
+
+            <div>
+
+                <span class="csi-radio-live-dot"></span>
+
+                <strong>CSI RADIO</strong>
+
+            </div>
+
+            <button
+                type="button"
+                id="csiRadioCollapse"
+                class="csi-radio-icon-btn"
+                aria-label="Radyoyu küçült">
+
+                <i class="fa-solid fa-chevron-down"></i>
+
+            </button>
+
+        </div>
+
+        <div class="csi-radio-now">
+
+            <span class="csi-radio-kicker">
+                ŞU AN ÇALIYOR
+            </span>
+
+            <strong
+                id="csiRadioStationName">
+                Yayın bekleniyor
+            </strong>
+
+            <span
+                id="csiRadioStationMeta">
+                CSI Radio
+            </span>
+
+        </div>
+
+        <div class="csi-radio-controls">
+
+            <button
+                type="button"
+                id="csiRadioPlay"
+                class="csi-radio-play"
+                aria-label="Oynat">
+
+                <i class="fa-solid fa-play"></i>
+
+            </button>
+
+            <button
+                type="button"
+                id="csiRadioMute"
+                class="csi-radio-icon-btn csi-radio-mute"
+                aria-label="Sessize al">
+
+                <i class="fa-solid fa-volume-high"></i>
+
+            </button>
+
+            <div class="csi-radio-volume-wrap">
+
+                <input
+                    type="range"
+                    id="csiRadioVolume"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="55"
+                    aria-label="Radyo sesi">
+
+                <span id="csiRadioVolumeValue">
+                    55%
+                </span>
+
+            </div>
+
+        </div>
+
+        <label
+            class="csi-radio-select-label"
+            for="csiRadioStation">
+
+            Radyo Kanalı
+
+        </label>
+
+        <select
+            id="csiRadioStation"
+            class="csi-radio-select">
+
+            <option value="">
+                Yayın seçilmedi
+            </option>
+
+        </select>
+
+
+        <div
+            id="csiRadioAdmin"
+            class="csi-radio-admin"
+            hidden>
+
+            <div class="csi-radio-admin-title">
+                <span>DJ YÖNETİMİ</span>
+                <small>Admin</small>
+            </div>
+
+            <label
+                class="csi-radio-select-label"
+                for="csiRadioDjName">
+                DJ Adı
+            </label>
+
+            <input
+                type="text"
+                id="csiRadioDjName"
+                class="csi-radio-input"
+                maxlength="40"
+                placeholder="Örn: CSI DJ">
+
+            <label
+                class="csi-radio-select-label"
+                for="csiRadioDjUrl">
+                Canlı Yayın Linki
+            </label>
+
+            <input
+                type="url"
+                id="csiRadioDjUrl"
+                class="csi-radio-input"
+                placeholder="https://.../stream">
+
+            <div class="csi-radio-admin-actions">
+
+                <button
+                    type="button"
+                    id="csiRadioDjStart"
+                    class="csi-radio-admin-btn csi-radio-admin-btn-primary">
+                    <i class="fa-solid fa-broadcast-tower"></i>
+                    DJ Yayınını Başlat
+                </button>
+
+                <button
+                    type="button"
+                    id="csiRadioDjStop"
+                    class="csi-radio-admin-btn">
+                    <i class="fa-solid fa-stop"></i>
+                    DJ Yayınını Kapat
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            id="csiRadioMessage"
+            class="csi-radio-message">
+
+            İlk sürüm hazır. Yayın adresleri sonraki adımda eklenecek.
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <!--=========================================
         FOOTER
 ==========================================-->
@@ -3210,6 +3437,7 @@ Admin
 <script src="js/announcements.js?v=1"></script>
 <script src="js/newsPanel.js?v=3"></script>
 <script src="js/notificationPanel.js"></script>
+<script src="js/radio.js?v=1"></script>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/chat.js?v=4"></script>
