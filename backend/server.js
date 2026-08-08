@@ -127,6 +127,14 @@ const {
 );
 
 const {
+    createUserNotification,
+    getUserNotifications,
+    markUserNotificationRead
+} = require(
+    "./models/notificationModel"
+);
+
+const {
     pool,
     initDatabase
 } = require("./database/db");
@@ -4065,6 +4073,134 @@ async function getAuthorizedApprovalUser(req) {
 }
 
 // ===============================
+// GENEL KULLANICI BİLDİRİMLERİ
+// ===============================
+
+app.get(
+    "/api/notifications",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const notifications =
+                await getUserNotifications(
+                    user.id,
+                    Number(
+                        req.query?.limit ||
+                        50
+                    )
+                );
+
+            return res.json({
+                success: true,
+                unreadCount:
+                    notifications.filter(
+                        item =>
+                            !item.isRead
+                    ).length,
+                notifications
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Kullanıcı bildirimleri yükleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bildirimler yüklenemedi."
+            });
+        }
+    }
+);
+
+app.patch(
+    "/api/notifications/:notificationId/read",
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await requireRequestUser(
+                    req,
+                    res
+                );
+
+            if (!user) {
+                return;
+            }
+
+            const notificationId =
+                Number(
+                    req.params
+                        .notificationId
+                );
+
+            if (
+                !Number.isInteger(
+                    notificationId
+                ) ||
+                notificationId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Geçersiz bildirim."
+                });
+            }
+
+            const notification =
+                await markUserNotificationRead({
+                    notificationId,
+                    recipientUserId:
+                        user.id
+                });
+
+            if (!notification) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Bildirim bulunamadı."
+                });
+            }
+
+            return res.json({
+                success: true,
+                notification
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Bildirim okundu işaretleme hatası:",
+                err
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Bildirim güncellenemedi."
+            });
+        }
+    }
+);
+
+// ===============================
 // GERİ BİLDİRİM SİSTEMİ
 // ===============================
 
@@ -4329,6 +4465,35 @@ app.patch(
                     success: false,
                     message:
                         "Geri bildirim bulunamadı."
+                });
+            }
+
+            if (
+                status === "resolved" &&
+                feedback.userId
+            ) {
+
+                await createUserNotification({
+                    recipientUserId:
+                        feedback.userId,
+
+                    type:
+                        "feedback_resolved",
+
+                    title:
+                        "Hata Bildirimin Çözüldü",
+
+                    message:
+                        `#${feedback.id} • ${feedback.title}\n` +
+                        `Bildirimin ${user.username} tarafından çözüldü olarak işaretlendi.`,
+
+                    sourceType:
+                        "feedback",
+
+                    sourceId:
+                        String(
+                            feedback.id
+                        )
                 });
             }
 
