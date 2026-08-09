@@ -697,13 +697,22 @@ function createFeedbackNotificationCard(
 
             <div>
                 <strong>
-                    #${feedback.id} • ${feedback.title}
+                    #${Number(feedback.id) || 0} •
+                    ${escapeNotificationHtml(
+                        feedback.title
+                    )}
                 </strong>
 
                 <span>
-                    ${feedback.username} •
-                    ${feedback.category} •
-                    ${formatNotificationDate(feedback.createdAt)}
+                    ${escapeNotificationHtml(
+                        feedback.username
+                    )} •
+                    ${escapeNotificationHtml(
+                        feedback.category
+                    )} •
+                    ${formatNotificationDate(
+                        feedback.createdAt
+                    )}
                 </span>
             </div>
 
@@ -716,10 +725,9 @@ function createFeedbackNotificationCard(
         <div class="notification-feedback-detail">
 
             <p>
-                ${String(feedback.message || "")
-                    .replaceAll("&","&amp;")
-                    .replaceAll("<","&lt;")
-                    .replaceAll(">","&gt;")}
+                ${escapeNotificationHtml(
+                    feedback.message
+                )}
             </p>
 
             <label class="notification-resolution-label">

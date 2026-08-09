@@ -665,7 +665,81 @@ const io =
 app.use(cors());
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, "..")));
+// ========================================
+// GÜVENLİ STATİK DOSYA YAYINI
+// Proje kökü ve backend klasörü web'e açılmaz.
+// ========================================
+
+const publicRoot =
+    path.join(
+        __dirname,
+        ".."
+    );
+
+app.use(
+    "/css",
+    express.static(
+        path.join(
+            publicRoot,
+            "css"
+        ),
+        {
+            index: false
+        }
+    )
+);
+
+app.use(
+    "/js",
+    express.static(
+        path.join(
+            publicRoot,
+            "js"
+        ),
+        {
+            index: false
+        }
+    )
+);
+
+app.use(
+    "/assets",
+    express.static(
+        path.join(
+            publicRoot,
+            "assets"
+        ),
+        {
+            index: false
+        }
+    )
+);
+
+app.use(
+    "/components",
+    express.static(
+        path.join(
+            publicRoot,
+            "components"
+        ),
+        {
+            index: false
+        }
+    )
+);
+
+app.get(
+    "/",
+    (req, res) => {
+
+        return res.sendFile(
+            path.join(
+                publicRoot,
+                "index.html"
+            )
+        );
+    }
+);
 
 const chatLastMessageTimes =
     new Map();
@@ -8352,6 +8426,20 @@ app.patch(
 
             }
 
+            if (
+                !hasPanelPermission(
+                    requester,
+                    "promotion"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Terfi rütbesi güncelleme yetkiniz bulunmuyor."
+                });
+            }
+
             const username =
                 String(req.body.username || "").trim();
 
@@ -8547,6 +8635,20 @@ app.patch(
                         "Oturum sahibi bulunamadı."
                 });
 
+            }
+
+            if (
+                !hasPanelPermission(
+                    requester,
+                    "bulkPromotion"
+                )
+            ) {
+
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "Toplu terfi rütbesi güncelleme yetkiniz bulunmuyor."
+                });
             }
 
             const promotions =
