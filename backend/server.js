@@ -307,6 +307,362 @@ function canManageNewsArticle(
 const app = express();
 
 // ========================================
+// GÜVENLİK AYARLARI
+// ========================================
+
+app.disable("x-powered-by");
+
+// Nginx aynı sunucuda proxy olarak çalıştığı için yalnızca loopback proxy'ye güven.
+app.set(
+    "trust proxy",
+    "loopback"
+);
+
+const DEFAULT_ALLOWED_ORIGINS = [
+    "http://45.81.113.17",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+];
+
+const allowedOrigins =
+    new Set(
+        String(
+            process.env.CORS_ALLOWED_ORIGINS ||
+            DEFAULT_ALLOWED_ORIGINS.join(",")
+        )
+            .split(",")
+            .map(
+                value =>
+                    value.trim()
+            )
+            .filter(Boolean)
+    );
+
+function isAllowedOrigin(
+    origin
+) {
+
+    if (!origin) {
+        return true;
+    }
+
+    return allowedOrigins.has(
+        String(origin).trim()
+    );
+}
+
+const corsOptions = {
+
+    origin: (
+        origin,
+        callback
+    ) => {
+
+        if (
+            isAllowedOrigin(
+                origin
+            )
+        ) {
+
+            return callback(
+                null,
+                true
+            );
+        }
+
+        return callback(
+            new Error(
+                "CORS origin reddedildi."
+            )
+        );
+    },
+
+    methods: [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+    ],
+
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Discord-Worker-Key"
+    ],
+
+    credentials: false,
+    maxAge: 600
+};
+
+// Helmet benzeri temel güvenlik başlıkları.
+// CSP, mevcut inline script/style ve YouTube radyo embed'i nedeniyle
+// ayrı bir test aşamasında sıkılaştırılacaktır.
+app.use(
+    (req, res, next) => {
+
+        res.setHeader(
+            "X-Content-Type-Options",
+            "nosniff"
+        );
+
+        res.setHeader(
+            "X-Frame-Options",
+            "SAMEORIGIN"
+        );
+
+        res.setHeader(
+            "Referrer-Policy",
+            "strict-origin-when-cross-origin"
+        );
+
+        res.setHeader(
+            "Permissions-Policy",
+            "camera=(), geolocation=(), microphone=()"
+        );
+
+        res.setHeader(
+            "Cross-Origin-Opener-Policy",
+            "same-origin"
+        );
+
+        res.setHeader(
+            "X-DNS-Prefetch-Control",
+            "off"
+        );
+
+        return next();
+    }
+);
+
+// ========================================
+// BASİT IN-MEMORY RATE LIMIT
+// PM2 restartında sayaçlar sıfırlanır.
+// ========================================
+
+const securityRateLimitBuckets =
+    new Map();
+
+const securityRateLimitPolicies = [
+
+    {
+        name: "login",
+        method: "POST",
+        paths: [
+            "/api/login"
+        ],
+        windowMs:
+            15 * 60 * 1000,
+        limit: 15
+    },
+
+    {
+        name: "registration",
+        method: "POST",
+        paths: [
+            "/api/verify/create",
+            "/api/verify/check",
+            "/api/register/password"
+        ],
+        windowMs:
+            15 * 60 * 1000,
+        limit: 20
+    },
+
+    {
+        name: "password-reset",
+        method: "POST",
+        paths: [
+            "/api/password-reset/create",
+            "/api/password-reset/check",
+            "/api/password-reset/complete"
+        ],
+        windowMs:
+            15 * 60 * 1000,
+        limit: 15
+    },
+
+    {
+        name: "password-change",
+        method: "POST",
+        paths: [
+            "/api/profile/change-password"
+        ],
+        windowMs:
+            60 * 60 * 1000,
+        limit: 10
+    },
+
+    {
+        name: "feedback",
+        method: "POST",
+        paths: [
+            "/api/feedback"
+        ],
+        windowMs:
+            10 * 60 * 1000,
+        limit: 10
+    }
+];
+
+function getSecurityRateLimitPolicy(
+    req
+) {
+
+    return securityRateLimitPolicies.find(
+        policy =>
+            policy.method ===
+                req.method &&
+            policy.paths.includes(
+                req.path
+            )
+    ) || null;
+}
+
+function securityRateLimitMiddleware(
+    req,
+    res,
+    next
+) {
+
+    const policy =
+        getSecurityRateLimitPolicy(
+            req
+        );
+
+    if (!policy) {
+        return next();
+    }
+
+    const now =
+        Date.now();
+
+    const ip =
+        String(
+            req.ip ||
+            req.socket?.remoteAddress ||
+            "unknown"
+        );
+
+    const key =
+        `${policy.name}:${ip}`;
+
+    let bucket =
+        securityRateLimitBuckets.get(
+            key
+        );
+
+    if (
+        !bucket ||
+        now >= bucket.resetAt
+    ) {
+
+        bucket = {
+            count: 0,
+            resetAt:
+                now +
+                policy.windowMs
+        };
+
+        securityRateLimitBuckets.set(
+            key,
+            bucket
+        );
+    }
+
+    bucket.count += 1;
+
+    const remaining =
+        Math.max(
+            policy.limit -
+            bucket.count,
+            0
+        );
+
+    res.setHeader(
+        "RateLimit-Limit",
+        String(
+            policy.limit
+        )
+    );
+
+    res.setHeader(
+        "RateLimit-Remaining",
+        String(
+            remaining
+        )
+    );
+
+    res.setHeader(
+        "RateLimit-Reset",
+        String(
+            Math.ceil(
+                bucket.resetAt /
+                1000
+            )
+        )
+    );
+
+    if (
+        bucket.count >
+        policy.limit
+    ) {
+
+        const retryAfterSeconds =
+            Math.max(
+                Math.ceil(
+                    (
+                        bucket.resetAt -
+                        now
+                    ) /
+                    1000
+                ),
+                1
+            );
+
+        res.setHeader(
+            "Retry-After",
+            String(
+                retryAfterSeconds
+            )
+        );
+
+        return res.status(429).json({
+            success: false,
+            rateLimited: true,
+            message:
+                "Çok fazla istek gönderildi. Lütfen bir süre sonra tekrar deneyin.",
+            retryAfterSeconds
+        });
+    }
+
+    if (
+        securityRateLimitBuckets.size >
+        5000
+    ) {
+
+        for (
+            const [
+                bucketKey,
+                bucketValue
+            ] of securityRateLimitBuckets
+        ) {
+
+            if (
+                now >=
+                bucketValue.resetAt
+            ) {
+                securityRateLimitBuckets.delete(
+                    bucketKey
+                );
+            }
+        }
+    }
+
+    return next();
+}
+
+// ========================================
 // TERFİ GEÇMİŞİ - PERSONELE GÖRE GETİR
 // ========================================
 
@@ -643,7 +999,27 @@ const httpServer =
 const io =
     new Server(httpServer, {
         cors: {
-            origin: true,
+            origin: (origin, callback) => {
+
+                if (
+                    isAllowedOrigin(
+                        origin
+                    )
+                ) {
+
+                    return callback(
+                        null,
+                        true
+                    );
+                }
+
+                return callback(
+                    new Error(
+                        "Socket.IO origin reddedildi."
+                    )
+                );
+            },
+
             methods: [
                 "GET",
                 "POST"
@@ -662,8 +1038,21 @@ const io =
     )
 );
 
-app.use(cors());
-app.use(express.json());
+app.use(
+    cors(
+        corsOptions
+    )
+);
+
+app.use(
+    express.json({
+        limit: "256kb"
+    })
+);
+
+app.use(
+    securityRateLimitMiddleware
+);
 
 // ========================================
 // GÜVENLİ STATİK DOSYA YAYINI
